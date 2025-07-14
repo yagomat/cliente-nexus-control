@@ -56,7 +56,7 @@ const PagamentosView = () => {
           className="w-8 h-8 bg-green-500 hover:bg-green-600 text-white p-0"
           onClick={() => handlePagamentoMes(clienteId, mes, ano)}
         >
-          <Check className="h-4 w-4" />
+          <Check className="h-3 w-3" />
         </Button>
       );
     }
@@ -68,7 +68,7 @@ const PagamentosView = () => {
           className="w-8 h-8 bg-blue-500 hover:bg-blue-600 text-white p-0"
           onClick={() => handlePagamentoMes(clienteId, mes, ano)}
         >
-          <Check className="h-4 w-4" />
+          <Check className="h-3 w-3" />
         </Button>
       );
     }
@@ -80,13 +80,13 @@ const PagamentosView = () => {
         className="w-8 h-8 border-red-300 hover:bg-red-50 p-0"
         onClick={() => handlePagamentoMes(clienteId, mes, ano)}
       >
-        <X className="h-4 w-4 text-red-500" />
+        <X className="h-3 w-3 text-red-500" />
       </Button>
     );
   };
 
   return (
-    <div className="space-y-4 p-4">
+    <div className="space-y-6 max-w-full">
       {/* Filtro de Ano */}
       <div className="flex items-center gap-4">
         <Calendar className="h-5 w-5" />
@@ -105,17 +105,17 @@ const PagamentosView = () => {
       </div>
 
       {/* Tabela de Pagamentos */}
-      <div className="border rounded-lg overflow-hidden">
-        <div className="flex">
+      <div className="border rounded-lg overflow-hidden w-full">
+        <div className="flex w-full">
           {/* Coluna fixa com nomes */}
-          <div className="bg-muted/50 border-r w-40 flex-shrink-0">
-            <div className="h-12 flex items-center justify-center border-b font-medium text-sm">
+          <div className="bg-muted/50 border-r w-32 flex-shrink-0">
+            <div className="h-12 flex items-center justify-center border-b font-medium text-xs">
               Nome
             </div>
             {clientes.map((cliente) => (
               <div
                 key={cliente.id}
-                className="h-12 flex items-center px-3 border-b text-sm"
+                className="h-12 flex items-center px-2 border-b text-xs"
               >
                 <span className="truncate" title={cliente.nome}>
                   {cliente.nome}
@@ -124,25 +124,25 @@ const PagamentosView = () => {
             ))}
           </div>
 
-          {/* Container com scroll horizontal para os meses */}
-          <div className="flex-1 overflow-x-auto">
-            <div className="flex">
-              {mesesDoAno.map((mes) => (
-                <div key={mes.numero} className="w-24 flex-shrink-0 border-r last:border-r-0">
-                  <div className="h-12 flex items-center justify-center border-b font-medium bg-muted/50 text-sm">
+          {/* Colunas dos meses */}
+          <div className="flex-1 grid grid-cols-12">
+            {mesesDoAno.map((mes) => (
+              <div key={mes.numero} className="border-r last:border-r-0">
+                <div className="h-12 flex items-center justify-center border-b font-medium bg-muted/50 text-[10px] px-1">
+                  <div className="text-center leading-tight">
                     {mes.nome.substring(0, 3)}
                   </div>
-                  {clientes.map((cliente) => (
-                    <div
-                      key={`${cliente.id}-${mes.numero}`}
-                      className="h-12 flex items-center justify-center border-b"
-                    >
-                      {getStatusButton(cliente.id, mes.numero, anoSelecionado)}
-                    </div>
-                  ))}
                 </div>
-              ))}
-            </div>
+                {clientes.map((cliente) => (
+                  <div
+                    key={`${cliente.id}-${mes.numero}`}
+                    className="h-12 flex items-center justify-center border-b"
+                  >
+                    {getStatusButton(cliente.id, mes.numero, anoSelecionado)}
+                  </div>
+                ))}
+              </div>
+            ))}
           </div>
         </div>
       </div>
