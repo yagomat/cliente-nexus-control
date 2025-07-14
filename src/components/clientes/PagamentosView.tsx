@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useClientes } from "@/hooks/useClientes";
 import { usePagamentos } from "@/hooks/usePagamentos";
@@ -53,10 +52,10 @@ const PagamentosView = () => {
       return (
         <Button
           size="sm"
-          className="w-8 h-8 bg-green-500 hover:bg-green-600 text-white p-0"
+          className="w-12 h-12 bg-green-500 hover:bg-green-600 text-white"
           onClick={() => handlePagamentoMes(clienteId, mes, ano)}
         >
-          <Check className="h-3 w-3" />
+          <Check className="h-4 w-4" />
         </Button>
       );
     }
@@ -65,10 +64,10 @@ const PagamentosView = () => {
       return (
         <Button
           size="sm"
-          className="w-8 h-8 bg-blue-500 hover:bg-blue-600 text-white p-0"
+          className="w-12 h-12 bg-blue-500 hover:bg-blue-600 text-white"
           onClick={() => handlePagamentoMes(clienteId, mes, ano)}
         >
-          <Check className="h-3 w-3" />
+          <Check className="h-4 w-4" />
         </Button>
       );
     }
@@ -77,16 +76,16 @@ const PagamentosView = () => {
       <Button
         size="sm"
         variant="outline"
-        className="w-8 h-8 border-red-300 hover:bg-red-50 p-0"
+        className="w-12 h-12 border-red-300 hover:bg-red-50"
         onClick={() => handlePagamentoMes(clienteId, mes, ano)}
       >
-        <X className="h-3 w-3 text-red-500" />
+        <X className="h-4 w-4 text-red-500" />
       </Button>
     );
   };
 
   return (
-    <div className="space-y-6 w-full max-w-none">
+    <div className="space-y-6">
       {/* Filtro de Ano */}
       <div className="flex items-center gap-4">
         <Calendar className="h-5 w-5" />
@@ -105,44 +104,45 @@ const PagamentosView = () => {
       </div>
 
       {/* Tabela de Pagamentos */}
-      <div className="w-full">
-        <div className="border rounded-lg overflow-x-auto">
-          <table className="w-full" style={{ minWidth: '1000px' }}>
-            <thead>
-              <tr className="bg-muted/50">
-                <th className="h-12 px-4 text-left border-r font-medium text-xs sticky left-0 bg-muted/50 z-10 min-w-[200px]">
-                  Nome
-                </th>
-                {mesesDoAno.map((mes) => (
-                  <th 
-                    key={mes.numero} 
-                    className="h-12 px-2 text-center border-r last:border-r-0 font-medium text-xs w-20"
-                  >
-                    {mes.nome.substring(0, 3)}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {clientes.map((cliente) => (
-                <tr key={cliente.id} className="border-b">
-                  <td className="h-12 px-4 border-r text-xs sticky left-0 bg-background z-10">
-                    <span className="truncate block" title={cliente.nome}>
-                      {cliente.nome}
-                    </span>
-                  </td>
-                  {mesesDoAno.map((mes) => (
-                    <td 
+      <div className="border rounded-lg overflow-hidden">
+        <div className="flex">
+          {/* Coluna fixa com nomes */}
+          <div className="bg-muted/50 border-r w-48 flex-shrink-0">
+            <div className="h-14 flex items-center justify-center border-b font-medium">
+              Nome
+            </div>
+            {clientes.map((cliente) => (
+              <div
+                key={cliente.id}
+                className="h-16 flex items-center px-4 border-b text-sm"
+              >
+                {cliente.nome}
+              </div>
+            ))}
+          </div>
+
+          {/* Colunas dos meses com scroll horizontal */}
+          <div className="flex-1 overflow-x-auto">
+            <div className="flex min-w-max">
+              {mesesDoAno.map((mes) => (
+                <div key={mes.numero} className="w-24 flex-shrink-0 border-r last:border-r-0">
+                  <div className="h-14 flex items-center justify-center border-b font-medium bg-muted/50 text-xs">
+                    {mes.nome}
+                    <br />
+                    {anoSelecionado}
+                  </div>
+                  {clientes.map((cliente) => (
+                    <div
                       key={`${cliente.id}-${mes.numero}`}
-                      className="h-12 px-2 text-center border-r last:border-r-0"
+                      className="h-16 flex items-center justify-center border-b"
                     >
                       {getStatusButton(cliente.id, mes.numero, anoSelecionado)}
-                    </td>
+                    </div>
                   ))}
-                </tr>
+                </div>
               ))}
-            </tbody>
-          </table>
+            </div>
+          </div>
         </div>
       </div>
     </div>
