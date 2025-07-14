@@ -17,10 +17,12 @@ const Clientes = () => {
   const [clientes, setClientes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [busca, setBusca] = useState("");
+  const [pagamentos, setPagamentos] = useState<any[]>([]);
   
   useEffect(() => {
     if (user) {
       fetchClientes();
+      fetchPagamentos();
     }
   }, [user]);
 
@@ -47,6 +49,125 @@ const Clientes = () => {
     }
   };
 
+  const fetchPagamentos = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('pagamentos')
+        .select('*')
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+      
+      setPagamentos(data || []);
+    } catch (error) {
+      console.error('Erro ao buscar pagamentos:', error);
+    }
+  };
+
+  const getPagamentoMesAtual = (clienteId: string) => {
+    const hoje = new Date();
+    const mesAtual = hoje.getMonth() + 1;
+    const anoAtual = hoje.getFullYear();
+    
+    return pagamentos.find(p => 
+      p.cliente_id === clienteId && 
+      p.mes === mesAtual && 
+      p.ano === anoAtual
+    );
+  };
+
+  const calcularStatusCliente = (cliente: any) => {
+    const hoje = new Date();
+    const diasParaVencer = calcularDiasParaVencer(cliente.dia_vencimento);
+    const pagamentoMesAtual = getPagamentoMesAtual(cliente.id);
+    
+    // Cliente está ativo se:
+    // - Pagou este mês (status 'pago' ou 'promocao') E ainda não venceu
+    // - Ou se pagou e ainda não passou do dia de vencimento
+    if (pagamentoMesAtual && (pagamentoMesAtual.status === 'pago' || pagamentoMesAtual.status === 'promocao')) {
+      return diasParaVencer >= 0;
+    }
+    
+    return false;
+  };
+
+  const handlePagamento = async (clienteId: string) => {
+    const hoje = new Date();
+    const mesAtual = hoje.getMonth() + 1;
+    const anoAtual = hoje.getFullYear();
+    
+    const pagamentoExistente = getPagamentoMesAtual(clienteId);
+    
+    try {
+      if (!pagamentoExistente) {
+        // Primeiro clique: registrar pagamento (verde)
+        const { error } = await supabase
+          .from('pagamentos')
+          .insert({
+            cliente_id: clienteId,
+            user_id: user?.id,
+            mes: mesAtual,
+            ano: anoAtual,
+            status: 'pago'
+          });
+        
+        if (error) throw error;
+      } else {
+        // Ciclar entre os status
+        let novoStatus;
+        switch (pagamentoExistente.status) {
+          case 'pago':
+            novoStatus = 'promocao'; // verde -> azul
+            break;
+          case 'promocao':
+            novoStatus = 'removido'; // azul -> vermelho
+            break;
+          case 'removido':
+            novoStatus = 'pago'; // vermelho -> verde
+            break;
+          default:
+            novoStatus = 'pago';
+        }
+        
+        const { error } = await supabase
+          .from('pagamentos')
+          .update({ status: novoStatus })
+          .eq('id', pagamentoExistente.id);
+        
+        if (error) throw error;
+      }
+      
+      // Atualizar os dados
+      await fetchPagamentos();
+      
+    } catch (error) {
+      console.error('Erro ao atualizar pagamento:', error);
+      toast({
+        title: "Erro ao atualizar pagamento",
+        description: "Tente novamente mais tarde.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const getButtonVariantAndColor = (clienteId: string) => {
+    const pagamento = getPagamentoMesAtual(clienteId);
+    
+    if (!pagamento || pagamento.status === 'removido') {
+      return { variant: "destructive" as const, className: "bg-red-500 hover:bg-red-600", icon: X };
+    }
+    
+    if (pagamento.status === 'pago') {
+      return { variant: "default" as const, className: "bg-green-500 hover:bg-green-600", icon: Check };
+    }
+    
+    if (pagamento.status === 'promocao') {
+      return { variant: "default" as const, className: "bg-blue-500 hover:bg-blue-600", icon: Check };
+    }
+    
+    return { variant: "destructive" as const, className: "bg-red-500 hover:bg-red-600", icon: X };
+  };
+
   const calcularDiasParaVencer = (diaVencimento: number) => {
     const hoje = new Date();
     const mesAtual = hoje.getMonth();
@@ -65,9 +186,10 @@ const Clientes = () => {
 
   const clientesFiltrados = clientes
     .filter(cliente => {
+      const clienteAtivo = calcularStatusCliente(cliente);
       const matchStatus = filtroStatus === "todos" || 
-        (filtroStatus === "ativo" && cliente.ativo) || 
-        (filtroStatus === "inativo" && !cliente.ativo);
+        (filtroStatus === "ativo" && clienteAtivo) || 
+        (filtroStatus === "inativo" && !clienteAtivo);
       
       const matchBusca = busca === "" || 
         cliente.nome.toLowerCase().includes(busca.toLowerCase()) ||
@@ -198,12 +320,16 @@ const Clientes = () => {
         <div className="space-y-4">
           {clientesFiltrados.map((cliente) => {
             const diasParaVencer = calcularDiasParaVencer(cliente.dia_vencimento);
+            const clienteAtivo = calcularStatusCliente(cliente);
+            const buttonConfig = getButtonVariantAndColor(cliente.id);
+            const IconComponent = buttonConfig.icon;
+            
             return (
               <Card key={cliente.id} className="p-4">
                 <div className="flex justify-between items-start mb-3">
                   <h3 className="font-semibold text-lg">{cliente.nome}</h3>
-                  <Badge className={cliente.ativo ? "bg-green-100 text-green-700 border-green-200" : "bg-red-100 text-red-700 border-red-200"}>
-                    {cliente.ativo ? "Ativo" : "Inativo"}
+                  <Badge className={clienteAtivo ? "bg-green-100 text-green-700 border-green-200" : "bg-red-100 text-red-700 border-red-200"}>
+                    {clienteAtivo ? "Ativo" : "Inativo"}
                   </Badge>
                 </div>
 
@@ -232,18 +358,10 @@ const Clientes = () => {
                   {/* Botão de Pagamento */}
                   <Button 
                     size="sm" 
-                    variant={!cliente.ativo ? "destructive" : "default"}
-                    className="flex-1"
+                    onClick={() => handlePagamento(cliente.id)}
+                    className={`flex-1 ${buttonConfig.className} text-white`}
                   >
-                    {!cliente.ativo ? (
-                      <>
-                        <X className="h-4 w-4 mr-1" />
-                      </>
-                    ) : (
-                      <>
-                        <Check className="h-4 w-4 mr-1" />
-                      </>
-                    )}
+                    <IconComponent className="h-4 w-4 mr-1" />
                   </Button>
 
                   {/* Botão Visualizar */}

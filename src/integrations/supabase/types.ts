@@ -92,6 +92,39 @@ export type Database = {
         }
         Relationships: []
       }
+      pagamentos: {
+        Row: {
+          ano: number
+          cliente_id: string
+          created_at: string
+          id: string
+          mes: number
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ano: number
+          cliente_id: string
+          created_at?: string
+          id?: string
+          mes: number
+          status: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ano?: number
+          cliente_id?: string
+          created_at?: string
+          id?: string
+          mes?: number
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
