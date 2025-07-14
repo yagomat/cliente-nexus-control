@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Users, Search, Plus, Filter, Download, Upload, Eye, Edit, MessageCircle, Trash2, DollarSign, Check, X, CreditCard, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -6,58 +6,87 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "@/hooks/use-toast";
 
 const Clientes = () => {
+  const { user } = useAuth();
   const [filtroStatus, setFiltroStatus] = useState("todos");
   const [ordenacao, setOrdenacao] = useState("cadastro");
+  const [clientes, setClientes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [busca, setBusca] = useState("");
   
-  const clientes = [
-    {
-      id: 1,
-      nome: "Adriano gomes",
-      telefone: "-",
-      status: "ativo",
-      servidor: "Uniplay",
-      diaVencimento: 17,
-      diasParaVencer: 35,
-      pagamentoPendente: false
-    },
-    {
-      id: 2,
-      nome: "Hugo",
-      telefone: "(21) 96655-879",
-      status: "inativo",
-      servidor: "Fire TV",
-      diaVencimento: 1,
-      diasParaVencer: -5,
-      pagamentoPendente: true
-    },
-    {
-      id: 3,
-      nome: "Luiza",
-      telefone: "-",
-      status: "ativo",
-      servidor: "Fire TV",
-      diaVencimento: 15,
-      diasParaVencer: 2,
-      pagamentoPendente: false
-    },
-    {
-      id: 4,
-      nome: "Ana",
-      telefone: "(11) 98765-4321",
-      status: "ativo",
-      servidor: "Uniplay",
-      diaVencimento: 25,
-      diasParaVencer: 12,
-      pagamentoPendente: false
+  useEffect(() => {
+    if (user) {
+      fetchClientes();
     }
-  ];
+  }, [user]);
 
-  const clientesFiltrados = clientes.filter(cliente => {
-    if (filtroStatus === "todos") return true;
-    return cliente.status === filtroStatus;
-  });
+  const fetchClientes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('clientes')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      
+      setClientes(data || []);
+    } catch (error) {
+      console.error('Erro ao buscar clientes:', error);
+      toast({
+        title: "Erro ao carregar clientes",
+        description: "Tente novamente mais tarde.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const calcularDiasParaVencer = (diaVencimento: number) => {
+    const hoje = new Date();
+    const mesAtual = hoje.getMonth();
+    const anoAtual = hoje.getFullYear();
+    const diaAtual = hoje.getDate();
+    
+    let proximoVencimento = new Date(anoAtual, mesAtual, diaVencimento);
+    
+    if (proximoVencimento < hoje) {
+      proximoVencimento = new Date(anoAtual, mesAtual + 1, diaVencimento);
+    }
+    
+    const diffTime = proximoVencimento.getTime() - hoje.getTime();
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  };
+
+  const clientesFiltrados = clientes
+    .filter(cliente => {
+      const matchStatus = filtroStatus === "todos" || 
+        (filtroStatus === "ativo" && cliente.ativo) || 
+        (filtroStatus === "inativo" && !cliente.ativo);
+      
+      const matchBusca = busca === "" || 
+        cliente.nome.toLowerCase().includes(busca.toLowerCase()) ||
+        cliente.telefone.includes(busca);
+      
+      return matchStatus && matchBusca;
+    })
+    .sort((a, b) => {
+      switch (ordenacao) {
+        case "nome-az":
+          return a.nome.localeCompare(b.nome);
+        case "nome-za":
+          return b.nome.localeCompare(a.nome);
+        case "vencimento":
+          return calcularDiasParaVencer(a.dia_vencimento) - calcularDiasParaVencer(b.dia_vencimento);
+        default:
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+    });
 
   const getStatusColor = (status: string) => {
     return status === "ativo" 
@@ -113,6 +142,8 @@ const Clientes = () => {
           <Input 
             placeholder="Buscar clientes..."
             className="pl-10"
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
           />
         </div>
 
@@ -155,78 +186,91 @@ const Clientes = () => {
       </div>
 
       {/* Lista de Clientes */}
-      <div className="space-y-4">
-        {clientesFiltrados.map((cliente) => (
-          <Card key={cliente.id} className="p-4">
-            <div className="flex justify-between items-start mb-3">
-              <h3 className="font-semibold text-lg">{cliente.nome}</h3>
-              <Badge className={getStatusColor(cliente.status)}>
-                {cliente.status === "ativo" ? "Ativo" : "Inativo"}
-              </Badge>
-            </div>
+      {loading ? (
+        <div className="text-center py-8">
+          <p>Carregando clientes...</p>
+        </div>
+      ) : clientesFiltrados.length === 0 ? (
+        <div className="text-center py-8">
+          <p className="text-muted-foreground">Nenhum cliente encontrado.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {clientesFiltrados.map((cliente) => {
+            const diasParaVencer = calcularDiasParaVencer(cliente.dia_vencimento);
+            return (
+              <Card key={cliente.id} className="p-4">
+                <div className="flex justify-between items-start mb-3">
+                  <h3 className="font-semibold text-lg">{cliente.nome}</h3>
+                  <Badge className={cliente.ativo ? "bg-green-100 text-green-700 border-green-200" : "bg-red-100 text-red-700 border-red-200"}>
+                    {cliente.ativo ? "Ativo" : "Inativo"}
+                  </Badge>
+                </div>
 
-            <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
-              <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">📞</span>
-                <span>{cliente.telefone}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span>Dia {cliente.diaVencimento}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">💻</span>
-                <span>{cliente.servidor}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className={getVencimentoColor(cliente.diasParaVencer)}>
-                  {getVencimentoTexto(cliente.diasParaVencer)}
-                </span>
-              </div>
-            </div>
+                <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground">📞</span>
+                    <span>{cliente.telefone || "-"}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span>Dia {cliente.dia_vencimento}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground">💻</span>
+                    <span>{cliente.servidor}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span className={getVencimentoColor(diasParaVencer)}>
+                      {getVencimentoTexto(diasParaVencer)}
+                    </span>
+                  </div>
+                </div>
 
-            <div className="flex gap-2">
-              {/* Botão de Pagamento */}
-              <Button 
-                size="sm" 
-                variant={cliente.pagamentoPendente ? "destructive" : "default"}
-                className="flex-1"
-              >
-                {cliente.pagamentoPendente ? (
-                  <>
-                    <X className="h-4 w-4 mr-1" />
-                  </>
-                ) : (
-                  <>
-                    <Check className="h-4 w-4 mr-1" />
-                  </>
-                )}
-              </Button>
+                <div className="flex gap-2">
+                  {/* Botão de Pagamento */}
+                  <Button 
+                    size="sm" 
+                    variant={!cliente.ativo ? "destructive" : "default"}
+                    className="flex-1"
+                  >
+                    {!cliente.ativo ? (
+                      <>
+                        <X className="h-4 w-4 mr-1" />
+                      </>
+                    ) : (
+                      <>
+                        <Check className="h-4 w-4 mr-1" />
+                      </>
+                    )}
+                  </Button>
 
-              {/* Botão Visualizar */}
-              <Button size="sm" variant="outline">
-                <Eye className="h-4 w-4" />
-              </Button>
+                  {/* Botão Visualizar */}
+                  <Button size="sm" variant="outline">
+                    <Eye className="h-4 w-4" />
+                  </Button>
 
-              {/* Botão Editar */}
-              <Button size="sm" variant="outline">
-                <Edit className="h-4 w-4" />
-              </Button>
+                  {/* Botão Editar */}
+                  <Button size="sm" variant="outline">
+                    <Edit className="h-4 w-4" />
+                  </Button>
 
-              {/* Botão Mensagens */}
-              <Button size="sm" variant="outline">
-                <MessageCircle className="h-4 w-4" />
-              </Button>
+                  {/* Botão Mensagens */}
+                  <Button size="sm" variant="outline">
+                    <MessageCircle className="h-4 w-4" />
+                  </Button>
 
-              {/* Botão Excluir */}
-              <Button size="sm" variant="outline">
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-          </Card>
-        ))}
-      </div>
+                  {/* Botão Excluir */}
+                  <Button size="sm" variant="outline">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      )}
 
       {/* Paginação */}
       <div className="flex justify-center items-center gap-4 mt-6">
