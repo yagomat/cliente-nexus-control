@@ -146,8 +146,8 @@ const PagamentosView = () => {
       </div>
 
       {/* Tabela de Pagamentos */}
-      <div className="border rounded-lg overflow-hidden">
-        <div className="flex">
+      <div className="border rounded-lg overflow-hidden w-full max-w-full">
+        <div className="flex w-full">
           {/* Coluna fixa com nomes */}
           <div className="bg-muted/50 border-r w-48 flex-shrink-0">
             <div className="h-14 flex items-center justify-center border-b font-medium">
@@ -164,19 +164,18 @@ const PagamentosView = () => {
           </div>
 
           {/* Colunas dos meses com scroll horizontal */}
-          <div className="flex-1 overflow-x-auto">
-            <div className="flex min-w-max">
+          <div className="flex-1 overflow-x-auto min-w-0">
+            <div className="flex">
               {mesesDoAno.map((mes) => (
-                <div key={mes.numero} className="w-24 flex-shrink-0 border-r last:border-r-0">
-                  <div className="h-14 flex items-center justify-center border-b font-medium bg-muted/50 text-xs">
-                    {mes.nome}
-                    <br />
-                    {anoSelecionado}
+                <div key={mes.numero} className="w-20 flex-shrink-0 border-r last:border-r-0">
+                  <div className="h-14 flex flex-col items-center justify-center border-b font-medium bg-muted/50 text-xs px-1">
+                    <span>{mes.nome.substring(0, 3)}</span>
+                    <span>{anoSelecionado}</span>
                   </div>
                   {clientes.map((cliente) => (
                     <div
                       key={`${cliente.id}-${mes.numero}`}
-                      className="h-16 flex items-center justify-center border-b"
+                      className="h-16 flex items-center justify-center border-b px-1"
                     >
                       {getStatusButton(cliente.id, mes.numero, anoSelecionado)}
                     </div>
