@@ -1,3 +1,92 @@
+export const calcularVencimentoInteligente = (cliente: any, getPagamentoDoMes: (clienteId: string, mes: number, ano: number) => any) => {
+  const hoje = new Date();
+  const mesAtual = hoje.getMonth() + 1;
+  const anoAtual = hoje.getFullYear();
+  
+  // Verificar se cliente está ativo
+  const clienteAtivo = calcularStatusCliente(cliente, getPagamentoDoMes);
+  
+  if (clienteAtivo) {
+    // Cliente ativo: encontrar primeiro gap nos pagamentos futuros
+    let mes = mesAtual;
+    let ano = anoAtual;
+    
+    // Percorrer meses consecutivos para encontrar o primeiro gap
+    for (let i = 0; i < 12; i++) {
+      const pagamento = getPagamentoDoMes(cliente.id, mes, ano);
+      
+      // Se não tem pagamento ou status não é válido, encontrou o gap
+      if (!pagamento || (pagamento.status !== 'pago' && pagamento.status !== 'promocao')) {
+        // Calcular dias até o vencimento deste mês (quando cliente se tornará inativo)
+        const dataVencimento = new Date(ano, mes - 1, cliente.dia_vencimento);
+        const diffTime = dataVencimento.getTime() - hoje.getTime();
+        const dias = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        return {
+          dias,
+          texto: dias <= 0 ? `Vence hoje` : `Vence em ${dias} dias`,
+          vencido: false
+        };
+      }
+      
+      // Avançar para próximo mês
+      mes++;
+      if (mes > 12) {
+        mes = 1;
+        ano++;
+      }
+    }
+    
+    // Se não encontrou gap em 12 meses, usar último mês verificado
+    const dataVencimento = new Date(ano, mes - 1, cliente.dia_vencimento);
+    const diffTime = dataVencimento.getTime() - hoje.getTime();
+    const dias = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    return {
+      dias,
+      texto: `Vence em ${dias} dias`,
+      vencido: false
+    };
+  } else {
+    // Cliente inativo: encontrar quando se tornou inativo
+    let mes = mesAtual;
+    let ano = anoAtual;
+    
+    // Buscar o último mês pago no passado
+    for (let i = 0; i < 12; i++) {
+      mes--;
+      if (mes < 1) {
+        mes = 12;
+        ano--;
+      }
+      
+      const pagamento = getPagamentoDoMes(cliente.id, mes, ano);
+      if (pagamento && (pagamento.status === 'pago' || pagamento.status === 'promocao')) {
+        // Encontrou último mês pago, cliente se tornou inativo no mês seguinte
+        let mesInativo = mes + 1;
+        let anoInativo = ano;
+        if (mesInativo > 12) {
+          mesInativo = 1;
+          anoInativo++;
+        }
+        
+        const dataVencimento = new Date(anoInativo, mesInativo - 1, cliente.dia_vencimento);
+        const diffTime = hoje.getTime() - dataVencimento.getTime();
+        const dias = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        return {
+          dias,
+          texto: `Venceu há ${dias} dias`,
+          vencido: true
+        };
+      }
+    }
+    
+    // Se não encontrou histórico de pagamento, não mostrar informação
+    return null;
+  }
+};
+
 export const calcularDiasParaVencer = (diaVencimento: number) => {
   const hoje = new Date();
   const mesAtual = hoje.getMonth();

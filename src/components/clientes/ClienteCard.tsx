@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { calcularDiasParaVencer, calcularStatusCliente, getButtonVariantAndColor, getVencimentoColor, getVencimentoTexto } from "@/utils/clienteUtils";
+import { calcularVencimentoInteligente, calcularStatusCliente, getButtonVariantAndColor, getVencimentoColor } from "@/utils/clienteUtils";
 import { ClienteViewModal } from "./ClienteViewModal";
 
 interface ClienteCardProps {
@@ -21,8 +21,10 @@ interface ClienteCardProps {
 export const ClienteCard = ({ cliente, getPagamentoMesAtual, getPagamentoDoMes, onPagamento, onClienteDeleted }: ClienteCardProps) => {
   const navigate = useNavigate();
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const diasParaVencer = calcularDiasParaVencer(cliente.dia_vencimento);
-  const clienteAtivo = getPagamentoDoMes ? calcularStatusCliente(cliente, getPagamentoDoMes) : calcularStatusCliente(cliente, getPagamentoMesAtual);
+  
+  // Calcular informações inteligentes de vencimento
+  const vencimentoInfo = getPagamentoDoMes ? calcularVencimentoInteligente(cliente, getPagamentoDoMes) : null;
+  const clienteAtivo = getPagamentoDoMes ? calcularStatusCliente(cliente, getPagamentoDoMes) : false;
   const buttonConfig = getButtonVariantAndColor(cliente.id, getPagamentoMesAtual);
   
   const getIconComponent = (iconName: string) => {
@@ -91,9 +93,13 @@ export const ClienteCard = ({ cliente, getPagamentoMesAtual, getPagamentoDoMes, 
         </div>
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4 text-muted-foreground" />
-          <span className={getVencimentoColor(diasParaVencer)}>
-            {getVencimentoTexto(diasParaVencer)}
-          </span>
+          {vencimentoInfo ? (
+            <span className={getVencimentoColor(vencimentoInfo.vencido ? -Math.abs(vencimentoInfo.dias) : vencimentoInfo.dias)}>
+              {vencimentoInfo.texto}
+            </span>
+          ) : (
+            <span className="text-muted-foreground">Sem informação</span>
+          )}
         </div>
       </div>
 
