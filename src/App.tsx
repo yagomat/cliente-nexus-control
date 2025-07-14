@@ -14,20 +14,19 @@ import Configuracoes from "./pages/Configuracoes";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
-// Create queryClient outside of component to prevent recreation
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
+      staleTime: 5 * 60 * 1000,
       retry: 1,
     },
   },
 });
 
-function App() {
+const App = () => {
   return (
-    <BrowserRouter>
-      <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
         <AuthProvider>
           <TooltipProvider>
             <Routes>
@@ -45,9 +44,9 @@ function App() {
             <Sonner />
           </TooltipProvider>
         </AuthProvider>
-      </QueryClientProvider>
-    </BrowserRouter>
+      </BrowserRouter>
+    </QueryClientProvider>
   );
-}
+};
 
 export default App;
