@@ -13,15 +13,34 @@ export const calcularDiasParaVencer = (diaVencimento: number) => {
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 };
 
-export const calcularStatusCliente = (cliente: any, getPagamentoMesAtual: (clienteId: string) => any) => {
-  const diasParaVencer = calcularDiasParaVencer(cliente.dia_vencimento);
-  const pagamentoMesAtual = getPagamentoMesAtual(cliente.id);
+export const calcularStatusCliente = (cliente: any, getPagamentoDoMes: (clienteId: string, mes: number, ano: number) => any) => {
+  const hoje = new Date();
+  const mesAtual = hoje.getMonth() + 1;
+  const anoAtual = hoje.getFullYear();
+  const diaAtual = hoje.getDate();
   
-  // Cliente está ativo se:
-  // - Pagou este mês (status 'pago' ou 'promocao') E ainda não venceu
-  // - Ou se pagou e ainda não passou do dia de vencimento
+  // Buscar pagamento do mês atual
+  const pagamentoMesAtual = getPagamentoDoMes(cliente.id, mesAtual, anoAtual);
+  
+  // Se tem pagamento no mês atual como pago/promoção, está ativo
   if (pagamentoMesAtual && (pagamentoMesAtual.status === 'pago' || pagamentoMesAtual.status === 'promocao')) {
-    return diasParaVencer >= 0;
+    return true;
+  }
+  
+  // Calcular mês anterior
+  let mesAnterior = mesAtual - 1;
+  let anoAnterior = anoAtual;
+  if (mesAnterior === 0) {
+    mesAnterior = 12;
+    anoAnterior = anoAtual - 1;
+  }
+  
+  // Buscar pagamento do mês anterior
+  const pagamentoMesAnterior = getPagamentoDoMes(cliente.id, mesAnterior, anoAnterior);
+  
+  // Se tem pagamento no mês anterior como pago/promoção E ainda não passou do dia de vencimento
+  if (pagamentoMesAnterior && (pagamentoMesAnterior.status === 'pago' || pagamentoMesAnterior.status === 'promocao')) {
+    return diaAtual <= cliente.dia_vencimento;
   }
   
   return false;

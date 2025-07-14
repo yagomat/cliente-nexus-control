@@ -13,15 +13,16 @@ import { ClienteViewModal } from "./ClienteViewModal";
 interface ClienteCardProps {
   cliente: any;
   getPagamentoMesAtual: (clienteId: string) => any;
+  getPagamentoDoMes?: (clienteId: string, mes: number, ano: number) => any;
   onPagamento: (clienteId: string) => void;
   onClienteDeleted: () => void;
 }
 
-export const ClienteCard = ({ cliente, getPagamentoMesAtual, onPagamento, onClienteDeleted }: ClienteCardProps) => {
+export const ClienteCard = ({ cliente, getPagamentoMesAtual, getPagamentoDoMes, onPagamento, onClienteDeleted }: ClienteCardProps) => {
   const navigate = useNavigate();
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const diasParaVencer = calcularDiasParaVencer(cliente.dia_vencimento);
-  const clienteAtivo = calcularStatusCliente(cliente, getPagamentoMesAtual);
+  const clienteAtivo = getPagamentoDoMes ? calcularStatusCliente(cliente, getPagamentoDoMes) : calcularStatusCliente(cliente, getPagamentoMesAtual);
   const buttonConfig = getButtonVariantAndColor(cliente.id, getPagamentoMesAtual);
   
   const getIconComponent = (iconName: string) => {

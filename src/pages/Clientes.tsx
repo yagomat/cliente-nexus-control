@@ -16,11 +16,11 @@ const Clientes = () => {
   const [activeTab, setActiveTab] = useState("clientes");
   
   const { clientes, loading, fetchClientes } = useClientes();
-  const { pagamentos, getPagamentoMesAtual, handlePagamento } = usePagamentos();
+  const { pagamentos, getPagamentoMesAtual, getPagamentoDoMes, handlePagamento } = usePagamentos();
 
   const clientesFiltrados = clientes
     .filter(cliente => {
-      const clienteAtivo = calcularStatusCliente(cliente, getPagamentoMesAtual);
+      const clienteAtivo = calcularStatusCliente(cliente, getPagamentoDoMes);
       const matchStatus = filtroStatus === "todos" || 
         (filtroStatus === "ativo" && clienteAtivo) || 
         (filtroStatus === "inativo" && !clienteAtivo);
@@ -82,6 +82,7 @@ const Clientes = () => {
                   key={cliente.id}
                   cliente={cliente}
                   getPagamentoMesAtual={getPagamentoMesAtual}
+                  getPagamentoDoMes={getPagamentoDoMes}
                   onPagamento={handlePagamento}
                   onClienteDeleted={fetchClientes}
                 />
