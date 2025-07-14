@@ -24,42 +24,58 @@ const PagamentosView = () => {
     };
   }, [anoAtual]);
 
-  const handlePagamentoMes = async (clienteId: string, mes: number, ano: number, status: 'pago' | 'promocao' | 'removido' | null) => {
+  const handlePagamentoMes = async (clienteId: string, mes: number, ano: number) => {
     if (!user) return;
 
+    const pagamentoExistente = getPagamentoDoMes(clienteId, mes, ano);
+    
     try {
-      if (status === null) {
-        // Remover pagamento
-        await supabase
+      if (!pagamentoExistente) {
+        // Primeiro clique: registrar pagamento (verde)
+        const { error } = await supabase
           .from('pagamentos')
-          .delete()
-          .eq('cliente_id', clienteId)
-          .eq('mes', mes)
-          .eq('ano', ano)
-          .eq('user_id', user.id);
-      } else {
-        // Inserir ou atualizar pagamento
-        await supabase
-          .from('pagamentos')
-          .upsert({
+          .insert({
             cliente_id: clienteId,
-            user_id: user.id,
-            mes,
-            ano,
-            status
+            user_id: user?.id,
+            mes: mes,
+            ano: ano,
+            status: 'pago'
           });
+        
+        if (error) throw error;
+      } else {
+        // Ciclar entre os status
+        let novoStatus;
+        switch (pagamentoExistente.status) {
+          case 'pago':
+            novoStatus = 'promocao'; // verde -> azul
+            break;
+          case 'promocao':
+            novoStatus = 'removido'; // azul -> vermelho
+            break;
+          case 'removido':
+            novoStatus = 'pago'; // vermelho -> verde
+            break;
+          default:
+            novoStatus = 'pago';
+        }
+        
+        const { error } = await supabase
+          .from('pagamentos')
+          .update({ status: novoStatus })
+          .eq('id', pagamentoExistente.id);
+        
+        if (error) throw error;
       }
       
+      // Atualizar os dados
       await fetchPagamentos();
-      toast({
-        title: "Pagamento atualizado",
-        description: "O status do pagamento foi alterado com sucesso.",
-      });
+      
     } catch (error) {
       console.error('Erro ao atualizar pagamento:', error);
       toast({
-        title: "Erro",
-        description: "Não foi possível atualizar o pagamento.",
+        title: "Erro ao atualizar pagamento",
+        description: "Tente novamente mais tarde.",
         variant: "destructive",
       });
     }
@@ -107,7 +123,19 @@ const PagamentosView = () => {
         <Button
           size="sm"
           className="w-12 h-12 bg-green-500 hover:bg-green-600 text-white"
-          onClick={() => handlePagamentoMes(clienteId, mes, ano, null)}
+          onClick={() => handlePagamentoMes(clienteId, mes, ano)}
+        >
+          <Check className="h-4 w-4" />
+        </Button>
+      );
+    }
+
+    if (status === 'promocao') {
+      return (
+        <Button
+          size="sm"
+          className="w-12 h-12 bg-blue-500 hover:bg-blue-600 text-white"
+          onClick={() => handlePagamentoMes(clienteId, mes, ano)}
         >
           <Check className="h-4 w-4" />
         </Button>
@@ -119,7 +147,7 @@ const PagamentosView = () => {
         size="sm"
         variant="outline"
         className="w-12 h-12 border-red-300 hover:bg-red-50"
-        onClick={() => handlePagamentoMes(clienteId, mes, ano, 'pago')}
+        onClick={() => handlePagamentoMes(clienteId, mes, ano)}
       >
         <X className="h-4 w-4 text-red-500" />
       </Button>
