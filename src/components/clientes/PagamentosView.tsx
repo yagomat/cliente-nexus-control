@@ -108,14 +108,14 @@ const PagamentosView = () => {
       <div className="border rounded-lg overflow-hidden w-full">
         <div className="flex w-full">
           {/* Coluna fixa com nomes */}
-          <div className="bg-muted/50 border-r w-32 flex-shrink-0">
-            <div className="h-12 flex items-center justify-center border-b font-medium text-xs">
+          <div className="bg-muted/50 border-r w-48 flex-shrink-0">
+            <div className="h-12 flex items-center justify-center border-b font-medium text-sm">
               Nome
             </div>
             {clientes.map((cliente) => (
               <div
                 key={cliente.id}
-                className="h-12 flex items-center px-2 border-b text-xs"
+                className="h-12 flex items-center px-3 border-b text-sm"
               >
                 <span className="truncate" title={cliente.nome}>
                   {cliente.nome}
@@ -124,25 +124,27 @@ const PagamentosView = () => {
             ))}
           </div>
 
-          {/* Colunas dos meses */}
-          <div className="flex-1 grid grid-cols-12">
-            {mesesDoAno.map((mes) => (
-              <div key={mes.numero} className="border-r last:border-r-0">
-                <div className="h-12 flex items-center justify-center border-b font-medium bg-muted/50 text-[10px] px-1">
-                  <div className="text-center leading-tight">
-                    {mes.nome.substring(0, 3)}
+          {/* Container com scroll horizontal para os meses */}
+          <div className="flex-1 overflow-x-auto">
+            <div className="flex min-w-max">
+              {mesesDoAno.map((mes) => (
+                <div key={mes.numero} className="w-20 flex-shrink-0 border-r last:border-r-0">
+                  <div className="h-12 flex items-center justify-center border-b font-medium bg-muted/50 text-xs px-1">
+                    <div className="text-center leading-tight">
+                      {mes.nome.substring(0, 3)}
+                    </div>
                   </div>
+                  {clientes.map((cliente) => (
+                    <div
+                      key={`${cliente.id}-${mes.numero}`}
+                      className="h-12 flex items-center justify-center border-b"
+                    >
+                      {getStatusButton(cliente.id, mes.numero, anoSelecionado)}
+                    </div>
+                  ))}
                 </div>
-                {clientes.map((cliente) => (
-                  <div
-                    key={`${cliente.id}-${mes.numero}`}
-                    className="h-12 flex items-center justify-center border-b"
-                  >
-                    {getStatusButton(cliente.id, mes.numero, anoSelecionado)}
-                  </div>
-                ))}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </div>
