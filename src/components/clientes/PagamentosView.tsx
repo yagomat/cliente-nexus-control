@@ -106,10 +106,10 @@ const PagamentosView = () => {
       return (
         <Button
           size="sm"
-          className="w-6 h-6 bg-green-500 hover:bg-green-600 text-white p-0"
+          className="w-12 h-12 bg-green-500 hover:bg-green-600 text-white"
           onClick={() => handlePagamentoMes(clienteId, mes, ano, null)}
         >
-          <Check className="h-3 w-3" />
+          <Check className="h-4 w-4" />
         </Button>
       );
     }
@@ -118,38 +118,16 @@ const PagamentosView = () => {
       <Button
         size="sm"
         variant="outline"
-        className="w-6 h-6 border-red-300 hover:bg-red-50 p-0"
+        className="w-12 h-12 border-red-300 hover:bg-red-50"
         onClick={() => handlePagamentoMes(clienteId, mes, ano, 'pago')}
       >
-        <X className="h-3 w-3 text-red-500" />
+        <X className="h-4 w-4 text-red-500" />
       </Button>
     );
   };
 
   return (
-    <div className="space-y-6 w-full overflow-hidden">
-      <style>{`
-        .scroll-container::-webkit-scrollbar {
-          height: 12px;
-        }
-        .scroll-container::-webkit-scrollbar-track {
-          background: #f1f5f9;
-          border-radius: 6px;
-        }
-        .scroll-container::-webkit-scrollbar-thumb {
-          background: #cbd5e1;
-          border-radius: 6px;
-          border: 2px solid #f1f5f9;
-        }
-        .scroll-container::-webkit-scrollbar-thumb:hover {
-          background: #94a3b8;
-        }
-        .scroll-container {
-          scrollbar-width: thin;
-          scrollbar-color: #cbd5e1 #f1f5f9;
-        }
-      `}</style>
-      
+    <div className="space-y-6">
       {/* Filtro de Ano */}
       <div className="flex items-center gap-4">
         <Calendar className="h-5 w-5" />
@@ -167,39 +145,38 @@ const PagamentosView = () => {
         </Select>
       </div>
 
-      {/* Tabela de Pagamentos - Container com largura limitada */}
-      <div className="w-full border rounded-lg overflow-hidden">
+      {/* Tabela de Pagamentos */}
+      <div className="border rounded-lg overflow-hidden">
         <div className="flex">
           {/* Coluna fixa com nomes */}
-          <div className="bg-muted/50 border-r w-32 flex-shrink-0">
-            <div className="h-10 flex items-center justify-center border-b font-medium text-xs">
+          <div className="bg-muted/50 border-r w-48 flex-shrink-0">
+            <div className="h-14 flex items-center justify-center border-b font-medium">
               Nome
             </div>
             {clientes.map((cliente) => (
               <div
                 key={cliente.id}
-                className="h-10 flex items-center px-1 border-b text-xs truncate"
+                className="h-16 flex items-center px-4 border-b text-sm"
               >
                 {cliente.nome}
               </div>
             ))}
           </div>
 
-          {/* Container com scroll horizontal interno */}
-          <div 
-            className="flex-1 overflow-x-auto scroll-container" 
-            style={{ maxWidth: 'calc(100vw - 200px)' }}
-          >
-            <div className="flex w-max">
+          {/* Colunas dos meses com scroll horizontal */}
+          <div className="flex-1 overflow-x-auto">
+            <div className="flex min-w-max">
               {mesesDoAno.map((mes) => (
-                <div key={mes.numero} className="w-12 flex-shrink-0 border-r last:border-r-0">
-                  <div className="h-10 flex items-center justify-center border-b font-medium bg-muted/50 text-xs">
-                    {mes.nome.slice(0, 3)}
+                <div key={mes.numero} className="w-24 flex-shrink-0 border-r last:border-r-0">
+                  <div className="h-14 flex items-center justify-center border-b font-medium bg-muted/50 text-xs">
+                    {mes.nome}
+                    <br />
+                    {anoSelecionado}
                   </div>
                   {clientes.map((cliente) => (
                     <div
                       key={`${cliente.id}-${mes.numero}`}
-                      className="h-10 flex items-center justify-center border-b"
+                      className="h-16 flex items-center justify-center border-b"
                     >
                       {getStatusButton(cliente.id, mes.numero, anoSelecionado)}
                     </div>
