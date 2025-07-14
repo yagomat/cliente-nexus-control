@@ -10,7 +10,7 @@ interface DashboardData {
   pagamentosPendentes: number;
   valorRecebido: number;
   clientesVencendo: Array<{ nome: string; servidor: string; dias: number }>;
-  appsVencendo: number;
+  appsVencendo: Array<{ nome: string; aplicativo: string; dias: number }>;
   evolucaoClientes: Array<{ month: string; value: number }>;
   evolucaoPagamentos: Array<{ month: string; value: number }>;
   distribuicaoDispositivo: Array<{ name: string; value: number }>;
@@ -30,7 +30,7 @@ export const useDashboard = () => {
     pagamentosPendentes: 0,
     valorRecebido: 0,
     clientesVencendo: [],
-    appsVencendo: 0,
+    appsVencendo: [],
     evolucaoClientes: [],
     evolucaoPagamentos: [],
     distribuicaoDispositivo: [],
@@ -71,8 +71,12 @@ export const useDashboard = () => {
       const trinta_dias_atras = new Date(hoje.getTime() - 30 * 24 * 60 * 60 * 1000);
       const tres_dias_futuro = new Date(hoje.getTime() + 3 * 24 * 60 * 60 * 1000);
 
-      // Função para verificar se cliente está ativo baseado em pagamentos
+      // Função para verificar se cliente está ativo baseado em pagamentos mais rigorosa
       const isClienteAtivo = (clienteId: string) => {
+        // Cliente deve ter campo ativo = true E ter pagamento no mês atual OU anterior
+        const cliente = clientes?.find(c => c.id === clienteId);
+        if (!cliente?.ativo) return false;
+        
         const pagamentoMesAtual = pagamentos?.find(p => 
           p.cliente_id === clienteId && 
           p.mes === mesAtual && 
@@ -87,19 +91,19 @@ export const useDashboard = () => {
           (p.status === 'pago' || p.status === 'promocao')
         );
         
-        return pagamentoMesAtual || pagamentoMesAnterior;
+        return !!(pagamentoMesAtual || pagamentoMesAnterior);
       };
 
       // Calcular métricas básicas corrigidas
       const totalClientes = clientes?.length || 0;
-      const clientesAtivos = clientes?.filter(c => c.ativo && isClienteAtivo(c.id)).length || 0;
+      const clientesAtivos = clientes?.filter(c => isClienteAtivo(c.id)).length || 0;
       const clientesInativos = totalClientes - clientesAtivos;
       
       const clientesNovos = clientes?.filter(c => 
         new Date(c.created_at) >= trinta_dias_atras
       ).length || 0;
 
-      // Clientes que estavam ativos no mês anterior mas não pagaram este mês
+      // Clientes que estavam ativos mas não pagaram este mês
       const pagamentosPendentes = clientes?.filter(cliente => {
         if (!cliente.ativo) return false;
         
@@ -107,17 +111,25 @@ export const useDashboard = () => {
           p.cliente_id === cliente.id && 
           p.mes === mesAtual && 
           p.ano === anoAtual &&
-          p.status === 'pago'
+          (p.status === 'pago' || p.status === 'promocao')
         );
         
-        return !pagamentoMesAtual;
+        // Se não tem pagamento no mês atual, mas tinha no anterior, é pendente
+        const pagamentoMesAnterior = pagamentos?.find(p => 
+          p.cliente_id === cliente.id && 
+          p.mes === (mesAtual === 1 ? 12 : mesAtual - 1) && 
+          p.ano === (mesAtual === 1 ? anoAtual - 1 : anoAtual) &&
+          (p.status === 'pago' || p.status === 'promocao')
+        );
+        
+        return !pagamentoMesAtual && pagamentoMesAnterior;
       }).length || 0;
 
       // Valor recebido no mês atual
       const pagamentosMesAtual = pagamentos?.filter(p => 
         p.mes === mesAtual && 
         p.ano === anoAtual && 
-        p.status === 'pago'
+        (p.status === 'pago' || p.status === 'promocao')
       ) || [];
 
       const valorRecebido = pagamentosMesAtual.reduce((total, pagamento) => {
@@ -127,7 +139,7 @@ export const useDashboard = () => {
 
       // Clientes vencendo em 3 dias (com detalhes)
       const clientesVencendo = clientes?.filter(cliente => {
-        if (!cliente.ativo || !isClienteAtivo(cliente.id)) return false;
+        if (!isClienteAtivo(cliente.id)) return false;
         const diaVencimento = new Date(hoje.getFullYear(), hoje.getMonth(), cliente.dia_vencimento);
         if (diaVencimento < hoje) {
           diaVencimento.setMonth(diaVencimento.getMonth() + 1);
@@ -148,30 +160,49 @@ export const useDashboard = () => {
         };
       }) || [];
 
-      // Apps com licenças vencendo em 30 dias
+      // Apps com licenças vencendo em 30 dias (com detalhes)
       const trinta_dias_futuro = new Date(hoje.getTime() + 30 * 24 * 60 * 60 * 1000);
-      let appsVencendo = 0;
+      const appsVencendo: Array<{ nome: string; aplicativo: string; dias: number }> = [];
       
       clientes?.forEach(cliente => {
+        if (!isClienteAtivo(cliente.id)) return;
+        
         if (cliente.data_licenca_aplicativo && new Date(cliente.data_licenca_aplicativo) <= trinta_dias_futuro) {
-          appsVencendo++;
+          const diffTime = new Date(cliente.data_licenca_aplicativo).getTime() - hoje.getTime();
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          appsVencendo.push({
+            nome: cliente.nome,
+            aplicativo: cliente.aplicativo,
+            dias: diffDays
+          });
         }
         if (cliente.data_licenca_aplicativo_2 && new Date(cliente.data_licenca_aplicativo_2) <= trinta_dias_futuro) {
-          appsVencendo++;
+          const diffTime = new Date(cliente.data_licenca_aplicativo_2).getTime() - hoje.getTime();
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          appsVencendo.push({
+            nome: cliente.nome,
+            aplicativo: cliente.aplicativo_2 || 'App 2',
+            dias: diffDays
+          });
         }
       });
 
-      // Evolução de clientes ativos baseado em pagamentos (12 meses)
+      // Evolução de clientes ativos baseado em pagamentos históricos (12 meses)
       const evolucaoClientes = [];
       for (let i = 11; i >= 0; i--) {
         const data = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
         const mes = data.getMonth() + 1;
         const ano = data.getFullYear();
         
+        // Contar clientes que existiam naquela data E tinham pagamento naquele mês
         const clientesComPagamento = clientes?.filter(cliente => {
-          if (!cliente.ativo) return false;
+          // Cliente deve ter sido criado antes ou durante aquele mês
           if (new Date(cliente.created_at) > data) return false;
           
+          // Cliente deve ter campo ativo = true
+          if (!cliente.ativo) return false;
+          
+          // Cliente deve ter pagamento naquele mês específico
           const pagamentoMes = pagamentos?.find(p => 
             p.cliente_id === cliente.id && 
             p.mes === mes && 
@@ -179,7 +210,7 @@ export const useDashboard = () => {
             (p.status === 'pago' || p.status === 'promocao')
           );
           
-          return pagamentoMes;
+          return !!pagamentoMes;
         }).length || 0;
         
         evolucaoClientes.push({
@@ -196,7 +227,7 @@ export const useDashboard = () => {
         const ano = data.getFullYear();
         
         const pagamentosMes = pagamentos?.filter(p => 
-          p.mes === mes && p.ano === ano && p.status === 'pago'
+          p.mes === mes && p.ano === ano && (p.status === 'pago' || p.status === 'promocao')
         ) || [];
         
         const valorMes = pagamentosMes.reduce((total, pagamento) => {

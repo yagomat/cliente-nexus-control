@@ -132,8 +132,24 @@ const Dashboard = () => {
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{dashboardData.appsVencendo}</div>
-            <p className="text-xs text-muted-foreground">Licenças expirando</p>
+            <div className="text-2xl font-bold text-orange-600">{dashboardData.appsVencendo.length}</div>
+            <div className="text-xs text-muted-foreground mt-2 space-y-1">
+              {dashboardData.appsVencendo.length > 0 ? (
+                dashboardData.appsVencendo.slice(0, 3).map((app, index) => (
+                  <div key={index} className="text-xs">
+                    <span className="font-medium">{app.nome}</span> - {app.aplicativo} 
+                    <span className="text-orange-600"> ({app.dias} dias)</span>
+                  </div>
+                ))
+              ) : (
+                <span>Nenhum app vencendo</span>
+              )}
+              {dashboardData.appsVencendo.length > 3 && (
+                <div className="text-xs text-muted-foreground">
+                  +{dashboardData.appsVencendo.length - 3} outros...
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>
