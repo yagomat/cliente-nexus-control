@@ -4,6 +4,8 @@ import { useClientes } from "@/hooks/useClientes";
 import { usePagamentos } from "@/hooks/usePagamentos";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Calendar, X, Check } from "lucide-react";
 
 const PagamentosView = () => {
@@ -53,10 +55,10 @@ const PagamentosView = () => {
       return (
         <Button
           size="sm"
-          className="w-8 h-8 bg-green-500 hover:bg-green-600 text-white p-0"
+          className="w-10 h-10 bg-green-500 hover:bg-green-600 text-white p-0"
           onClick={() => handlePagamentoMes(clienteId, mes, ano)}
         >
-          <Check className="h-3 w-3" />
+          <Check className="h-4 w-4" />
         </Button>
       );
     }
@@ -65,10 +67,10 @@ const PagamentosView = () => {
       return (
         <Button
           size="sm"
-          className="w-8 h-8 bg-blue-500 hover:bg-blue-600 text-white p-0"
+          className="w-10 h-10 bg-blue-500 hover:bg-blue-600 text-white p-0"
           onClick={() => handlePagamentoMes(clienteId, mes, ano)}
         >
-          <Check className="h-3 w-3" />
+          <Check className="h-4 w-4" />
         </Button>
       );
     }
@@ -77,16 +79,16 @@ const PagamentosView = () => {
       <Button
         size="sm"
         variant="outline"
-        className="w-8 h-8 border-red-300 hover:bg-red-50 p-0"
+        className="w-10 h-10 border-red-300 hover:bg-red-50 p-0"
         onClick={() => handlePagamentoMes(clienteId, mes, ano)}
       >
-        <X className="h-3 w-3 text-red-500" />
+        <X className="h-4 w-4 text-red-500" />
       </Button>
     );
   };
 
   return (
-    <div className="space-y-6 p-4 w-full max-w-full">
+    <div className="space-y-6 p-4">
       {/* Filtro de Ano */}
       <div className="flex items-center gap-4">
         <Calendar className="h-5 w-5" />
@@ -104,44 +106,38 @@ const PagamentosView = () => {
         </Select>
       </div>
 
-      {/* Tabela de Pagamentos - Layout Responsivo */}
-      <div className="w-full overflow-x-auto">
-        <div className="min-w-full">
-          {/* Cabeçalho da Tabela */}
-          <div className="border rounded-lg bg-white">
-            <div className="grid grid-cols-13 gap-1 p-3 bg-muted/50 border-b font-medium text-sm">
-              <div className="col-span-1 text-left">Nome</div>
-              {mesesDoAno.map((mes) => (
-                <div key={mes.numero} className="col-span-1 text-center">
-                  {mes.nome}
-                </div>
-              ))}
-            </div>
-
-            {/* Linhas dos Clientes */}
-            <div className="divide-y">
+      {/* Tabela de Pagamentos */}
+      <div className="border rounded-lg">
+        <ScrollArea className="w-full whitespace-nowrap">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-48 min-w-48">Cliente</TableHead>
+                {mesesDoAno.map((mes) => (
+                  <TableHead key={mes.numero} className="text-center w-20 min-w-20">
+                    {mes.nome}
+                  </TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {clientes.map((cliente) => (
-                <div key={cliente.id} className="grid grid-cols-13 gap-1 p-3 items-center hover:bg-muted/30">
-                  <div className="col-span-1 font-medium text-sm truncate pr-2">
+                <TableRow key={cliente.id}>
+                  <TableCell className="w-48 min-w-48 font-medium">
                     {cliente.nome}
-                  </div>
+                  </TableCell>
                   {mesesDoAno.map((mes) => (
-                    <div key={`${cliente.id}-${mes.numero}`} className="col-span-1 flex justify-center">
+                    <TableCell key={`${cliente.id}-${mes.numero}`} className="text-center w-20 min-w-20">
                       {getStatusButton(cliente.id, mes.numero, anoSelecionado)}
-                    </div>
+                    </TableCell>
                   ))}
-                </div>
+                </TableRow>
               ))}
-            </div>
-          </div>
-        </div>
+            </TableBody>
+          </Table>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
       </div>
-
-      {clientes.length === 0 && (
-        <div className="text-center py-8">
-          <p className="text-muted-foreground">Nenhum cliente encontrado.</p>
-        </div>
-      )}
     </div>
   );
 };
