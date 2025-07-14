@@ -105,8 +105,24 @@ const Dashboard = () => {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{dashboardData.clientesVencendo}</div>
-            <p className="text-xs text-muted-foreground">Próximos 3 dias</p>
+            <div className="text-2xl font-bold text-yellow-600">{dashboardData.clientesVencendo.length}</div>
+            <div className="text-xs text-muted-foreground mt-2 space-y-1">
+              {dashboardData.clientesVencendo.length > 0 ? (
+                dashboardData.clientesVencendo.slice(0, 3).map((cliente, index) => (
+                  <div key={index} className="text-xs">
+                    <span className="font-medium">{cliente.nome}</span> - {cliente.servidor} 
+                    <span className="text-yellow-600"> ({cliente.dias} dias)</span>
+                  </div>
+                ))
+              ) : (
+                <span>Nenhum cliente vencendo</span>
+              )}
+              {dashboardData.clientesVencendo.length > 3 && (
+                <div className="text-xs text-muted-foreground">
+                  +{dashboardData.clientesVencendo.length - 3} outros...
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
 

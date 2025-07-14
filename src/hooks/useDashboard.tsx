@@ -2,24 +2,41 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
+interface DashboardData {
+  totalClientes: number;
+  clientesAtivos: number;
+  clientesInativos: number;
+  clientesNovos: number;
+  pagamentosPendentes: number;
+  valorRecebido: number;
+  clientesVencendo: Array<{ nome: string; servidor: string; dias: number }>;
+  appsVencendo: number;
+  evolucaoClientes: Array<{ month: string; value: number }>;
+  evolucaoPagamentos: Array<{ month: string; value: number }>;
+  distribuicaoDispositivo: Array<{ name: string; value: number }>;
+  distribuicaoAplicativo: Array<{ name: string; value: number }>;
+  distribuicaoUF: Array<{ name: string; value: number }>;
+  distribuicaoServidor: Array<{ name: string; value: number }>;
+}
+
 export const useDashboard = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [dashboardData, setDashboardData] = useState({
+  const [dashboardData, setDashboardData] = useState<DashboardData>({
     totalClientes: 0,
     clientesAtivos: 0,
     clientesInativos: 0,
     clientesNovos: 0,
     pagamentosPendentes: 0,
     valorRecebido: 0,
-    clientesVencendo: 0,
+    clientesVencendo: [],
     appsVencendo: 0,
-    evolucaoClientes: [] as Array<{ month: string; value: number }>,
-    evolucaoPagamentos: [] as Array<{ month: string; value: number }>,
-    distribuicaoDispositivo: [] as Array<{ name: string; value: number }>,
-    distribuicaoAplicativo: [] as Array<{ name: string; value: number }>,
-    distribuicaoUF: [] as Array<{ name: string; value: number }>,
-    distribuicaoServidor: [] as Array<{ name: string; value: number }>
+    evolucaoClientes: [],
+    evolucaoPagamentos: [],
+    distribuicaoDispositivo: [],
+    distribuicaoAplicativo: [],
+    distribuicaoUF: [],
+    distribuicaoServidor: []
   });
 
   useEffect(() => {
@@ -54,9 +71,28 @@ export const useDashboard = () => {
       const trinta_dias_atras = new Date(hoje.getTime() - 30 * 24 * 60 * 60 * 1000);
       const tres_dias_futuro = new Date(hoje.getTime() + 3 * 24 * 60 * 60 * 1000);
 
-      // Calcular métricas básicas
+      // Função para verificar se cliente está ativo baseado em pagamentos
+      const isClienteAtivo = (clienteId: string) => {
+        const pagamentoMesAtual = pagamentos?.find(p => 
+          p.cliente_id === clienteId && 
+          p.mes === mesAtual && 
+          p.ano === anoAtual &&
+          (p.status === 'pago' || p.status === 'promocao')
+        );
+        
+        const pagamentoMesAnterior = pagamentos?.find(p => 
+          p.cliente_id === clienteId && 
+          p.mes === (mesAtual === 1 ? 12 : mesAtual - 1) && 
+          p.ano === (mesAtual === 1 ? anoAtual - 1 : anoAtual) &&
+          (p.status === 'pago' || p.status === 'promocao')
+        );
+        
+        return pagamentoMesAtual || pagamentoMesAnterior;
+      };
+
+      // Calcular métricas básicas corrigidas
       const totalClientes = clientes?.length || 0;
-      const clientesAtivos = clientes?.filter(c => c.ativo).length || 0;
+      const clientesAtivos = clientes?.filter(c => c.ativo && isClienteAtivo(c.id)).length || 0;
       const clientesInativos = totalClientes - clientesAtivos;
       
       const clientesNovos = clientes?.filter(c => 
@@ -89,15 +125,28 @@ export const useDashboard = () => {
         return total + (cliente?.valor_plano || 0);
       }, 0);
 
-      // Clientes vencendo em 3 dias
+      // Clientes vencendo em 3 dias (com detalhes)
       const clientesVencendo = clientes?.filter(cliente => {
-        if (!cliente.ativo) return false;
+        if (!cliente.ativo || !isClienteAtivo(cliente.id)) return false;
         const diaVencimento = new Date(hoje.getFullYear(), hoje.getMonth(), cliente.dia_vencimento);
         if (diaVencimento < hoje) {
           diaVencimento.setMonth(diaVencimento.getMonth() + 1);
         }
         return diaVencimento <= tres_dias_futuro;
-      }).length || 0;
+      }).map(cliente => {
+        const diaVencimento = new Date(hoje.getFullYear(), hoje.getMonth(), cliente.dia_vencimento);
+        if (diaVencimento < hoje) {
+          diaVencimento.setMonth(diaVencimento.getMonth() + 1);
+        }
+        const diffTime = diaVencimento.getTime() - hoje.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        return {
+          nome: cliente.nome,
+          servidor: cliente.servidor,
+          dias: diffDays
+        };
+      }) || [];
 
       // Apps com licenças vencendo em 30 dias
       const trinta_dias_futuro = new Date(hoje.getTime() + 30 * 24 * 60 * 60 * 1000);
@@ -112,17 +161,30 @@ export const useDashboard = () => {
         }
       });
 
-      // Evolução de clientes ativos (12 meses)
+      // Evolução de clientes ativos baseado em pagamentos (12 meses)
       const evolucaoClientes = [];
       for (let i = 11; i >= 0; i--) {
         const data = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
-        const clientesAteData = clientes?.filter(c => 
-          new Date(c.created_at) <= data && c.ativo
-        ).length || 0;
+        const mes = data.getMonth() + 1;
+        const ano = data.getFullYear();
+        
+        const clientesComPagamento = clientes?.filter(cliente => {
+          if (!cliente.ativo) return false;
+          if (new Date(cliente.created_at) > data) return false;
+          
+          const pagamentoMes = pagamentos?.find(p => 
+            p.cliente_id === cliente.id && 
+            p.mes === mes && 
+            p.ano === ano &&
+            (p.status === 'pago' || p.status === 'promocao')
+          );
+          
+          return pagamentoMes;
+        }).length || 0;
         
         evolucaoClientes.push({
           month: data.toLocaleDateString('pt-BR', { month: 'short' }),
-          value: clientesAteData
+          value: clientesComPagamento
         });
       }
 
@@ -148,17 +210,21 @@ export const useDashboard = () => {
         });
       }
 
-      // Distribuições
-      const distribuicaoDispositivo = [
-        {
-          name: "Uma tela",
-          value: clientes?.filter(c => !c.tela_adicional).length || 0
-        },
-        {
-          name: "Duas telas",
-          value: clientes?.filter(c => c.tela_adicional).length || 0
+      // Distribuição por dispositivos únicos
+      const dispositivosCount: Record<string, number> = {};
+      clientes?.forEach(cliente => {
+        if (cliente.dispositivo_smart) {
+          dispositivosCount[cliente.dispositivo_smart] = (dispositivosCount[cliente.dispositivo_smart] || 0) + 1;
         }
-      ];
+        if (cliente.dispositivo_smart_2) {
+          dispositivosCount[cliente.dispositivo_smart_2] = (dispositivosCount[cliente.dispositivo_smart_2] || 0) + 1;
+        }
+      });
+      
+      const distribuicaoDispositivo = Object.entries(dispositivosCount).map(([name, value]) => ({
+        name,
+        value
+      }));
 
       // Distribuição por aplicativo
       const appsCount: Record<string, number> = {};
