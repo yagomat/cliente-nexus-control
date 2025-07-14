@@ -33,7 +33,10 @@ export const useDadosCadastro = () => {
 
   // Fetch all data
   const fetchAllData = async () => {
-    if (!user) return;
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
@@ -45,22 +48,42 @@ export const useDadosCadastro = () => {
         supabase.from('valores_plano').select('*').eq('user_id', user.id).order('valor')
       ]);
 
-      if (servidoresRes.error) throw servidoresRes.error;
-      if (aplicativosRes.error) throw aplicativosRes.error;
-      if (dispositivosRes.error) throw dispositivosRes.error;
-      if (valoresRes.error) throw valoresRes.error;
+      if (servidoresRes.error) {
+        console.error('Erro ao buscar servidores:', servidoresRes.error);
+        setServidores([]);
+      } else {
+        setServidores(servidoresRes.data || []);
+      }
 
-      setServidores(servidoresRes.data || []);
-      setAplicativos(aplicativosRes.data || []);
-      setDispositivos(dispositivosRes.data || []);
-      setValoresPlano(valoresRes.data || []);
+      if (aplicativosRes.error) {
+        console.error('Erro ao buscar aplicativos:', aplicativosRes.error);
+        setAplicativos([]);
+      } else {
+        setAplicativos(aplicativosRes.data || []);
+      }
+
+      if (dispositivosRes.error) {
+        console.error('Erro ao buscar dispositivos:', dispositivosRes.error);
+        setDispositivos([]);
+      } else {
+        setDispositivos(dispositivosRes.data || []);
+      }
+
+      if (valoresRes.error) {
+        console.error('Erro ao buscar valores:', valoresRes.error);
+        setValoresPlano([]);
+      } else {
+        setValoresPlano(valoresRes.data || []);
+      }
+
     } catch (error) {
       console.error('Erro ao buscar dados de cadastro:', error);
-      toast({
-        title: "Erro ao carregar dados",
-        description: "Não foi possível carregar os dados de cadastro.",
-        variant: "destructive",
-      });
+      // Não mostrar toast de erro aqui para evitar spam de notificações
+      // Define arrays vazios como fallback
+      setServidores([]);
+      setAplicativos([]);
+      setDispositivos([]);
+      setValoresPlano([]);
     } finally {
       setLoading(false);
     }
