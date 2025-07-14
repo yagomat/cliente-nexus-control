@@ -106,7 +106,7 @@ const PagamentosView = () => {
       return (
         <Button
           size="sm"
-          className="w-8 h-8 bg-green-500 hover:bg-green-600 text-white"
+          className="w-6 h-6 bg-green-500 hover:bg-green-600 text-white p-0"
           onClick={() => handlePagamentoMes(clienteId, mes, ano, null)}
         >
           <Check className="h-3 w-3" />
@@ -118,7 +118,7 @@ const PagamentosView = () => {
       <Button
         size="sm"
         variant="outline"
-        className="w-8 h-8 border-red-300 hover:bg-red-50"
+        className="w-6 h-6 border-red-300 hover:bg-red-50 p-0"
         onClick={() => handlePagamentoMes(clienteId, mes, ano, 'pago')}
       >
         <X className="h-3 w-3 text-red-500" />
@@ -127,7 +127,7 @@ const PagamentosView = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full max-w-full overflow-hidden">
       {/* Filtro de Ano */}
       <div className="flex items-center gap-4">
         <Calendar className="h-5 w-5" />
@@ -146,17 +146,17 @@ const PagamentosView = () => {
       </div>
 
       {/* Tabela de Pagamentos */}
-      <div className="w-full border rounded-lg overflow-hidden">
-        <div className="flex max-w-full">
+      <div className="w-full max-w-full border rounded-lg overflow-hidden">
+        <div className="flex w-full">
           {/* Coluna fixa com nomes */}
-          <div className="bg-muted/50 border-r w-40 flex-shrink-0">
-            <div className="h-12 flex items-center justify-center border-b font-medium text-xs">
+          <div className="bg-muted/50 border-r w-32 flex-shrink-0 min-w-0">
+            <div className="h-10 flex items-center justify-center border-b font-medium text-xs">
               Nome
             </div>
             {clientes.map((cliente) => (
               <div
                 key={cliente.id}
-                className="h-12 flex items-center px-2 border-b text-xs"
+                className="h-10 flex items-center px-1 border-b text-xs truncate"
               >
                 {cliente.nome}
               </div>
@@ -165,16 +165,16 @@ const PagamentosView = () => {
 
           {/* Colunas dos meses com scroll horizontal */}
           <div className="flex-1 overflow-x-auto min-w-0">
-            <div className="flex">
+            <div className="flex w-max">
               {mesesDoAno.map((mes) => (
-                <div key={mes.numero} className="w-16 flex-shrink-0 border-r last:border-r-0">
-                  <div className="h-12 flex items-center justify-center border-b font-medium bg-muted/50 text-xs">
+                <div key={mes.numero} className="w-12 flex-shrink-0 border-r last:border-r-0">
+                  <div className="h-10 flex items-center justify-center border-b font-medium bg-muted/50 text-xs">
                     {mes.nome.slice(0, 3)}
                   </div>
                   {clientes.map((cliente) => (
                     <div
                       key={`${cliente.id}-${mes.numero}`}
-                      className="h-12 flex items-center justify-center border-b"
+                      className="h-10 flex items-center justify-center border-b"
                     >
                       {getStatusButton(cliente.id, mes.numero, anoSelecionado)}
                     </div>
