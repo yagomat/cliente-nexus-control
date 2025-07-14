@@ -16,7 +16,7 @@ const Clientes = () => {
   const [activeTab, setActiveTab] = useState("clientes");
   
   const { clientes, loading, fetchClientes } = useClientes();
-  const { getPagamentoMesAtual, handlePagamento } = usePagamentos();
+  const { pagamentos, getPagamentoMesAtual, handlePagamento } = usePagamentos();
 
   const clientesFiltrados = clientes
     .filter(cliente => {
