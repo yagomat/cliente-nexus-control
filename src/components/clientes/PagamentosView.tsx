@@ -4,18 +4,13 @@ import { usePagamentos } from "@/hooks/usePagamentos";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar, X, Check } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
 
 const PagamentosView = () => {
   const anoAtual = new Date().getFullYear();
   const [anoSelecionado, setAnoSelecionado] = useState(anoAtual);
   
   const { clientes } = useClientes();
-  const { pagamentos, fetchPagamentos } = usePagamentos();
-  const { user } = useAuth();
-  const { toast } = useToast();
+  const { handlePagamentoMes, getPagamentoDoMes } = usePagamentos();
 
   // Reset para ano atual quando o componente for desmontado
   useEffect(() => {
@@ -23,71 +18,6 @@ const PagamentosView = () => {
       setAnoSelecionado(anoAtual);
     };
   }, [anoAtual]);
-
-  const handlePagamentoMes = async (clienteId: string, mes: number, ano: number) => {
-    if (!user) return;
-
-    const pagamentoExistente = getPagamentoDoMes(clienteId, mes, ano);
-    
-    try {
-      if (!pagamentoExistente) {
-        // Primeiro clique: registrar pagamento (verde)
-        const { error } = await supabase
-          .from('pagamentos')
-          .insert({
-            cliente_id: clienteId,
-            user_id: user?.id,
-            mes: mes,
-            ano: ano,
-            status: 'pago'
-          });
-        
-        if (error) throw error;
-      } else {
-        // Ciclar entre os status
-        let novoStatus;
-        switch (pagamentoExistente.status) {
-          case 'pago':
-            novoStatus = 'promocao'; // verde -> azul
-            break;
-          case 'promocao':
-            novoStatus = 'removido'; // azul -> vermelho
-            break;
-          case 'removido':
-            novoStatus = 'pago'; // vermelho -> verde
-            break;
-          default:
-            novoStatus = 'pago';
-        }
-        
-        const { error } = await supabase
-          .from('pagamentos')
-          .update({ status: novoStatus })
-          .eq('id', pagamentoExistente.id);
-        
-        if (error) throw error;
-      }
-      
-      // Atualizar os dados
-      await fetchPagamentos();
-      
-    } catch (error) {
-      console.error('Erro ao atualizar pagamento:', error);
-      toast({
-        title: "Erro ao atualizar pagamento",
-        description: "Tente novamente mais tarde.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const getPagamentoDoMes = (clienteId: string, mes: number, ano: number) => {
-    return pagamentos.find(p => 
-      p.cliente_id === clienteId && 
-      p.mes === mes && 
-      p.ano === ano
-    );
-  };
 
   // Gerar opções de anos (4 anos para trás e 4 para frente)
   const gerarOpcoesAnos = () => {

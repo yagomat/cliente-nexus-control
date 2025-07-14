@@ -45,7 +45,13 @@ export const usePagamentos = () => {
     const mesAtual = hoje.getMonth() + 1;
     const anoAtual = hoje.getFullYear();
     
-    const pagamentoExistente = getPagamentoMesAtual(clienteId);
+    await handlePagamentoMes(clienteId, mesAtual, anoAtual);
+  };
+
+  const handlePagamentoMes = async (clienteId: string, mes: number, ano: number) => {
+    if (!user) return;
+
+    const pagamentoExistente = getPagamentoDoMes(clienteId, mes, ano);
     
     try {
       if (!pagamentoExistente) {
@@ -55,8 +61,8 @@ export const usePagamentos = () => {
           .insert({
             cliente_id: clienteId,
             user_id: user?.id,
-            mes: mesAtual,
-            ano: anoAtual,
+            mes: mes,
+            ano: ano,
             status: 'pago'
           });
         
@@ -99,10 +105,20 @@ export const usePagamentos = () => {
     }
   };
 
+  const getPagamentoDoMes = (clienteId: string, mes: number, ano: number) => {
+    return pagamentos.find(p => 
+      p.cliente_id === clienteId && 
+      p.mes === mes && 
+      p.ano === ano
+    );
+  };
+
   return {
     pagamentos,
     getPagamentoMesAtual,
+    getPagamentoDoMes,
     handlePagamento,
+    handlePagamentoMes,
     fetchPagamentos
   };
 };
