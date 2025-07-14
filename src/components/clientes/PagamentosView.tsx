@@ -53,10 +53,10 @@ const PagamentosView = () => {
       return (
         <Button
           size="sm"
-          className="w-12 h-12 bg-green-500 hover:bg-green-600 text-white"
+          className="w-8 h-8 bg-green-500 hover:bg-green-600 text-white p-0"
           onClick={() => handlePagamentoMes(clienteId, mes, ano)}
         >
-          <Check className="h-4 w-4" />
+          <Check className="h-3 w-3" />
         </Button>
       );
     }
@@ -65,10 +65,10 @@ const PagamentosView = () => {
       return (
         <Button
           size="sm"
-          className="w-12 h-12 bg-blue-500 hover:bg-blue-600 text-white"
+          className="w-8 h-8 bg-blue-500 hover:bg-blue-600 text-white p-0"
           onClick={() => handlePagamentoMes(clienteId, mes, ano)}
         >
-          <Check className="h-4 w-4" />
+          <Check className="h-3 w-3" />
         </Button>
       );
     }
@@ -77,10 +77,10 @@ const PagamentosView = () => {
       <Button
         size="sm"
         variant="outline"
-        className="w-12 h-12 border-red-300 hover:bg-red-50"
+        className="w-8 h-8 border-red-300 hover:bg-red-50 p-0"
         onClick={() => handlePagamentoMes(clienteId, mes, ano)}
       >
-        <X className="h-4 w-4 text-red-500" />
+        <X className="h-3 w-3 text-red-500" />
       </Button>
     );
   };
@@ -105,38 +105,38 @@ const PagamentosView = () => {
       </div>
 
       {/* Tabela de Pagamentos */}
-      <div className="border rounded-lg overflow-hidden max-w-full">
-        <div className="overflow-x-auto">
-          <div className="flex min-w-max">
-            {/* Coluna fixa com nomes */}
-            <div className="bg-muted/50 border-r w-48 flex-shrink-0">
-              <div className="h-14 flex items-center justify-center border-b font-medium">
-                Nome
-              </div>
-              {clientes.map((cliente) => (
-                <div
-                  key={cliente.id}
-                  className="h-16 flex items-center px-4 border-b text-sm"
-                >
-                  {cliente.nome}
-                </div>
-              ))}
+      <div className="border rounded-lg overflow-hidden w-full">
+        <div className="flex w-full">
+          {/* Coluna fixa com nomes */}
+          <div className="bg-muted/50 border-r w-32 flex-shrink-0">
+            <div className="h-12 flex items-center justify-center border-b font-medium text-xs">
+              Nome
             </div>
+            {clientes.map((cliente) => (
+              <div
+                key={cliente.id}
+                className="h-12 flex items-center px-2 border-b text-xs"
+              >
+                <span className="truncate" title={cliente.nome}>
+                  {cliente.nome}
+                </span>
+              </div>
+            ))}
+          </div>
 
-            {/* Colunas dos meses */}
+          {/* Colunas dos meses */}
+          <div className="flex-1 grid grid-cols-12">
             {mesesDoAno.map((mes) => (
-              <div key={mes.numero} className="w-20 flex-shrink-0 border-r last:border-r-0">
-                <div className="h-14 flex items-center justify-center border-b font-medium bg-muted/50 text-xs px-1">
-                  <div className="text-center">
+              <div key={mes.numero} className="border-r last:border-r-0">
+                <div className="h-12 flex items-center justify-center border-b font-medium bg-muted/50 text-[10px] px-1">
+                  <div className="text-center leading-tight">
                     {mes.nome.substring(0, 3)}
-                    <br />
-                    {anoSelecionado}
                   </div>
                 </div>
                 {clientes.map((cliente) => (
                   <div
                     key={`${cliente.id}-${mes.numero}`}
-                    className="h-16 flex items-center justify-center border-b"
+                    className="h-12 flex items-center justify-center border-b"
                   >
                     {getStatusButton(cliente.id, mes.numero, anoSelecionado)}
                   </div>
