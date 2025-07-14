@@ -128,6 +128,27 @@ const PagamentosView = () => {
 
   return (
     <div className="space-y-6 w-full max-w-full overflow-hidden">
+      <style>{`
+        .scroll-container::-webkit-scrollbar {
+          height: 12px;
+        }
+        .scroll-container::-webkit-scrollbar-track {
+          background: #f1f5f9;
+          border-radius: 6px;
+        }
+        .scroll-container::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 6px;
+          border: 2px solid #f1f5f9;
+        }
+        .scroll-container::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8;
+        }
+        .scroll-container {
+          scrollbar-width: thin;
+          scrollbar-color: #cbd5e1 #f1f5f9;
+        }
+      `}</style>
       {/* Filtro de Ano */}
       <div className="flex items-center gap-4">
         <Calendar className="h-5 w-5" />
@@ -164,7 +185,7 @@ const PagamentosView = () => {
           </div>
 
           {/* Colunas dos meses com scroll horizontal */}
-          <div className="flex-1 overflow-x-auto min-w-0">
+          <div className="flex-1 overflow-x-auto min-w-0 scroll-container">
             <div className="flex w-max">
               {mesesDoAno.map((mes) => (
                 <div key={mes.numero} className="w-12 flex-shrink-0 border-r last:border-r-0">
