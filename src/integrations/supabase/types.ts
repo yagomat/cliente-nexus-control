@@ -14,6 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
+      clientes: {
+        Row: {
+          aplicativo: string
+          ativo: boolean | null
+          created_at: string
+          data_licenca_aplicativo: string | null
+          dia_vencimento: number
+          dispositivo_smart: string | null
+          id: string
+          nome: string
+          observacoes: string | null
+          senha_aplicativo: string | null
+          servidor: string
+          tela_adicional: boolean | null
+          telefone: string
+          uf: string | null
+          updated_at: string
+          user_id: string
+          usuario_aplicativo: string | null
+          valor_plano: number | null
+        }
+        Insert: {
+          aplicativo: string
+          ativo?: boolean | null
+          created_at?: string
+          data_licenca_aplicativo?: string | null
+          dia_vencimento: number
+          dispositivo_smart?: string | null
+          id?: string
+          nome: string
+          observacoes?: string | null
+          senha_aplicativo?: string | null
+          servidor: string
+          tela_adicional?: boolean | null
+          telefone: string
+          uf?: string | null
+          updated_at?: string
+          user_id: string
+          usuario_aplicativo?: string | null
+          valor_plano?: number | null
+        }
+        Update: {
+          aplicativo?: string
+          ativo?: boolean | null
+          created_at?: string
+          data_licenca_aplicativo?: string | null
+          dia_vencimento?: number
+          dispositivo_smart?: string | null
+          id?: string
+          nome?: string
+          observacoes?: string | null
+          senha_aplicativo?: string | null
+          servidor?: string
+          tela_adicional?: boolean | null
+          telefone?: string
+          uf?: string | null
+          updated_at?: string
+          user_id?: string
+          usuario_aplicativo?: string | null
+          valor_plano?: number | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
