@@ -86,7 +86,7 @@ const PagamentosView = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-full">
+    <div className="space-y-6 w-full max-w-none">
       {/* Filtro de Ano */}
       <div className="flex items-center gap-4">
         <Calendar className="h-5 w-5" />
@@ -105,43 +105,45 @@ const PagamentosView = () => {
       </div>
 
       {/* Tabela de Pagamentos */}
-      <div className="border rounded-lg overflow-x-auto">
-        <table className="min-w-full">
-          <thead>
-            <tr className="bg-muted/50">
-              <th className="h-12 px-4 text-left border-r font-medium text-xs min-w-[150px]">
-                Nome
-              </th>
-              {mesesDoAno.map((mes) => (
-                <th 
-                  key={mes.numero} 
-                  className="h-12 px-2 text-center border-r last:border-r-0 font-medium text-[10px] min-w-[60px]"
-                >
-                  {mes.nome.substring(0, 3)}
+      <div className="w-full">
+        <div className="border rounded-lg overflow-x-auto">
+          <table className="w-full" style={{ minWidth: '1000px' }}>
+            <thead>
+              <tr className="bg-muted/50">
+                <th className="h-12 px-4 text-left border-r font-medium text-xs sticky left-0 bg-muted/50 z-10 min-w-[200px]">
+                  Nome
                 </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {clientes.map((cliente) => (
-              <tr key={cliente.id} className="border-b">
-                <td className="h-12 px-4 border-r text-xs">
-                  <span className="truncate block" title={cliente.nome}>
-                    {cliente.nome}
-                  </span>
-                </td>
                 {mesesDoAno.map((mes) => (
-                  <td 
-                    key={`${cliente.id}-${mes.numero}`}
-                    className="h-12 px-2 text-center border-r last:border-r-0"
+                  <th 
+                    key={mes.numero} 
+                    className="h-12 px-2 text-center border-r last:border-r-0 font-medium text-xs w-20"
                   >
-                    {getStatusButton(cliente.id, mes.numero, anoSelecionado)}
-                  </td>
+                    {mes.nome.substring(0, 3)}
+                  </th>
                 ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {clientes.map((cliente) => (
+                <tr key={cliente.id} className="border-b">
+                  <td className="h-12 px-4 border-r text-xs sticky left-0 bg-background z-10">
+                    <span className="truncate block" title={cliente.nome}>
+                      {cliente.nome}
+                    </span>
+                  </td>
+                  {mesesDoAno.map((mes) => (
+                    <td 
+                      key={`${cliente.id}-${mes.numero}`}
+                      className="h-12 px-2 text-center border-r last:border-r-0"
+                    >
+                      {getStatusButton(cliente.id, mes.numero, anoSelecionado)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
