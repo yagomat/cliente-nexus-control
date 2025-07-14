@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      aplicativos: {
+        Row: {
+          created_at: string | null
+          id: string
+          nome: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          nome: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          nome?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       clientes: {
         Row: {
           aplicativo: string
@@ -92,6 +116,30 @@ export type Database = {
         }
         Relationships: []
       }
+      dispositivos: {
+        Row: {
+          created_at: string | null
+          id: string
+          nome: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          nome: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          nome?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       pagamentos: {
         Row: {
           ano: number
@@ -149,6 +197,54 @@ export type Database = {
           telefone?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      servidores: {
+        Row: {
+          created_at: string | null
+          id: string
+          nome: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          nome: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          nome?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      valores_plano: {
+        Row: {
+          created_at: string | null
+          id: string
+          updated_at: string | null
+          user_id: string
+          valor: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id: string
+          valor: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id?: string
+          valor?: number
         }
         Relationships: []
       }

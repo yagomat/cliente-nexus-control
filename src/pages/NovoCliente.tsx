@@ -18,6 +18,7 @@ import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useDadosCadastro } from "@/hooks/useDadosCadastro";
 import { toast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
@@ -49,23 +50,11 @@ const estados = [
   "RS", "RO", "RR", "SC", "SP", "SE", "TO"
 ];
 
-const servidores = [
-  "Servidor 1", "Servidor 2", "Servidor 3", "Servidor 4", "Servidor 5"
-];
-
-const aplicativos = [
-  "Netflix", "Amazon Prime", "Disney+", "HBO Max", "Spotify", "YouTube Premium"
-];
-
-const dispositivos = [
-  "Smart TV Samsung", "Smart TV LG", "Amazon Fire TV", "Chromecast", "Apple TV"
-];
-
-const valoresPlano = [29.90, 39.90, 49.90, 59.90, 69.90, 79.90];
 
 export default function NovoCliente() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { servidores, aplicativos, dispositivos, valoresPlano, loading: dadosLoading } = useDadosCadastro();
   const [isLoading, setIsLoading] = useState(false);
   const [dateOpen, setDateOpen] = useState(false);
   const [dateOpen2, setDateOpen2] = useState(false);
@@ -210,8 +199,8 @@ export default function NovoCliente() {
                 </SelectTrigger>
                 <SelectContent>
                   {servidores.map((servidor) => (
-                    <SelectItem key={servidor} value={servidor}>
-                      {servidor}
+                    <SelectItem key={servidor.id} value={servidor.nome}>
+                      {servidor.nome}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -245,8 +234,8 @@ export default function NovoCliente() {
                 </SelectTrigger>
                 <SelectContent>
                   {valoresPlano.map((valor) => (
-                    <SelectItem key={valor} value={valor.toString()}>
-                      R$ {valor.toFixed(2)}
+                    <SelectItem key={valor.id} value={valor.valor.toString()}>
+                      R$ {valor.valor.toFixed(2)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -268,8 +257,8 @@ export default function NovoCliente() {
                 </SelectTrigger>
                 <SelectContent>
                   {dispositivos.map((dispositivo) => (
-                    <SelectItem key={dispositivo} value={dispositivo}>
-                      {dispositivo}
+                    <SelectItem key={dispositivo.id} value={dispositivo.nome}>
+                      {dispositivo.nome}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -284,8 +273,8 @@ export default function NovoCliente() {
                 </SelectTrigger>
                 <SelectContent>
                   {aplicativos.map((app) => (
-                    <SelectItem key={app} value={app}>
-                      {app}
+                    <SelectItem key={app.id} value={app.nome}>
+                      {app.nome}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -379,8 +368,8 @@ export default function NovoCliente() {
                   </SelectTrigger>
                   <SelectContent>
                     {dispositivos.map((dispositivo) => (
-                      <SelectItem key={dispositivo} value={dispositivo}>
-                        {dispositivo}
+                      <SelectItem key={dispositivo.id} value={dispositivo.nome}>
+                        {dispositivo.nome}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -395,8 +384,8 @@ export default function NovoCliente() {
                   </SelectTrigger>
                   <SelectContent>
                     {aplicativos.map((app) => (
-                      <SelectItem key={app} value={app}>
-                        {app}
+                      <SelectItem key={app.id} value={app.nome}>
+                        {app.nome}
                       </SelectItem>
                     ))}
                   </SelectContent>
