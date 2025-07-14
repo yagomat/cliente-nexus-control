@@ -1,16 +1,25 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Check, X, Eye, Edit, MessageCircle, Trash2, Calendar } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { calcularDiasParaVencer, calcularStatusCliente, getButtonVariantAndColor, getVencimentoColor, getVencimentoTexto } from "@/utils/clienteUtils";
+import { ClienteViewModal } from "./ClienteViewModal";
 
 interface ClienteCardProps {
   cliente: any;
   getPagamentoMesAtual: (clienteId: string) => any;
   onPagamento: (clienteId: string) => void;
+  onClienteDeleted: () => void;
 }
 
-export const ClienteCard = ({ cliente, getPagamentoMesAtual, onPagamento }: ClienteCardProps) => {
+export const ClienteCard = ({ cliente, getPagamentoMesAtual, onPagamento, onClienteDeleted }: ClienteCardProps) => {
+  const navigate = useNavigate();
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const diasParaVencer = calcularDiasParaVencer(cliente.dia_vencimento);
   const clienteAtivo = calcularStatusCliente(cliente, getPagamentoMesAtual);
   const buttonConfig = getButtonVariantAndColor(cliente.id, getPagamentoMesAtual);
@@ -27,6 +36,35 @@ export const ClienteCard = ({ cliente, getPagamentoMesAtual, onPagamento }: Clie
   };
   
   const IconComponent = getIconComponent(buttonConfig.icon);
+
+  const handleEdit = () => {
+    navigate(`/clientes/editar/${cliente.id}`);
+  };
+
+  const handleDelete = async () => {
+    try {
+      const { error } = await supabase
+        .from('clientes')
+        .delete()
+        .eq('id', cliente.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Cliente excluído",
+        description: "O cliente foi excluído com sucesso.",
+      });
+
+      onClienteDeleted();
+    } catch (error) {
+      console.error('Erro ao excluir cliente:', error);
+      toast({
+        title: "Erro ao excluir cliente",
+        description: "Tente novamente mais tarde.",
+        variant: "destructive",
+      });
+    }
+  };
   
   return (
     <Card key={cliente.id} className="p-4">
@@ -63,31 +101,58 @@ export const ClienteCard = ({ cliente, getPagamentoMesAtual, onPagamento }: Clie
         <Button 
           size="sm" 
           onClick={() => onPagamento(cliente.id)}
-          className={`flex-1 ${buttonConfig.className} text-white`}
+          className={`${buttonConfig.className} text-white`}
         >
-          <IconComponent className="h-4 w-4 mr-1" />
+          <IconComponent className="h-4 w-4" />
         </Button>
 
         {/* Botão Visualizar */}
-        <Button size="sm" variant="outline">
+        <Button size="sm" variant="outline" onClick={() => setIsViewModalOpen(true)}>
           <Eye className="h-4 w-4" />
         </Button>
 
         {/* Botão Editar */}
-        <Button size="sm" variant="outline">
+        <Button size="sm" variant="outline" onClick={handleEdit}>
           <Edit className="h-4 w-4" />
         </Button>
 
         {/* Botão Mensagens */}
-        <Button size="sm" variant="outline">
+        <Button size="sm" variant="outline" disabled>
           <MessageCircle className="h-4 w-4" />
         </Button>
 
         {/* Botão Excluir */}
-        <Button size="sm" variant="outline">
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button size="sm" variant="outline">
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tem certeza que deseja excluir o cliente <strong>{cliente.nome}</strong>? 
+                Esta ação não pode ser desfeita.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+                Excluir
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
+
+      {/* Modal de Visualização */}
+      <ClienteViewModal
+        isOpen={isViewModalOpen}
+        onClose={() => setIsViewModalOpen(false)}
+        cliente={cliente}
+        getPagamentoMesAtual={getPagamentoMesAtual}
+      />
     </Card>
   );
 };

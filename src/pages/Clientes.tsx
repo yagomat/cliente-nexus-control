@@ -12,7 +12,7 @@ const Clientes = () => {
   const [ordenacao, setOrdenacao] = useState("cadastro");
   const [busca, setBusca] = useState("");
   
-  const { clientes, loading } = useClientes();
+  const { clientes, loading, fetchClientes } = useClientes();
   const { getPagamentoMesAtual, handlePagamento } = usePagamentos();
 
   const clientesFiltrados = clientes
@@ -73,6 +73,7 @@ const Clientes = () => {
               cliente={cliente}
               getPagamentoMesAtual={getPagamentoMesAtual}
               onPagamento={handlePagamento}
+              onClienteDeleted={fetchClientes}
             />
           ))}
         </div>
