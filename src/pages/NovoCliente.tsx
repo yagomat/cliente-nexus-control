@@ -33,6 +33,11 @@ const formSchema = z.object({
   senha_aplicativo: z.string().optional(),
   data_licenca_aplicativo: z.date().optional(),
   tela_adicional: z.boolean().default(false),
+  dispositivo_smart_2: z.string().optional(),
+  aplicativo_2: z.string().optional(),
+  usuario_aplicativo_2: z.string().optional(),
+  senha_aplicativo_2: z.string().optional(),
+  data_licenca_aplicativo_2: z.date().optional(),
   observacoes: z.string().optional(),
 });
 
@@ -63,6 +68,7 @@ export default function NovoCliente() {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [dateOpen, setDateOpen] = useState(false);
+  const [dateOpen2, setDateOpen2] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -90,6 +96,11 @@ export default function NovoCliente() {
         senha_aplicativo: data.senha_aplicativo || null,
         data_licenca_aplicativo: data.data_licenca_aplicativo?.toISOString().split('T')[0] || null,
         tela_adicional: data.tela_adicional,
+        dispositivo_smart_2: data.dispositivo_smart_2 || null,
+        aplicativo_2: data.aplicativo_2 || null,
+        usuario_aplicativo_2: data.usuario_aplicativo_2 || null,
+        senha_aplicativo_2: data.senha_aplicativo_2 || null,
+        data_licenca_aplicativo_2: data.data_licenca_aplicativo_2?.toISOString().split('T')[0] || null,
         observacoes: data.observacoes || null,
         user_id: user.id,
       };
@@ -352,6 +363,109 @@ export default function NovoCliente() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Tela Principal 2 - Exibida condicionalmente */}
+        {form.watch("tela_adicional") && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Tela Principal 2</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="dispositivo_smart_2">Dispositivo Smart 2</Label>
+                <Select onValueChange={(value) => form.setValue("dispositivo_smart_2", value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um dispositivo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {dispositivos.map((dispositivo) => (
+                      <SelectItem key={dispositivo} value={dispositivo}>
+                        {dispositivo}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="aplicativo_2">Aplicativo 2</Label>
+                <Select onValueChange={(value) => form.setValue("aplicativo_2", value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um aplicativo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {aplicativos.map((app) => (
+                      <SelectItem key={app} value={app}>
+                        {app}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="usuario_aplicativo_2">Usuário do Aplicativo 2</Label>
+                <Input
+                  id="usuario_aplicativo_2"
+                  placeholder="Digite o usuário"
+                  maxLength={25}
+                  {...form.register("usuario_aplicativo_2")}
+                />
+                <div className="text-sm text-muted-foreground text-right">
+                  {form.watch("usuario_aplicativo_2")?.length || 0}/25
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="senha_aplicativo_2">Senha do Aplicativo 2</Label>
+                <Input
+                  id="senha_aplicativo_2"
+                  type="password"
+                  placeholder="Digite a senha"
+                  maxLength={25}
+                  {...form.register("senha_aplicativo_2")}
+                />
+                <div className="text-sm text-muted-foreground text-right">
+                  {form.watch("senha_aplicativo_2")?.length || 0}/25
+                </div>
+              </div>
+
+              <div>
+                <Label>Data de Licença do Aplicativo 2</Label>
+                <Popover open={dateOpen2} onOpenChange={setDateOpen2}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !form.watch("data_licenca_aplicativo_2") && "text-muted-foreground"
+                      )}
+                    >
+                      <Calendar className="mr-2 h-4 w-4" />
+                      {form.watch("data_licenca_aplicativo_2") ? (
+                        format(form.watch("data_licenca_aplicativo_2")!, "PPP", { locale: ptBR })
+                      ) : (
+                        <span>Selecione uma data</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={form.watch("data_licenca_aplicativo_2")}
+                      onSelect={(date) => {
+                        form.setValue("data_licenca_aplicativo_2", date);
+                        setDateOpen2(false);
+                      }}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <Card>
           <CardHeader>

@@ -17,15 +17,19 @@ export type Database = {
       clientes: {
         Row: {
           aplicativo: string
+          aplicativo_2: string | null
           ativo: boolean | null
           created_at: string
           data_licenca_aplicativo: string | null
+          data_licenca_aplicativo_2: string | null
           dia_vencimento: number
           dispositivo_smart: string | null
+          dispositivo_smart_2: string | null
           id: string
           nome: string
           observacoes: string | null
           senha_aplicativo: string | null
+          senha_aplicativo_2: string | null
           servidor: string
           tela_adicional: boolean | null
           telefone: string
@@ -33,19 +37,24 @@ export type Database = {
           updated_at: string
           user_id: string
           usuario_aplicativo: string | null
+          usuario_aplicativo_2: string | null
           valor_plano: number | null
         }
         Insert: {
           aplicativo: string
+          aplicativo_2?: string | null
           ativo?: boolean | null
           created_at?: string
           data_licenca_aplicativo?: string | null
+          data_licenca_aplicativo_2?: string | null
           dia_vencimento: number
           dispositivo_smart?: string | null
+          dispositivo_smart_2?: string | null
           id?: string
           nome: string
           observacoes?: string | null
           senha_aplicativo?: string | null
+          senha_aplicativo_2?: string | null
           servidor: string
           tela_adicional?: boolean | null
           telefone: string
@@ -53,19 +62,24 @@ export type Database = {
           updated_at?: string
           user_id: string
           usuario_aplicativo?: string | null
+          usuario_aplicativo_2?: string | null
           valor_plano?: number | null
         }
         Update: {
           aplicativo?: string
+          aplicativo_2?: string | null
           ativo?: boolean | null
           created_at?: string
           data_licenca_aplicativo?: string | null
+          data_licenca_aplicativo_2?: string | null
           dia_vencimento?: number
           dispositivo_smart?: string | null
+          dispositivo_smart_2?: string | null
           id?: string
           nome?: string
           observacoes?: string | null
           senha_aplicativo?: string | null
+          senha_aplicativo_2?: string | null
           servidor?: string
           tela_adicional?: boolean | null
           telefone?: string
@@ -73,6 +87,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           usuario_aplicativo?: string | null
+          usuario_aplicativo_2?: string | null
           valor_plano?: number | null
         }
         Relationships: []
