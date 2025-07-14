@@ -1,29 +1,30 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useClientes } from "@/hooks/useClientes";
 import { usePagamentos } from "@/hooks/usePagamentos";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Calendar, User, DollarSign } from "lucide-react";
+import { Calendar, X, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 
 const PagamentosView = () => {
-  const [mesAno, setMesAno] = useState(() => {
-    const hoje = new Date();
-    return `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
-  });
+  const anoAtual = new Date().getFullYear();
+  const [anoSelecionado, setAnoSelecionado] = useState(anoAtual);
   
   const { clientes } = useClientes();
   const { pagamentos, fetchPagamentos } = usePagamentos();
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const [ano, mes] = mesAno.split('-').map(Number);
+  // Reset para ano atual quando o componente for desmontado
+  useEffect(() => {
+    return () => {
+      setAnoSelecionado(anoAtual);
+    };
+  }, [anoAtual]);
 
-  const handlePagamentoMes = async (clienteId: string, status: 'pago' | 'promocao' | 'removido' | null) => {
+  const handlePagamentoMes = async (clienteId: string, mes: number, ano: number, status: 'pago' | 'promocao' | 'removido' | null) => {
     if (!user) return;
 
     try {
@@ -64,7 +65,7 @@ const PagamentosView = () => {
     }
   };
 
-  const getPagamentoDoMes = (clienteId: string) => {
+  const getPagamentoDoMes = (clienteId: string, mes: number, ano: number) => {
     return pagamentos.find(p => 
       p.cliente_id === clienteId && 
       p.mes === mes && 
@@ -72,118 +73,119 @@ const PagamentosView = () => {
     );
   };
 
-  const getStatusBadge = (status?: string) => {
-    switch (status) {
-      case 'pago':
-        return <Badge variant="default" className="bg-green-500">Pago</Badge>;
-      case 'promocao':
-        return <Badge variant="secondary">Promoção</Badge>;
-      case 'removido':
-        return <Badge variant="destructive">Removido</Badge>;
-      default:
-        return <Badge variant="outline">Pendente</Badge>;
+  // Gerar opções de anos (4 anos para trás e 4 para frente)
+  const gerarOpcoesAnos = () => {
+    const opcoes = [];
+    for (let i = -4; i <= 4; i++) {
+      opcoes.push(anoAtual + i);
     }
+    return opcoes;
   };
 
-  // Gerar opções de meses (6 meses anteriores e 6 futuros)
-  const gerarOpcoesMeses = () => {
-    const opcoes = [];
-    const hoje = new Date();
-    
-    for (let i = -6; i <= 6; i++) {
-      const data = new Date(hoje.getFullYear(), hoje.getMonth() + i, 1);
-      const ano = data.getFullYear();
-      const mes = data.getMonth() + 1;
-      const valor = `${ano}-${String(mes).padStart(2, '0')}`;
-      const label = data.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-      
-      opcoes.push({ valor, label });
+  // Gerar meses do ano
+  const mesesDoAno = [
+    { numero: 1, nome: 'Janeiro' },
+    { numero: 2, nome: 'Fevereiro' },
+    { numero: 3, nome: 'Março' },
+    { numero: 4, nome: 'Abril' },
+    { numero: 5, nome: 'Maio' },
+    { numero: 6, nome: 'Junho' },
+    { numero: 7, nome: 'Julho' },
+    { numero: 8, nome: 'Agosto' },
+    { numero: 9, nome: 'Setembro' },
+    { numero: 10, nome: 'Outubro' },
+    { numero: 11, nome: 'Novembro' },
+    { numero: 12, nome: 'Dezembro' },
+  ];
+
+  const getStatusButton = (clienteId: string, mes: number, ano: number) => {
+    const pagamento = getPagamentoDoMes(clienteId, mes, ano);
+    const status = pagamento?.status;
+
+    if (status === 'pago') {
+      return (
+        <Button
+          size="sm"
+          className="w-12 h-12 bg-green-500 hover:bg-green-600 text-white"
+          onClick={() => handlePagamentoMes(clienteId, mes, ano, null)}
+        >
+          <Check className="h-4 w-4" />
+        </Button>
+      );
     }
-    
-    return opcoes;
+
+    return (
+      <Button
+        size="sm"
+        variant="outline"
+        className="w-12 h-12 border-red-300 hover:bg-red-50"
+        onClick={() => handlePagamentoMes(clienteId, mes, ano, 'pago')}
+      >
+        <X className="h-4 w-4 text-red-500" />
+      </Button>
+    );
   };
 
   return (
     <div className="space-y-6">
+      {/* Filtro de Ano */}
       <div className="flex items-center gap-4">
         <Calendar className="h-5 w-5" />
-        <Select value={mesAno} onValueChange={setMesAno}>
-          <SelectTrigger className="w-64">
+        <Select value={anoSelecionado.toString()} onValueChange={(valor) => setAnoSelecionado(parseInt(valor))}>
+          <SelectTrigger className="w-32">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {gerarOpcoesMeses().map(opcao => (
-              <SelectItem key={opcao.valor} value={opcao.valor}>
-                {opcao.label}
+            {gerarOpcoesAnos().map(ano => (
+              <SelectItem key={ano} value={ano.toString()}>
+                {ano}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
 
-      <div className="grid gap-4">
-        {clientes.map((cliente) => {
-          const pagamento = getPagamentoDoMes(cliente.id);
-          
-          return (
-            <Card key={cliente.id}>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <User className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <CardTitle className="text-lg">{cliente.nome}</CardTitle>
-                      <p className="text-sm text-muted-foreground">{cliente.telefone}</p>
-                    </div>
+      {/* Tabela de Pagamentos */}
+      <div className="border rounded-lg overflow-hidden">
+        <div className="flex">
+          {/* Coluna fixa com nomes */}
+          <div className="bg-muted/50 border-r w-48 flex-shrink-0">
+            <div className="h-14 flex items-center justify-center border-b font-medium">
+              Nome
+            </div>
+            {clientes.map((cliente) => (
+              <div
+                key={cliente.id}
+                className="h-16 flex items-center px-4 border-b text-sm"
+              >
+                {cliente.nome}
+              </div>
+            ))}
+          </div>
+
+          {/* Colunas dos meses com scroll horizontal */}
+          <div className="flex-1 overflow-x-auto">
+            <div className="flex min-w-max">
+              {mesesDoAno.map((mes) => (
+                <div key={mes.numero} className="w-24 flex-shrink-0 border-r last:border-r-0">
+                  <div className="h-14 flex items-center justify-center border-b font-medium bg-muted/50 text-xs">
+                    {mes.nome}
+                    <br />
+                    {anoSelecionado}
                   </div>
-                  <div className="flex items-center gap-3">
-                    {cliente.valor_plano && (
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <DollarSign className="h-4 w-4" />
-                        R$ {cliente.valor_plano}
-                      </div>
-                    )}
-                    {getStatusBadge(pagamento?.status)}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant={pagamento?.status === 'pago' ? 'default' : 'outline'}
-                    onClick={() => handlePagamentoMes(cliente.id, 'pago')}
-                  >
-                    Pago
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={pagamento?.status === 'promocao' ? 'default' : 'outline'}
-                    onClick={() => handlePagamentoMes(cliente.id, 'promocao')}
-                  >
-                    Promoção
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={pagamento?.status === 'removido' ? 'destructive' : 'outline'}
-                    onClick={() => handlePagamentoMes(cliente.id, 'removido')}
-                  >
-                    Removido
-                  </Button>
-                  {pagamento && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => handlePagamentoMes(cliente.id, null)}
+                  {clientes.map((cliente) => (
+                    <div
+                      key={`${cliente.id}-${mes.numero}`}
+                      className="h-16 flex items-center justify-center border-b"
                     >
-                      Limpar
-                    </Button>
-                  )}
+                      {getStatusButton(cliente.id, mes.numero, anoSelecionado)}
+                    </div>
+                  ))}
                 </div>
-              </CardContent>
-            </Card>
-          );
-        })}
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
