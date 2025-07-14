@@ -86,7 +86,7 @@ const PagamentosView = () => {
   };
 
   return (
-    <div className="space-y-6 w-full">
+    <div className="space-y-6 max-w-full">
       {/* Filtro de Ano */}
       <div className="flex items-center gap-4">
         <Calendar className="h-5 w-5" />
@@ -105,44 +105,44 @@ const PagamentosView = () => {
       </div>
 
       {/* Tabela de Pagamentos */}
-      <div className="border rounded-lg overflow-hidden w-full">
-        <div className="flex w-full">
-          {/* Coluna fixa com nomes */}
-          <div className="bg-muted/50 border-r w-48 flex-shrink-0">
-            <div className="h-14 flex items-center justify-center border-b font-medium">
-              Nome
-            </div>
-            {clientes.map((cliente) => (
-              <div
-                key={cliente.id}
-                className="h-16 flex items-center px-4 border-b text-sm"
-              >
-                {cliente.nome}
+      <div className="border rounded-lg overflow-hidden max-w-full">
+        <div className="overflow-x-auto">
+          <div className="flex min-w-max">
+            {/* Coluna fixa com nomes */}
+            <div className="bg-muted/50 border-r w-48 flex-shrink-0">
+              <div className="h-14 flex items-center justify-center border-b font-medium">
+                Nome
               </div>
-            ))}
-          </div>
-
-          {/* Colunas dos meses com scroll horizontal */}
-          <div className="flex-1 overflow-x-auto">
-            <div className="flex min-w-max">
-              {mesesDoAno.map((mes) => (
-                <div key={mes.numero} className="w-24 flex-shrink-0 border-r last:border-r-0">
-                  <div className="h-14 flex items-center justify-center border-b font-medium bg-muted/50 text-xs">
-                    {mes.nome}
-                    <br />
-                    {anoSelecionado}
-                  </div>
-                  {clientes.map((cliente) => (
-                    <div
-                      key={`${cliente.id}-${mes.numero}`}
-                      className="h-16 flex items-center justify-center border-b"
-                    >
-                      {getStatusButton(cliente.id, mes.numero, anoSelecionado)}
-                    </div>
-                  ))}
+              {clientes.map((cliente) => (
+                <div
+                  key={cliente.id}
+                  className="h-16 flex items-center px-4 border-b text-sm"
+                >
+                  {cliente.nome}
                 </div>
               ))}
             </div>
+
+            {/* Colunas dos meses */}
+            {mesesDoAno.map((mes) => (
+              <div key={mes.numero} className="w-20 flex-shrink-0 border-r last:border-r-0">
+                <div className="h-14 flex items-center justify-center border-b font-medium bg-muted/50 text-xs px-1">
+                  <div className="text-center">
+                    {mes.nome.substring(0, 3)}
+                    <br />
+                    {anoSelecionado}
+                  </div>
+                </div>
+                {clientes.map((cliente) => (
+                  <div
+                    key={`${cliente.id}-${mes.numero}`}
+                    className="h-16 flex items-center justify-center border-b"
+                  >
+                    {getStatusButton(cliente.id, mes.numero, anoSelecionado)}
+                  </div>
+                ))}
+              </div>
+            ))}
           </div>
         </div>
       </div>
