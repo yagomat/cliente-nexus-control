@@ -1,17 +1,38 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 
+// Estado global para sincronização
+let globalPagamentos: any[] = [];
+let listeners: (() => void)[] = [];
+
 export const usePagamentos = () => {
   const { user } = useAuth();
-  const [pagamentos, setPagamentos] = useState<any[]>([]);
+  const [pagamentos, setPagamentos] = useState<any[]>(globalPagamentos);
   
+  // Registrar listener para atualizações globais
+  useEffect(() => {
+    const updateListener = () => {
+      setPagamentos([...globalPagamentos]);
+    };
+    
+    listeners.push(updateListener);
+    
+    return () => {
+      listeners = listeners.filter(l => l !== updateListener);
+    };
+  }, []);
+
   useEffect(() => {
     if (user) {
       fetchPagamentos();
     }
   }, [user]);
+
+  const notifyAllListeners = () => {
+    listeners.forEach(listener => listener());
+  };
 
   const fetchPagamentos = async () => {
     try {
@@ -22,7 +43,9 @@ export const usePagamentos = () => {
 
       if (error) throw error;
       
-      setPagamentos(data || []);
+      globalPagamentos = data || [];
+      setPagamentos([...globalPagamentos]);
+      notifyAllListeners();
     } catch (error) {
       console.error('Erro ao buscar pagamentos:', error);
     }
@@ -33,17 +56,11 @@ export const usePagamentos = () => {
     const mesAtual = hoje.getMonth() + 1;
     const anoAtual = hoje.getFullYear();
     
-    console.log('getPagamentoMesAtual - cliente:', clienteId, 'mesAtual:', mesAtual, 'anoAtual:', anoAtual);
-    console.log('Pagamentos disponíveis:', pagamentos.filter(p => p.cliente_id === clienteId));
-    
-    const pagamento = pagamentos.find(p => 
+    return pagamentos.find(p => 
       p.cliente_id === clienteId && 
       p.mes === mesAtual && 
       p.ano === anoAtual
     );
-    
-    console.log('Pagamento encontrado:', pagamento);
-    return pagamento;
   };
 
   const handlePagamento = async (clienteId: string) => {
