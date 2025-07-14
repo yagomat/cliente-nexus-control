@@ -18,6 +18,7 @@ import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useDadosCadastro } from "@/hooks/useDadosCadastro";
 import { toast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
@@ -49,24 +50,11 @@ const estados = [
   "RS", "RO", "RR", "SC", "SP", "SE", "TO"
 ];
 
-const servidores = [
-  "Servidor 1", "Servidor 2", "Servidor 3", "Servidor 4", "Servidor 5"
-];
-
-const aplicativos = [
-  "Netflix", "Amazon Prime", "Disney+", "HBO Max", "Spotify", "YouTube Premium"
-];
-
-const dispositivos = [
-  "Smart TV Samsung", "Smart TV LG", "Amazon Fire TV", "Chromecast", "Apple TV"
-];
-
-const valoresPlano = [29.90, 39.90, 49.90, 59.90, 69.90, 79.90];
-
 export default function EditarCliente() {
   const navigate = useNavigate();
   const { id } = useParams();
   const { user } = useAuth();
+  const { servidores, aplicativos, dispositivos, valoresPlano } = useDadosCadastro();
   const [isLoading, setIsLoading] = useState(false);
   const [loadingCliente, setLoadingCliente] = useState(true);
   const [dateOpen, setDateOpen] = useState(false);
@@ -286,8 +274,8 @@ export default function EditarCliente() {
                 </SelectTrigger>
                 <SelectContent>
                   {servidores.map((servidor) => (
-                    <SelectItem key={servidor} value={servidor}>
-                      {servidor}
+                    <SelectItem key={servidor.id} value={servidor.nome}>
+                      {servidor.nome}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -324,8 +312,8 @@ export default function EditarCliente() {
                 </SelectTrigger>
                 <SelectContent>
                   {valoresPlano.map((valor) => (
-                    <SelectItem key={valor} value={valor.toString()}>
-                      R$ {valor.toFixed(2)}
+                    <SelectItem key={valor.id} value={valor.valor.toString()}>
+                      R$ {valor.valor.toFixed(2)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -350,8 +338,8 @@ export default function EditarCliente() {
                 </SelectTrigger>
                 <SelectContent>
                   {dispositivos.map((dispositivo) => (
-                    <SelectItem key={dispositivo} value={dispositivo}>
-                      {dispositivo}
+                    <SelectItem key={dispositivo.id} value={dispositivo.nome}>
+                      {dispositivo.nome}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -369,8 +357,8 @@ export default function EditarCliente() {
                 </SelectTrigger>
                 <SelectContent>
                   {aplicativos.map((app) => (
-                    <SelectItem key={app} value={app}>
-                      {app}
+                    <SelectItem key={app.id} value={app.nome}>
+                      {app.nome}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -456,43 +444,43 @@ export default function EditarCliente() {
               <CardTitle>Tela Principal 2</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="dispositivo_smart_2">Dispositivo Smart 2</Label>
-                <Select 
-                  value={form.watch("dispositivo_smart_2") || ""}
-                  onValueChange={(value) => form.setValue("dispositivo_smart_2", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione um dispositivo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {dispositivos.map((dispositivo) => (
-                      <SelectItem key={dispositivo} value={dispositivo}>
-                        {dispositivo}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+               <div>
+                 <Label htmlFor="dispositivo_smart_2">Dispositivo Smart 2</Label>
+                 <Select 
+                   value={form.watch("dispositivo_smart_2") || ""}
+                   onValueChange={(value) => form.setValue("dispositivo_smart_2", value)}
+                 >
+                   <SelectTrigger>
+                     <SelectValue placeholder="Selecione um dispositivo" />
+                   </SelectTrigger>
+                   <SelectContent>
+                     {dispositivos.map((dispositivo) => (
+                       <SelectItem key={dispositivo.id} value={dispositivo.nome}>
+                         {dispositivo.nome}
+                       </SelectItem>
+                     ))}
+                   </SelectContent>
+                 </Select>
+               </div>
 
-              <div>
-                <Label htmlFor="aplicativo_2">Aplicativo 2</Label>
-                <Select 
-                  value={form.watch("aplicativo_2") || ""}
-                  onValueChange={(value) => form.setValue("aplicativo_2", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione um aplicativo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {aplicativos.map((app) => (
-                      <SelectItem key={app} value={app}>
-                        {app}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+               <div>
+                 <Label htmlFor="aplicativo_2">Aplicativo 2</Label>
+                 <Select 
+                   value={form.watch("aplicativo_2") || ""}
+                   onValueChange={(value) => form.setValue("aplicativo_2", value)}
+                 >
+                   <SelectTrigger>
+                     <SelectValue placeholder="Selecione um aplicativo" />
+                   </SelectTrigger>
+                   <SelectContent>
+                     {aplicativos.map((app) => (
+                       <SelectItem key={app.id} value={app.nome}>
+                         {app.nome}
+                       </SelectItem>
+                     ))}
+                   </SelectContent>
+                 </Select>
+               </div>
 
               <div>
                 <Label htmlFor="usuario_aplicativo_2">Usuário do Aplicativo 2</Label>
