@@ -99,25 +99,25 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-yellow-200 bg-yellow-50/50 dark:border-yellow-800 dark:bg-yellow-950/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Clientes Vencendo (3 dias)</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-yellow-700 dark:text-yellow-300">Clientes Vencendo (3 dias)</CardTitle>
+            <Calendar className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{dashboardData.clientesVencendo}</div>
-            <p className="text-xs text-muted-foreground">Próximos 3 dias</p>
+            <div className="text-2xl font-bold text-yellow-700 dark:text-yellow-300">{dashboardData.clientesVencendo}</div>
+            <p className="text-xs text-yellow-600 dark:text-yellow-400">Próximos 3 dias</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-orange-200 bg-orange-50/50 dark:border-orange-800 dark:bg-orange-950/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Apps Vencendo (30 dias)</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-orange-700 dark:text-orange-300">Apps Vencendo (30 dias)</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{dashboardData.appsVencendo}</div>
-            <p className="text-xs text-muted-foreground">Licenças expirando</p>
+            <div className="text-2xl font-bold text-orange-700 dark:text-orange-300">{dashboardData.appsVencendo}</div>
+            <p className="text-xs text-orange-600 dark:text-orange-400">Licenças expirando</p>
           </CardContent>
         </Card>
       </div>
@@ -210,13 +210,23 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={dashboardData.distribuicaoAplicativo}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} />
-                <YAxis />
+              <PieChart>
+                <Pie
+                  data={dashboardData.distribuicaoAplicativo}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {dashboardData.distribuicaoAplicativo.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
                 <Tooltip />
-                <Bar dataKey="value" fill="hsl(var(--primary))" />
-              </BarChart>
+              </PieChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
@@ -230,13 +240,23 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={dashboardData.distribuicaoUF}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
+              <PieChart>
+                <Pie
+                  data={dashboardData.distribuicaoUF}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {dashboardData.distribuicaoUF.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
                 <Tooltip />
-                <Bar dataKey="value" fill="hsl(var(--secondary))" />
-              </BarChart>
+              </PieChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
@@ -248,13 +268,23 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={dashboardData.distribuicaoServidor}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} />
-                <YAxis />
+              <PieChart>
+                <Pie
+                  data={dashboardData.distribuicaoServidor}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {dashboardData.distribuicaoServidor.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
                 <Tooltip />
-                <Bar dataKey="value" fill="hsl(var(--accent))" />
-              </BarChart>
+              </PieChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>

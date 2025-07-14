@@ -28,6 +28,48 @@ export const useDashboard = () => {
     }
   }, [user]);
 
+  // Realtime updates
+  useEffect(() => {
+    if (!user) return;
+
+    const clientesChannel = supabase
+      .channel('clientes-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'clientes',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          fetchDashboardData();
+        }
+      )
+      .subscribe();
+
+    const pagamentosChannel = supabase
+      .channel('pagamentos-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'pagamentos',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          fetchDashboardData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(clientesChannel);
+      supabase.removeChannel(pagamentosChannel);
+    };
+  }, [user]);
+
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
