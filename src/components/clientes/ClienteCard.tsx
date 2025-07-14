@@ -9,6 +9,7 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { calcularVencimentoInteligente, calcularStatusCliente, getButtonVariantAndColor, getVencimentoColor } from "@/utils/clienteUtils";
 import { ClienteViewModal } from "./ClienteViewModal";
+import { TemplateModal } from "@/components/templates/TemplateModal";
 
 interface ClienteCardProps {
   cliente: any;
@@ -21,6 +22,7 @@ interface ClienteCardProps {
 export const ClienteCard = ({ cliente, getPagamentoMesAtual, getPagamentoDoMes, onPagamento, onClienteDeleted }: ClienteCardProps) => {
   const navigate = useNavigate();
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   
   // Calcular informações inteligentes de vencimento
   const vencimentoInfo = getPagamentoDoMes ? calcularVencimentoInteligente(cliente, getPagamentoDoMes) : null;
@@ -124,7 +126,7 @@ export const ClienteCard = ({ cliente, getPagamentoMesAtual, getPagamentoDoMes, 
         </Button>
 
         {/* Botão Mensagens */}
-        <Button size="sm" variant="outline" disabled>
+        <Button size="sm" variant="outline" onClick={() => setIsTemplateModalOpen(true)}>
           <MessageCircle className="h-4 w-4" />
         </Button>
 
@@ -159,6 +161,13 @@ export const ClienteCard = ({ cliente, getPagamentoMesAtual, getPagamentoDoMes, 
         onClose={() => setIsViewModalOpen(false)}
         cliente={cliente}
         getPagamentoMesAtual={getPagamentoMesAtual}
+      />
+
+      {/* Modal de Template */}
+      <TemplateModal
+        isOpen={isTemplateModalOpen}
+        onClose={() => setIsTemplateModalOpen(false)}
+        templateData={{ cliente, vencimentoInfo }}
       />
     </Card>
   );

@@ -1,48 +1,54 @@
+import { useState } from "react";
 import { MessageSquare, Plus, Edit, Trash2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { useTemplates } from "@/hooks/useTemplates";
+import { useTemplateFormatter } from "@/hooks/useTemplateFormatter";
+import { TemplateFormModal } from "@/components/templates/TemplateFormModal";
 
 const Templates = () => {
-  const templates = [
-    {
-      id: 1,
-      nome: "Cobrança Padrão",
-      tipo: "cobranca",
-      mensagem: "Olá {nome}, seu pagamento do plano IPTV está em atraso. Valor: R$ {valor}. Vencimento: {vencimento}.",
-      isDefault: true
-    },
-    {
-      id: 2,
-      nome: "Renovação de Licença",
-      tipo: "renovacao",
-      mensagem: "Oi {nome}! Sua licença do {aplicativo} vence em breve. Entre em contato para renovar.",
-      isDefault: false
-    },
-    {
-      id: 3,
-      nome: "Boas-vindas",
-      tipo: "boas_vindas",
-      mensagem: "Bem-vindo {nome}! Seus dados de acesso: Servidor: {servidor}, Usuário: {usuario}, Senha: {senha}.",
-      isDefault: true
-    },
-    {
-      id: 4,
-      nome: "Lembrete de Vencimento",
-      tipo: "lembrete",
-      mensagem: "Oi {nome}, seu plano vence no dia {vencimento}. Não se esqueça de renovar!",
-      isDefault: false
-    }
-  ];
+  const { templates, loading, createTemplate, updateTemplate, deleteTemplate } = useTemplates();
+  const { availableVariables } = useTemplateFormatter();
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState(null);
 
   const getTipoBadge = (tipo: string) => {
     const types = {
+      a_vencer: { label: "A Vencer", variant: "default" as const },
+      vence_hoje: { label: "Vence Hoje", variant: "destructive" as const },
+      vencido: { label: "Vencido", variant: "destructive" as const },
+      pago: { label: "Pago", variant: "secondary" as const },
       cobranca: { label: "Cobrança", variant: "destructive" as const },
       renovacao: { label: "Renovação", variant: "default" as const },
       boas_vindas: { label: "Boas-vindas", variant: "secondary" as const },
       lembrete: { label: "Lembrete", variant: "outline" as const }
     };
     return types[tipo as keyof typeof types] || { label: tipo, variant: "outline" as const };
+  };
+
+  const handleEdit = (template: any) => {
+    setEditingTemplate(template);
+    setIsFormModalOpen(true);
+  };
+
+  const handleDelete = async (templateId: string) => {
+    await deleteTemplate(templateId);
+  };
+
+  const handleSave = async (templateData: any) => {
+    if (editingTemplate) {
+      await updateTemplate(editingTemplate.id, templateData);
+    } else {
+      await createTemplate(templateData);
+    }
+    setEditingTemplate(null);
+  };
+
+  const handleCloseModal = () => {
+    setIsFormModalOpen(false);
+    setEditingTemplate(null);
   };
 
   return (
@@ -52,7 +58,7 @@ const Templates = () => {
           <h1 className="text-3xl font-bold text-foreground">Templates WhatsApp</h1>
           <p className="text-muted-foreground">Gerencie mensagens predefinidas para WhatsApp</p>
         </div>
-        <Button className="flex items-center gap-2">
+        <Button className="flex items-center gap-2" onClick={() => setIsFormModalOpen(true)}>
           <Plus className="h-4 w-4" />
           Novo Template
         </Button>
@@ -73,19 +79,40 @@ const Templates = () => {
                       <Badge {...getTipoBadge(template.tipo)}>
                         {getTipoBadge(template.tipo).label}
                       </Badge>
-                      {template.isDefault && (
+                      {template.is_default && (
                         <Badge variant="outline">Padrão</Badge>
                       )}
                     </div>
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" onClick={() => handleEdit(template)}>
                     <Edit className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="sm">
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  {!template.is_default && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Tem certeza que deseja excluir o template <strong>{template.nome}</strong>? 
+                            Esta ação não pode ser desfeita.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDelete(template.id)} className="bg-red-600 hover:bg-red-700">
+                            Excluir
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
                 </div>
               </div>
             </CardHeader>
@@ -101,20 +128,17 @@ const Templates = () => {
                 <div>
                   <h4 className="text-sm font-medium text-muted-foreground mb-2">Variáveis disponíveis:</h4>
                   <div className="flex flex-wrap gap-1">
-                    {['{nome}', '{valor}', '{vencimento}', '{servidor}', '{aplicativo}', '{usuario}', '{senha}'].map((variable) => (
-                      <Badge key={variable} variant="secondary" className="text-xs">
-                        {variable}
+                    {availableVariables.slice(0, 6).map((variable) => (
+                      <Badge key={variable.key} variant="secondary" className="text-xs">
+                        {variable.key}
                       </Badge>
                     ))}
                   </div>
                 </div>
 
                 <div className="flex gap-2 pt-2">
-                  <Button variant="outline" size="sm" className="flex-1">
+                  <Button variant="outline" size="sm" className="flex-1" onClick={() => handleEdit(template)}>
                     Editar Template
-                  </Button>
-                  <Button variant="outline" size="sm" className="flex-1">
-                    Testar Envio
                   </Button>
                 </div>
               </div>
@@ -130,45 +154,23 @@ const Templates = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <Badge variant="secondary">{'{nome}'}</Badge>
-                <span className="text-sm text-muted-foreground">Nome do cliente</span>
+            {availableVariables.map((variable) => (
+              <div key={variable.key} className="flex justify-between">
+                <Badge variant="secondary">{variable.key}</Badge>
+                <span className="text-sm text-muted-foreground">{variable.description}</span>
               </div>
-              <div className="flex justify-between">
-                <Badge variant="secondary">{'{telefone}'}</Badge>
-                <span className="text-sm text-muted-foreground">Telefone do cliente</span>
-              </div>
-              <div className="flex justify-between">
-                <Badge variant="secondary">{'{valor}'}</Badge>
-                <span className="text-sm text-muted-foreground">Valor do plano</span>
-              </div>
-              <div className="flex justify-between">
-                <Badge variant="secondary">{'{vencimento}'}</Badge>
-                <span className="text-sm text-muted-foreground">Dia de vencimento</span>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <Badge variant="secondary">{'{servidor}'}</Badge>
-                <span className="text-sm text-muted-foreground">Servidor do cliente</span>
-              </div>
-              <div className="flex justify-between">
-                <Badge variant="secondary">{'{aplicativo}'}</Badge>
-                <span className="text-sm text-muted-foreground">Aplicativo IPTV</span>
-              </div>
-              <div className="flex justify-between">
-                <Badge variant="secondary">{'{usuario}'}</Badge>
-                <span className="text-sm text-muted-foreground">Usuário do aplicativo</span>
-              </div>
-              <div className="flex justify-between">
-                <Badge variant="secondary">{'{senha}'}</Badge>
-                <span className="text-sm text-muted-foreground">Senha do aplicativo</span>
-              </div>
-            </div>
+            ))}
           </div>
         </CardContent>
       </Card>
+
+      {/* Modal de Formulário */}
+      <TemplateFormModal
+        isOpen={isFormModalOpen}
+        onClose={handleCloseModal}
+        onSave={handleSave}
+        template={editingTemplate}
+      />
     </div>
   );
 };
