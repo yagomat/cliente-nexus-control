@@ -127,7 +127,7 @@ const PagamentosView = () => {
   };
 
   return (
-    <div className="space-y-6 w-full max-w-full overflow-hidden">
+    <div className="space-y-6 w-full overflow-hidden">
       <style>{`
         .scroll-container::-webkit-scrollbar {
           height: 12px;
@@ -149,6 +149,7 @@ const PagamentosView = () => {
           scrollbar-color: #cbd5e1 #f1f5f9;
         }
       `}</style>
+      
       {/* Filtro de Ano */}
       <div className="flex items-center gap-4">
         <Calendar className="h-5 w-5" />
@@ -166,11 +167,11 @@ const PagamentosView = () => {
         </Select>
       </div>
 
-      {/* Tabela de Pagamentos */}
-      <div className="w-full max-w-full border rounded-lg overflow-hidden">
-        <div className="flex w-full">
+      {/* Tabela de Pagamentos - Container com largura limitada */}
+      <div className="w-full border rounded-lg overflow-hidden">
+        <div className="flex">
           {/* Coluna fixa com nomes */}
-          <div className="bg-muted/50 border-r w-32 flex-shrink-0 min-w-0">
+          <div className="bg-muted/50 border-r w-32 flex-shrink-0">
             <div className="h-10 flex items-center justify-center border-b font-medium text-xs">
               Nome
             </div>
@@ -184,8 +185,11 @@ const PagamentosView = () => {
             ))}
           </div>
 
-          {/* Colunas dos meses com scroll horizontal */}
-          <div className="flex-1 overflow-x-auto min-w-0 scroll-container">
+          {/* Container com scroll horizontal interno */}
+          <div 
+            className="flex-1 overflow-x-auto scroll-container" 
+            style={{ maxWidth: 'calc(100vw - 200px)' }}
+          >
             <div className="flex w-max">
               {mesesDoAno.map((mes) => (
                 <div key={mes.numero} className="w-12 flex-shrink-0 border-r last:border-r-0">
