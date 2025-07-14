@@ -56,7 +56,7 @@ const PagamentosView = () => {
           className="w-8 h-8 bg-green-500 hover:bg-green-600 text-white p-0"
           onClick={() => handlePagamentoMes(clienteId, mes, ano)}
         >
-          <Check className="h-3 w-3" />
+          <Check className="h-4 w-4" />
         </Button>
       );
     }
@@ -68,7 +68,7 @@ const PagamentosView = () => {
           className="w-8 h-8 bg-blue-500 hover:bg-blue-600 text-white p-0"
           onClick={() => handlePagamentoMes(clienteId, mes, ano)}
         >
-          <Check className="h-3 w-3" />
+          <Check className="h-4 w-4" />
         </Button>
       );
     }
@@ -80,13 +80,13 @@ const PagamentosView = () => {
         className="w-8 h-8 border-red-300 hover:bg-red-50 p-0"
         onClick={() => handlePagamentoMes(clienteId, mes, ano)}
       >
-        <X className="h-3 w-3 text-red-500" />
+        <X className="h-4 w-4 text-red-500" />
       </Button>
     );
   };
 
   return (
-    <div className="space-y-6 max-w-full">
+    <div className="space-y-4 p-4">
       {/* Filtro de Ano */}
       <div className="flex items-center gap-4">
         <Calendar className="h-5 w-5" />
@@ -105,10 +105,10 @@ const PagamentosView = () => {
       </div>
 
       {/* Tabela de Pagamentos */}
-      <div className="border rounded-lg overflow-hidden w-full">
-        <div className="flex w-full">
+      <div className="border rounded-lg overflow-hidden">
+        <div className="flex">
           {/* Coluna fixa com nomes */}
-          <div className="bg-muted/50 border-r w-48 flex-shrink-0">
+          <div className="bg-muted/50 border-r w-40 flex-shrink-0">
             <div className="h-12 flex items-center justify-center border-b font-medium text-sm">
               Nome
             </div>
@@ -126,13 +126,11 @@ const PagamentosView = () => {
 
           {/* Container com scroll horizontal para os meses */}
           <div className="flex-1 overflow-x-auto">
-            <div className="flex min-w-max">
+            <div className="flex">
               {mesesDoAno.map((mes) => (
-                <div key={mes.numero} className="w-20 flex-shrink-0 border-r last:border-r-0">
-                  <div className="h-12 flex items-center justify-center border-b font-medium bg-muted/50 text-xs px-1">
-                    <div className="text-center leading-tight">
-                      {mes.nome.substring(0, 3)}
-                    </div>
+                <div key={mes.numero} className="w-24 flex-shrink-0 border-r last:border-r-0">
+                  <div className="h-12 flex items-center justify-center border-b font-medium bg-muted/50 text-sm">
+                    {mes.nome.substring(0, 3)}
                   </div>
                   {clientes.map((cliente) => (
                     <div
