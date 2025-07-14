@@ -106,10 +106,10 @@ const PagamentosView = () => {
       return (
         <Button
           size="sm"
-          className="w-12 h-12 bg-green-500 hover:bg-green-600 text-white"
+          className="w-8 h-8 bg-green-500 hover:bg-green-600 text-white"
           onClick={() => handlePagamentoMes(clienteId, mes, ano, null)}
         >
-          <Check className="h-4 w-4" />
+          <Check className="h-3 w-3" />
         </Button>
       );
     }
@@ -118,10 +118,10 @@ const PagamentosView = () => {
       <Button
         size="sm"
         variant="outline"
-        className="w-12 h-12 border-red-300 hover:bg-red-50"
+        className="w-8 h-8 border-red-300 hover:bg-red-50"
         onClick={() => handlePagamentoMes(clienteId, mes, ano, 'pago')}
       >
-        <X className="h-4 w-4 text-red-500" />
+        <X className="h-3 w-3 text-red-500" />
       </Button>
     );
   };
@@ -149,7 +149,7 @@ const PagamentosView = () => {
       <div className="border rounded-lg overflow-hidden">
         <div className="flex">
           {/* Coluna fixa com nomes */}
-          <div className="bg-muted/50 border-r w-48 flex-shrink-0">
+          <div className="bg-muted/50 border-r w-32 flex-shrink-0">
             <div className="h-14 flex items-center justify-center border-b font-medium">
               Nome
             </div>
@@ -167,7 +167,7 @@ const PagamentosView = () => {
           <div className="flex-1 overflow-x-auto">
             <div className="flex min-w-max">
               {mesesDoAno.map((mes) => (
-                <div key={mes.numero} className="w-24 flex-shrink-0 border-r last:border-r-0">
+                <div key={mes.numero} className="w-16 flex-shrink-0 border-r last:border-r-0">
                   <div className="h-14 flex items-center justify-center border-b font-medium bg-muted/50 text-xs">
                     {mes.nome}
                     <br />
