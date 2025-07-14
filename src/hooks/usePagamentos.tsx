@@ -33,11 +33,17 @@ export const usePagamentos = () => {
     const mesAtual = hoje.getMonth() + 1;
     const anoAtual = hoje.getFullYear();
     
-    return pagamentos.find(p => 
+    console.log('getPagamentoMesAtual - cliente:', clienteId, 'mesAtual:', mesAtual, 'anoAtual:', anoAtual);
+    console.log('Pagamentos disponíveis:', pagamentos.filter(p => p.cliente_id === clienteId));
+    
+    const pagamento = pagamentos.find(p => 
       p.cliente_id === clienteId && 
       p.mes === mesAtual && 
       p.ano === anoAtual
     );
+    
+    console.log('Pagamento encontrado:', pagamento);
+    return pagamento;
   };
 
   const handlePagamento = async (clienteId: string) => {
