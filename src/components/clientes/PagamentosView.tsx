@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useClientes } from "@/hooks/useClientes";
 import { usePagamentos } from "@/hooks/usePagamentos";
@@ -85,7 +86,7 @@ const PagamentosView = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full">
       {/* Filtro de Ano */}
       <div className="flex items-center gap-4">
         <Calendar className="h-5 w-5" />
@@ -104,8 +105,8 @@ const PagamentosView = () => {
       </div>
 
       {/* Tabela de Pagamentos */}
-      <div className="border rounded-lg overflow-hidden">
-        <div className="flex">
+      <div className="border rounded-lg overflow-hidden w-full">
+        <div className="flex w-full">
           {/* Coluna fixa com nomes */}
           <div className="bg-muted/50 border-r w-48 flex-shrink-0">
             <div className="h-14 flex items-center justify-center border-b font-medium">
