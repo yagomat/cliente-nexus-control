@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Users, Search, Plus, Filter, Download, Upload, Eye, Edit, MessageCircle, Trash2, DollarSign, Check, X, CreditCard, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -99,10 +100,12 @@ const Clientes = () => {
         </p>
 
         {/* Botão Novo Cliente */}
-        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 mb-6">
-          <Users className="h-4 w-4 mr-2" />
-          Novo Cliente
-        </Button>
+        <Link to="/clientes/novo">
+          <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 mb-6">
+            <Users className="h-4 w-4 mr-2" />
+            Novo Cliente
+          </Button>
+        </Link>
 
         {/* Campo de busca */}
         <div className="relative mb-4">
