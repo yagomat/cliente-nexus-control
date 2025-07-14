@@ -106,10 +106,10 @@ const PagamentosView = () => {
       return (
         <Button
           size="sm"
-          className="w-10 h-10 bg-green-500 hover:bg-green-600 text-white"
+          className="w-12 h-12 bg-green-500 hover:bg-green-600 text-white"
           onClick={() => handlePagamentoMes(clienteId, mes, ano, null)}
         >
-          <Check className="h-3 w-3" />
+          <Check className="h-4 w-4" />
         </Button>
       );
     }
@@ -118,10 +118,10 @@ const PagamentosView = () => {
       <Button
         size="sm"
         variant="outline"
-        className="w-10 h-10 border-red-300 hover:bg-red-50"
+        className="w-12 h-12 border-red-300 hover:bg-red-50"
         onClick={() => handlePagamentoMes(clienteId, mes, ano, 'pago')}
       >
-        <X className="h-3 w-3 text-red-500" />
+        <X className="h-4 w-4 text-red-500" />
       </Button>
     );
   };
@@ -146,18 +146,17 @@ const PagamentosView = () => {
       </div>
 
       {/* Tabela de Pagamentos */}
-      <div className="w-full max-w-full border rounded-lg overflow-hidden">
-        <div className="flex max-w-full">
+      <div className="border rounded-lg overflow-hidden">
+        <div className="flex">
           {/* Coluna fixa com nomes */}
           <div className="bg-muted/50 border-r w-48 flex-shrink-0">
-            <div className="h-14 flex items-center justify-center border-b font-medium text-sm">
+            <div className="h-14 flex items-center justify-center border-b font-medium">
               Nome
             </div>
             {clientes.map((cliente) => (
               <div
                 key={cliente.id}
-                className="h-16 flex items-center px-2 border-b text-sm truncate"
-                title={cliente.nome}
+                className="h-16 flex items-center px-4 border-b text-sm"
               >
                 {cliente.nome}
               </div>
@@ -165,18 +164,19 @@ const PagamentosView = () => {
           </div>
 
           {/* Colunas dos meses com scroll horizontal */}
-          <div className="flex-1 overflow-x-auto min-w-0">
-            <div className="flex">
+          <div className="flex-1 overflow-x-auto">
+            <div className="flex min-w-max">
               {mesesDoAno.map((mes) => (
-                <div key={mes.numero} className="w-20 min-w-20 flex-shrink-0 border-r last:border-r-0">
-                  <div className="h-14 flex flex-col items-center justify-center border-b font-medium bg-muted/50 text-xs px-1">
-                    <span className="truncate">{mes.nome.slice(0, 3)}</span>
-                    <span className="text-xs text-muted-foreground">{anoSelecionado}</span>
+                <div key={mes.numero} className="w-24 flex-shrink-0 border-r last:border-r-0">
+                  <div className="h-14 flex items-center justify-center border-b font-medium bg-muted/50 text-xs">
+                    {mes.nome}
+                    <br />
+                    {anoSelecionado}
                   </div>
                   {clientes.map((cliente) => (
                     <div
                       key={`${cliente.id}-${mes.numero}`}
-                      className="h-16 flex items-center justify-center border-b px-1"
+                      className="h-16 flex items-center justify-center border-b"
                     >
                       {getStatusButton(cliente.id, mes.numero, anoSelecionado)}
                     </div>
