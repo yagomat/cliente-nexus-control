@@ -79,7 +79,21 @@ export const useDashboard = () => {
 
       // Calcular métricas básicas corrigidas
       const totalClientes = clientes?.length || 0;
-      const clientesAtivos = clientes?.filter(c => isClienteAtivo(c.id)).length || 0;
+      
+      // Clientes ativos no mês vigente: tem ativo=true E tem pagamento no mês atual
+      const clientesAtivos = clientes?.filter(cliente => {
+        if (!cliente.ativo) return false;
+        
+        const pagamentoMesAtual = pagamentos?.find(p => 
+          p.cliente_id === cliente.id && 
+          p.mes === mesAtual && 
+          p.ano === anoAtual &&
+          (p.status === 'pago' || p.status === 'promocao')
+        );
+        
+        return !!pagamentoMesAtual;
+      }).length || 0;
+      
       const clientesInativos = totalClientes - clientesAtivos;
       
       const clientesNovos = clientes?.filter(c => 
@@ -201,17 +215,21 @@ export const useDashboard = () => {
         });
       }
 
-      // Evolução de pagamentos (12 meses)
+      // Evolução de pagamentos (12 meses) - valor total arrecadado baseado no histórico
       const evolucaoPagamentos = [];
       for (let i = 11; i >= 0; i--) {
         const data = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
         const mes = data.getMonth() + 1;
         const ano = data.getFullYear();
         
+        // Buscar todos os pagamentos do mês (pagos ou promoção)
         const pagamentosMes = pagamentos?.filter(p => 
-          p.mes === mes && p.ano === ano && (p.status === 'pago' || p.status === 'promocao')
+          p.mes === mes && 
+          p.ano === ano && 
+          (p.status === 'pago' || p.status === 'promocao')
         ) || [];
         
+        // Calcular valor total baseado no valor do plano do cliente no momento do pagamento
         const valorMes = pagamentosMes.reduce((total, pagamento) => {
           const cliente = clientes?.find(c => c.id === pagamento.cliente_id);
           return total + (cliente?.valor_plano || 0);
