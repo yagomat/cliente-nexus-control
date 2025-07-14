@@ -71,27 +71,10 @@ export const useDashboard = () => {
       const trinta_dias_atras = new Date(hoje.getTime() - 30 * 24 * 60 * 60 * 1000);
       const tres_dias_futuro = new Date(hoje.getTime() + 3 * 24 * 60 * 60 * 1000);
 
-      // Função para verificar se cliente está ativo baseado em pagamentos mais rigorosa
+      // Clientes ativos são apenas aqueles com campo ativo = true
       const isClienteAtivo = (clienteId: string) => {
-        // Cliente deve ter campo ativo = true E ter pagamento no mês atual OU anterior
         const cliente = clientes?.find(c => c.id === clienteId);
-        if (!cliente?.ativo) return false;
-        
-        const pagamentoMesAtual = pagamentos?.find(p => 
-          p.cliente_id === clienteId && 
-          p.mes === mesAtual && 
-          p.ano === anoAtual &&
-          (p.status === 'pago' || p.status === 'promocao')
-        );
-        
-        const pagamentoMesAnterior = pagamentos?.find(p => 
-          p.cliente_id === clienteId && 
-          p.mes === (mesAtual === 1 ? 12 : mesAtual - 1) && 
-          p.ano === (mesAtual === 1 ? anoAtual - 1 : anoAtual) &&
-          (p.status === 'pago' || p.status === 'promocao')
-        );
-        
-        return !!(pagamentoMesAtual || pagamentoMesAnterior);
+        return cliente?.ativo === true;
       };
 
       // Calcular métricas básicas corrigidas
@@ -160,30 +143,38 @@ export const useDashboard = () => {
         };
       }) || [];
 
-      // Apps com licenças vencendo em 30 dias (com detalhes)
+      // Apps com licenças vencendo em 30 dias (com detalhes) - apenas futuros, não vencidos
       const trinta_dias_futuro = new Date(hoje.getTime() + 30 * 24 * 60 * 60 * 1000);
       const appsVencendo: Array<{ nome: string; aplicativo: string; dias: number }> = [];
       
       clientes?.forEach(cliente => {
         if (!isClienteAtivo(cliente.id)) return;
         
-        if (cliente.data_licenca_aplicativo && new Date(cliente.data_licenca_aplicativo) <= trinta_dias_futuro) {
-          const diffTime = new Date(cliente.data_licenca_aplicativo).getTime() - hoje.getTime();
-          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-          appsVencendo.push({
-            nome: cliente.nome,
-            aplicativo: cliente.aplicativo,
-            dias: diffDays
-          });
+        if (cliente.data_licenca_aplicativo) {
+          const dataLicenca = new Date(cliente.data_licenca_aplicativo);
+          // Apenas apps que vão vencer no futuro (não já vencidos)
+          if (dataLicenca > hoje && dataLicenca <= trinta_dias_futuro) {
+            const diffTime = dataLicenca.getTime() - hoje.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            appsVencendo.push({
+              nome: cliente.nome,
+              aplicativo: cliente.aplicativo,
+              dias: diffDays
+            });
+          }
         }
-        if (cliente.data_licenca_aplicativo_2 && new Date(cliente.data_licenca_aplicativo_2) <= trinta_dias_futuro) {
-          const diffTime = new Date(cliente.data_licenca_aplicativo_2).getTime() - hoje.getTime();
-          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-          appsVencendo.push({
-            nome: cliente.nome,
-            aplicativo: cliente.aplicativo_2 || 'App 2',
-            dias: diffDays
-          });
+        if (cliente.data_licenca_aplicativo_2) {
+          const dataLicenca2 = new Date(cliente.data_licenca_aplicativo_2);
+          // Apenas apps que vão vencer no futuro (não já vencidos)
+          if (dataLicenca2 > hoje && dataLicenca2 <= trinta_dias_futuro) {
+            const diffTime = dataLicenca2.getTime() - hoje.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            appsVencendo.push({
+              nome: cliente.nome,
+              aplicativo: cliente.aplicativo_2 || 'App 2',
+              dias: diffDays
+            });
+          }
         }
       });
 
@@ -194,28 +185,19 @@ export const useDashboard = () => {
         const mes = data.getMonth() + 1;
         const ano = data.getFullYear();
         
-        // Contar clientes que existiam naquela data E tinham pagamento naquele mês
-        const clientesComPagamento = clientes?.filter(cliente => {
-          // Cliente deve ter sido criado antes ou durante aquele mês
-          if (new Date(cliente.created_at) > data) return false;
-          
-          // Cliente deve ter campo ativo = true
-          if (!cliente.ativo) return false;
-          
-          // Cliente deve ter pagamento naquele mês específico
-          const pagamentoMes = pagamentos?.find(p => 
-            p.cliente_id === cliente.id && 
-            p.mes === mes && 
-            p.ano === ano &&
-            (p.status === 'pago' || p.status === 'promocao')
-          );
-          
-          return !!pagamentoMes;
-        }).length || 0;
+        // Contar clientes que tinham pagamento naquele mês (independente do status atual)
+        const clientesComPagamento = pagamentos?.filter(p => 
+          p.mes === mes && 
+          p.ano === ano &&
+          (p.status === 'pago' || p.status === 'promocao')
+        ).map(p => p.cliente_id) || [];
+        
+        // Remove duplicatas e conta clientes únicos
+        const clientesUnicos = [...new Set(clientesComPagamento)].length;
         
         evolucaoClientes.push({
           month: data.toLocaleDateString('pt-BR', { month: 'short' }),
-          value: clientesComPagamento
+          value: clientesUnicos
         });
       }
 
