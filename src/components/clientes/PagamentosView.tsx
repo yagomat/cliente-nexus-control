@@ -105,17 +105,20 @@ const PagamentosView = () => {
       </div>
 
       {/* Tabela de Pagamentos */}
-      <div className="border rounded-lg overflow-hidden w-full">
-        <div className="flex w-full">
-          {/* Coluna fixa com nomes */}
-          <div className="bg-muted/50 border-r w-32 flex-shrink-0">
-            <div className="h-12 flex items-center justify-center border-b font-medium text-xs">
-              Nome
+      <div className="border rounded-lg overflow-hidden">
+        <div className="flex">
+          {/* Coluna fixa com nomes dos clientes */}
+          <div className="bg-muted/50 border-r flex-shrink-0" style={{ minWidth: '200px' }}>
+            {/* Cabeçalho da coluna de nomes */}
+            <div className="h-12 flex items-center justify-center border-b font-medium bg-muted/50 px-4">
+              Cliente
             </div>
+            {/* Lista de clientes */}
             {clientes.map((cliente) => (
               <div
                 key={cliente.id}
-                className="h-12 flex items-center px-2 border-b text-xs"
+                className="h-12 flex items-center px-4 border-b text-sm"
+                style={{ minWidth: '200px' }}
               >
                 <span className="truncate" title={cliente.nome}>
                   {cliente.nome}
@@ -124,25 +127,29 @@ const PagamentosView = () => {
             ))}
           </div>
 
-          {/* Colunas dos meses */}
-          <div className="flex-1 grid grid-cols-12">
-            {mesesDoAno.map((mes) => (
-              <div key={mes.numero} className="border-r last:border-r-0">
-                <div className="h-12 flex items-center justify-center border-b font-medium bg-muted/50 text-[10px] px-1">
-                  <div className="text-center leading-tight">
-                    {mes.nome.substring(0, 3)}
+          {/* Área dos meses com scroll horizontal */}
+          <div className="flex-1 overflow-x-auto">
+            <div className="flex" style={{ minWidth: '960px' }}>
+              {mesesDoAno.map((mes) => (
+                <div key={mes.numero} className="border-r last:border-r-0" style={{ minWidth: '80px' }}>
+                  {/* Cabeçalho do mês */}
+                  <div className="h-12 flex items-center justify-center border-b font-medium bg-muted/50 text-xs px-2">
+                    <div className="text-center leading-tight">
+                      {mes.nome.substring(0, 3)}
+                    </div>
                   </div>
+                  {/* Botões de pagamento para cada cliente */}
+                  {clientes.map((cliente) => (
+                    <div
+                      key={`${cliente.id}-${mes.numero}`}
+                      className="h-12 flex items-center justify-center border-b"
+                    >
+                      {getStatusButton(cliente.id, mes.numero, anoSelecionado)}
+                    </div>
+                  ))}
                 </div>
-                {clientes.map((cliente) => (
-                  <div
-                    key={`${cliente.id}-${mes.numero}`}
-                    className="h-12 flex items-center justify-center border-b"
-                  >
-                    {getStatusButton(cliente.id, mes.numero, anoSelecionado)}
-                  </div>
-                ))}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </div>
