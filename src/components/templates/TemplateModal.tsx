@@ -1,4 +1,5 @@
 
+
 import { useState, useEffect } from 'react';
 import { MessageSquare, Send } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -46,6 +47,10 @@ export const TemplateModal = ({ isOpen, onClose, templateData }: TemplateModalPr
     onClose();
   };
 
+  const handleMessageChange = (value: string) => {
+    setEditableMessage(value);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -80,9 +85,10 @@ export const TemplateModal = ({ isOpen, onClose, templateData }: TemplateModalPr
               <label className="text-sm font-medium">Mensagem:</label>
               <Textarea
                 value={editableMessage}
-                onChange={(e) => setEditableMessage(e.target.value)}
+                onChange={(e) => handleMessageChange(e.target.value)}
                 placeholder="Digite sua mensagem..."
-                className="min-h-[120px]"
+                className="min-h-[120px] resize-none"
+                rows={6}
               />
             </div>
           )}
@@ -106,3 +112,4 @@ export const TemplateModal = ({ isOpen, onClose, templateData }: TemplateModalPr
     </Dialog>
   );
 };
+
