@@ -74,12 +74,6 @@ export const ClienteViewModal = ({ isOpen, onClose, cliente, getPagamentoMesAtua
                     {getVencimentoTexto(diasParaVencer)}
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Tela Adicional:</span>
-                  <Badge variant={cliente.tela_adicional ? "default" : "secondary"}>
-                    {cliente.tela_adicional ? "Sim" : "Não"}
-                  </Badge>
-                </div>
               </div>
             </div>
           </div>

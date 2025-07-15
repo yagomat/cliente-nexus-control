@@ -1,6 +1,7 @@
 
 import { Search, Filter, SortAsc } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ClienteFiltersProps {
@@ -67,6 +68,22 @@ export const ClienteFilters = ({
             </SelectContent>
           </Select>
         </div>
+      </div>
+
+      {/* Botão Limpar Filtros */}
+      <div className="flex justify-end">
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={() => {
+            setBusca("");
+            setFiltroStatus("todos");
+            setOrdenacao("cadastro");
+          }}
+          className="text-muted-foreground hover:text-foreground"
+        >
+          Limpar Filtros
+        </Button>
       </div>
 
       {/* Contador de resultados */}
