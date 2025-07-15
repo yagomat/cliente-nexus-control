@@ -205,7 +205,6 @@ export default function EditarCliente() {
           <ArrowLeft className="h-4 w-4" />
           Voltar
         </Button>
-        <h1 className="text-2xl font-bold">Editar Cliente</h1>
       </div>
 
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

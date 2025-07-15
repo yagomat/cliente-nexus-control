@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { Users, Download, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -5,8 +6,6 @@ import { Button } from "@/components/ui/button";
 export const ClienteHeader = () => {
   return (
     <div className="mb-6">
-      <h1 className="text-2xl font-bold mb-4">Clientes</h1>
-      
       {/* Botões de Export/Import */}
       <div className="flex gap-3 mb-4">
         <Button variant="outline" className="flex items-center gap-2">

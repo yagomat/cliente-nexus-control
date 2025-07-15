@@ -50,7 +50,6 @@ const estados = [
   "RS", "RO", "RR", "SC", "SP", "SE", "TO"
 ];
 
-
 export default function NovoCliente() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -130,7 +129,6 @@ export default function NovoCliente() {
           <ArrowLeft className="h-4 w-4" />
           Voltar
         </Button>
-        <h1 className="text-2xl font-bold">Cadastrar Cliente</h1>
       </div>
 
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
