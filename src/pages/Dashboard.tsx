@@ -5,7 +5,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { useDashboard } from "@/hooks/useDashboard";
 import { useState } from "react";
 
-const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted))', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
+const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted))', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4', '#84CC16', '#F97316', '#EC4899'];
 
 const Dashboard = () => {
   const { dashboardData, loading } = useDashboard();
@@ -23,11 +23,29 @@ const Dashboard = () => {
     }));
   };
 
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0];
+      const total = dashboardData.distribuicaoDispositivo.reduce((sum, item) => sum + item.value, 0) || 
+                   dashboardData.distribuicaoAplicativo.reduce((sum, item) => sum + item.value, 0) ||
+                   dashboardData.distribuicaoUF.reduce((sum, item) => sum + item.value, 0) ||
+                   dashboardData.distribuicaoServidor.reduce((sum, item) => sum + item.value, 0);
+      const percentage = ((data.value / total) * 100).toFixed(1);
+      
+      return (
+        <div className="bg-background border border-border rounded-lg px-3 py-2 shadow-lg">
+          <p className="text-sm font-medium">{`${data.name}: ${percentage}%`}</p>
+        </div>
+      );
+    }
+    return null;
+  };
+
   const CustomLegend = ({ data, chartType }: { data: Array<{ name: string; value: number }>, chartType: string }) => {
     const total = data.reduce((sum, item) => sum + item.value, 0);
     
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
+      <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-3">
         {data.map((item, index) => {
           const percentage = ((item.value / total) * 100).toFixed(1);
           const isSelected = selectedSegments[chartType] === item.name;
@@ -35,17 +53,17 @@ const Dashboard = () => {
           return (
             <div 
               key={item.name}
-              className="flex items-center justify-between p-2 rounded cursor-pointer hover:bg-muted/50 transition-colors"
+              className="flex items-center justify-between cursor-pointer hover:bg-muted/50 transition-colors p-1 rounded"
               onClick={() => handleSegmentClick(chartType, item.name)}
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-w-0 flex-1">
                 <div
                   className="w-3 h-3 rounded-sm shrink-0"
                   style={{ backgroundColor: COLORS[index % COLORS.length] }}
                 />
                 <span className="text-sm font-medium truncate">{item.name}</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 ml-2">
                 <span className="text-sm font-bold">{item.value}</span>
                 {isSelected && (
                   <span className="text-xs text-muted-foreground">({percentage}%)</span>
@@ -255,12 +273,12 @@ const Dashboard = () => {
       {/* Gráficos de distribuição */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
-          <CardHeader className="pb-2 md:pb-6">
+          <CardHeader className="pb-2">
             <CardTitle>Distribuição por Dispositivo</CardTitle>
             <CardDescription>Dispositivos Smart (Telas 1 e 2)</CardDescription>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+          <CardContent className="py-2">
+            <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie
                   data={dashboardData.distribuicaoDispositivo}
@@ -276,7 +294,7 @@ const Dashboard = () => {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip content={<CustomTooltip />} />
               </PieChart>
             </ResponsiveContainer>
             <CustomLegend data={dashboardData.distribuicaoDispositivo} chartType="dispositivo" />
@@ -284,12 +302,12 @@ const Dashboard = () => {
         </Card>
 
         <Card>
-          <CardHeader className="pb-2 md:pb-6">
+          <CardHeader className="pb-2">
             <CardTitle>Distribuição por Aplicativo</CardTitle>
             <CardDescription>Apps mais utilizados (Telas 1 e 2)</CardDescription>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+          <CardContent className="py-2">
+            <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie
                   data={dashboardData.distribuicaoAplicativo}
@@ -305,7 +323,7 @@ const Dashboard = () => {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip content={<CustomTooltip />} />
               </PieChart>
             </ResponsiveContainer>
             <CustomLegend data={dashboardData.distribuicaoAplicativo} chartType="aplicativo" />
@@ -315,12 +333,12 @@ const Dashboard = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
-          <CardHeader className="pb-2 md:pb-6">
+          <CardHeader className="pb-2">
             <CardTitle>Distribuição por UF</CardTitle>
             <CardDescription>Estados dos clientes</CardDescription>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+          <CardContent className="py-2">
+            <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie
                   data={dashboardData.distribuicaoUF}
@@ -336,7 +354,7 @@ const Dashboard = () => {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip content={<CustomTooltip />} />
               </PieChart>
             </ResponsiveContainer>
             <CustomLegend data={dashboardData.distribuicaoUF} chartType="uf" />
@@ -344,12 +362,12 @@ const Dashboard = () => {
         </Card>
 
         <Card>
-          <CardHeader className="pb-2 md:pb-6">
+          <CardHeader className="pb-2">
             <CardTitle>Distribuição por Servidor</CardTitle>
             <CardDescription>Servidores utilizados</CardDescription>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+          <CardContent className="py-2">
+            <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie
                   data={dashboardData.distribuicaoServidor}
@@ -365,7 +383,7 @@ const Dashboard = () => {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip content={<CustomTooltip />} />
               </PieChart>
             </ResponsiveContainer>
             <CustomLegend data={dashboardData.distribuicaoServidor} chartType="servidor" />
