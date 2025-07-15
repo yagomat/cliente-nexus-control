@@ -5,7 +5,29 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { useDashboard } from "@/hooks/useDashboard";
 import { useState } from "react";
 
-const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted))', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4', '#84CC16', '#F97316', '#EC4899'];
+// Cores mais variadas e vibrantes para os gráficos de pizza
+const COLORS = [
+  'hsl(var(--primary))',      // Azul primário
+  'hsl(var(--secondary))',    // Cinza secundário
+  'hsl(var(--accent))',       // Cor de accent
+  '#10B981',                  // Verde esmeralda
+  '#F59E0B',                  // Âmbar
+  '#EF4444',                  // Vermelho
+  '#8B5CF6',                  // Violeta
+  '#06B6D4',                  // Ciano
+  '#84CC16',                  // Lima
+  '#F97316',                  // Laranja
+  '#EC4899',                  // Rosa
+  '#6366F1',                  // Índigo
+  '#14B8A6',                  // Teal
+  '#F472B6',                  // Rosa claro
+  '#A78BFA',                  // Violeta claro
+  '#34D399',                  // Verde claro
+  '#FBBF24',                  // Amarelo
+  '#FB7185',                  // Rosa coral
+  '#60A5FA',                  // Azul claro
+  '#A3A3A3'                   // Cinza neutro
+];
 
 const Dashboard = () => {
   const { dashboardData, loading } = useDashboard();
@@ -226,7 +248,7 @@ const Dashboard = () => {
             <CardTitle>Evolução de Clientes Ativos</CardTitle>
             <CardDescription>Últimos 12 meses</CardDescription>
           </CardHeader>
-          <CardContent className="pl-2 md:pl-6">
+          <CardContent className="pl-0 md:pl-2">
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={dashboardData.evolucaoClientes}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -250,7 +272,7 @@ const Dashboard = () => {
             <CardTitle>Evolução de Pagamentos</CardTitle>
             <CardDescription>Últimos 12 meses (R$)</CardDescription>
           </CardHeader>
-          <CardContent className="pl-2 md:pl-6">
+          <CardContent className="pl-0 md:pl-2">
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={dashboardData.evolucaoPagamentos}>
                 <CartesianGrid strokeDasharray="3 3" />
