@@ -6,13 +6,13 @@ import { Button } from "@/components/ui/button";
 export const ClienteHeader = () => {
   return (
     <div className="mb-6">
-      {/* Botões de Export/Import */}
-      <div className="flex gap-3 mb-4">
-        <Button variant="outline" className="flex items-center gap-2">
+      {/* Botões de Export/Import - ocupando toda a largura em mobile */}
+      <div className="flex gap-3 mb-4 w-full">
+        <Button variant="outline" className="flex items-center gap-2 flex-1 justify-center">
           <Download className="h-4 w-4" />
           Exportar Excel
         </Button>
-        <Button variant="outline" className="flex items-center gap-2">
+        <Button variant="outline" className="flex items-center gap-2 flex-1 justify-center">
           <Upload className="h-4 w-4" />
           Importar Excel
         </Button>

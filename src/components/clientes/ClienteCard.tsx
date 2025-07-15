@@ -1,6 +1,7 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, X, Eye, Edit, MessageCircle, Trash2, Calendar } from "lucide-react";
+import { Check, X, Eye, Edit, MessageCircle, Trash2, Calendar, Gift } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -41,6 +42,10 @@ export const ClienteCard = ({ cliente, getPagamentoMesAtual, getPagamentoDoMes, 
   };
   
   const IconComponent = getIconComponent(buttonConfig.icon);
+
+  // Verificar se é promoção para mostrar ícone de presente
+  const pagamento = getPagamentoMesAtual(cliente.id);
+  const isPromocao = pagamento && pagamento.status === 'promocao';
 
   const handleEdit = () => {
     navigate(`/clientes/editar/${cliente.id}`);
@@ -105,54 +110,57 @@ export const ClienteCard = ({ cliente, getPagamentoMesAtual, getPagamentoDoMes, 
         </div>
       </div>
 
-      <div className="flex gap-2">
-        {/* Botão de Pagamento */}
+      <div className="flex justify-between items-center">
+        {/* Botão de Pagamento - alinhado à esquerda */}
         <Button 
           size="sm" 
           onClick={() => onPagamento(cliente.id)}
           className={`${buttonConfig.className} text-white`}
         >
-          <IconComponent className="h-4 w-4" />
+          {isPromocao ? <Gift className="h-4 w-4" /> : <IconComponent className="h-4 w-4" />}
         </Button>
 
-        {/* Botão Visualizar */}
-        <Button size="sm" variant="outline" onClick={() => setIsViewModalOpen(true)}>
-          <Eye className="h-4 w-4" />
-        </Button>
+        {/* Outros botões - alinhados à direita */}
+        <div className="flex gap-2">
+          {/* Botão Visualizar */}
+          <Button size="sm" variant="outline" onClick={() => setIsViewModalOpen(true)}>
+            <Eye className="h-4 w-4" />
+          </Button>
 
-        {/* Botão Editar */}
-        <Button size="sm" variant="outline" onClick={handleEdit}>
-          <Edit className="h-4 w-4" />
-        </Button>
+          {/* Botão Editar */}
+          <Button size="sm" variant="outline" onClick={handleEdit}>
+            <Edit className="h-4 w-4" />
+          </Button>
 
-        {/* Botão Mensagens */}
-        <Button size="sm" variant="outline" onClick={() => setIsTemplateModalOpen(true)}>
-          <MessageCircle className="h-4 w-4" />
-        </Button>
+          {/* Botão Mensagens */}
+          <Button size="sm" variant="outline" onClick={() => setIsTemplateModalOpen(true)}>
+            <MessageCircle className="h-4 w-4" />
+          </Button>
 
-        {/* Botão Excluir */}
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button size="sm" variant="outline">
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-              <AlertDialogDescription>
-                Tem certeza que deseja excluir o cliente <strong>{cliente.nome}</strong>? 
-                Esta ação não pode ser desfeita.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
-                Excluir
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+          {/* Botão Excluir */}
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button size="sm" variant="outline">
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Tem certeza que deseja excluir o cliente <strong>{cliente.nome}</strong>? 
+                  Esta ação não pode ser desfeita.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+                  Excluir
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </div>
 
       {/* Modal de Visualização */}

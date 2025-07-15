@@ -1,4 +1,5 @@
-import { Search, Filter, Users } from "lucide-react";
+
+import { Search, Filter, Users, ArrowUpDown, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,12 @@ export const ClienteFilters = ({
   clientesFiltrados,
   totalClientes
 }: ClienteFiltersProps) => {
+  const limparFiltros = () => {
+    setBusca("");
+    setFiltroStatus("todos");
+    setOrdenacao("cadastro");
+  };
+
   return (
     <>
       {/* Campo de busca */}
@@ -53,6 +60,7 @@ export const ClienteFilters = ({
 
         <Select value={ordenacao} onValueChange={setOrdenacao}>
           <SelectTrigger className="w-36">
+            <ArrowUpDown className="h-4 w-4 mr-2" />
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -62,6 +70,10 @@ export const ClienteFilters = ({
             <SelectItem value="nome-za">Nome Z-A</SelectItem>
           </SelectContent>
         </Select>
+
+        <Button variant="outline" onClick={limparFiltros} className="px-3">
+          <X className="h-4 w-4" />
+        </Button>
       </div>
 
       <div className="flex justify-between items-center mb-4">
