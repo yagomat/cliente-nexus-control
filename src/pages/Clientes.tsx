@@ -87,37 +87,39 @@ const Clientes = () => {
         <ClienteHeader />
 
         <div className="mt-6 w-full">
-          <ClienteFilters
-            busca={busca}
-            setBusca={handleBuscaChange}
-            filtroStatus={filtroStatus}
-            setFiltroStatus={handleFiltroChange}
-            ordenacao={ordenacao}
-            setOrdenacao={handleOrdenacaoChange}
-            clientesFiltrados={clientesFiltrados}
-            totalClientes={clientes.length}
-          />
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+            <ClienteFilters
+              busca={busca}
+              setBusca={handleBuscaChange}
+              filtroStatus={filtroStatus}
+              setFiltroStatus={handleFiltroChange}
+              ordenacao={ordenacao}
+              setOrdenacao={handleOrdenacaoChange}
+              clientesFiltrados={clientesFiltrados}
+              totalClientes={clientes.length}
+            />
 
-          {/* Seletor de modo de visualização */}
-          <div className="flex gap-2 mb-4">
-            <Button
-              variant={viewMode === "lista" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setViewMode("lista")}
-              className="flex items-center gap-2"
-            >
-              <List className="h-4 w-4" />
-              Lista
-            </Button>
-            <Button
-              variant={viewMode === "matriz" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setViewMode("matriz")}
-              className="flex items-center gap-2"
-            >
-              <Grid className="h-4 w-4" />
-              Matriz
-            </Button>
+            {/* Seletor de modo de visualização - movido para o lado direito */}
+            <div className="flex gap-2 flex-shrink-0">
+              <Button
+                variant={viewMode === "lista" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setViewMode("lista")}
+                className="flex items-center gap-2"
+              >
+                <List className="h-4 w-4" />
+                Lista
+              </Button>
+              <Button
+                variant={viewMode === "matriz" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setViewMode("matriz")}
+                className="flex items-center gap-2"
+              >
+                <Grid className="h-4 w-4" />
+                Matriz
+              </Button>
+            </div>
           </div>
 
           {loading ? (
