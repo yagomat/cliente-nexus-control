@@ -7,6 +7,7 @@ import { ClienteHeader } from "@/components/clientes/ClienteHeader";
 import { ClienteFilters } from "@/components/clientes/ClienteFilters";
 import { ClienteCard } from "@/components/clientes/ClienteCard";
 import { ClientePagination } from "@/components/clientes/ClientePagination";
+import { ClienteMatrixView } from "@/components/clientes/ClienteMatrixView";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PagamentosView from "@/components/clientes/PagamentosView";
 
@@ -85,8 +86,9 @@ const Clientes = () => {
       <ClienteHeader />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
-        <TabsList className="grid w-full grid-cols-2 max-w-md">
+        <TabsList className="grid w-full grid-cols-3 max-w-lg">
           <TabsTrigger value="clientes">Clientes</TabsTrigger>
+          <TabsTrigger value="matriz">Matriz</TabsTrigger>
           <TabsTrigger value="pagamentos">Pagamentos</TabsTrigger>
         </TabsList>
 
@@ -134,6 +136,30 @@ const Clientes = () => {
             onPageChange={handlePageChange}
             onItemsPerPageChange={handleItemsPerPageChange}
           />
+        </TabsContent>
+
+        <TabsContent value="matriz" className="mt-6">
+          <ClienteFilters
+            busca={busca}
+            setBusca={handleBuscaChange}
+            filtroStatus={filtroStatus}
+            setFiltroStatus={handleFiltroChange}
+            ordenacao={ordenacao}
+            setOrdenacao={handleOrdenacaoChange}
+            clientesFiltrados={clientesFiltrados}
+            totalClientes={clientes.length}
+          />
+
+          {loading ? (
+            <div className="text-center py-8">
+              <p>Carregando clientes...</p>
+            </div>
+          ) : (
+            <ClienteMatrixView 
+              clientes={clientes}
+              clientesFiltrados={clientesFiltrados}
+            />
+          )}
         </TabsContent>
 
         <TabsContent value="pagamentos" className="mt-6">
