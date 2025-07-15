@@ -1,4 +1,5 @@
-import { LayoutGrid, Users, TrendingUp, Bell, Calendar, DollarSign, AlertTriangle, Smartphone, Monitor, MapPin, Server, UserCheck, UserX } from "lucide-react";
+
+import { LayoutGrid, Users, TrendingUp, Calendar, DollarSign, AlertTriangle, Smartphone, Monitor, MapPin, Server, UserCheck, UserX } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from "recharts";
 import { useDashboard } from "@/hooks/useDashboard";
@@ -11,8 +12,7 @@ const Dashboard = () => {
   if (loading) {
     return (
       <div className="p-6">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+        <div className="text-center">
           <p className="text-muted-foreground">Carregando dados...</p>
         </div>
       </div>
@@ -21,9 +21,61 @@ const Dashboard = () => {
 
   return (
     <div className="p-6 space-y-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground">Visão geral do seu sistema de gestão</p>
+      {/* Cards de alerta - clientes e apps vencendo */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20 dark:border-yellow-800">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-yellow-800 dark:text-yellow-200">Clientes Vencendo (3 dias)</CardTitle>
+            <Calendar className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-yellow-900 dark:text-yellow-100">{dashboardData.clientesVencendo.length}</div>
+            <div className="text-xs text-yellow-700 dark:text-yellow-300 mt-2 space-y-1">
+              {dashboardData.clientesVencendo.length > 0 ? (
+                dashboardData.clientesVencendo.slice(0, 3).map((cliente, index) => (
+                  <div key={index} className="text-xs">
+                    <span className="font-medium">{cliente.nome}</span> - {cliente.servidor} 
+                    <span className="text-yellow-600 dark:text-yellow-400"> ({cliente.dias} dias)</span>
+                  </div>
+                ))
+              ) : (
+                <span>Nenhum cliente vencendo</span>
+              )}
+              {dashboardData.clientesVencendo.length > 3 && (
+                <div className="text-xs text-yellow-600 dark:text-yellow-400">
+                  +{dashboardData.clientesVencendo.length - 3} outros...
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-orange-200 bg-orange-50 dark:bg-orange-950/20 dark:border-orange-800">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-orange-800 dark:text-orange-200">Apps Vencendo (30 dias)</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">{dashboardData.appsVencendo.length}</div>
+            <div className="text-xs text-orange-700 dark:text-orange-300 mt-2 space-y-1">
+              {dashboardData.appsVencendo.length > 0 ? (
+                dashboardData.appsVencendo.slice(0, 3).map((app, index) => (
+                  <div key={index} className="text-xs">
+                    <span className="font-medium">{app.nome}</span> - {app.aplicativo} 
+                    <span className="text-orange-600 dark:text-orange-400"> ({app.dias} dias)</span>
+                  </div>
+                ))
+              ) : (
+                <span>Nenhum app vencendo</span>
+              )}
+              {dashboardData.appsVencendo.length > 3 && (
+                <div className="text-xs text-orange-600 dark:text-orange-400">
+                  +{dashboardData.appsVencendo.length - 3} outros...
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Métricas principais */}
@@ -74,11 +126,11 @@ const Dashboard = () => {
       </div>
 
       {/* Segunda linha de métricas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Pagamentos Pendentes</CardTitle>
-            <Bell className="h-4 w-4 text-muted-foreground" />
+            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">{dashboardData.pagamentosPendentes}</div>
@@ -96,60 +148,6 @@ const Dashboard = () => {
               R$ {dashboardData.valorRecebido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </div>
             <p className="text-xs text-muted-foreground">Mês atual</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Clientes Vencendo (3 dias)</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{dashboardData.clientesVencendo.length}</div>
-            <div className="text-xs text-muted-foreground mt-2 space-y-1">
-              {dashboardData.clientesVencendo.length > 0 ? (
-                dashboardData.clientesVencendo.slice(0, 3).map((cliente, index) => (
-                  <div key={index} className="text-xs">
-                    <span className="font-medium">{cliente.nome}</span> - {cliente.servidor} 
-                    <span className="text-yellow-600"> ({cliente.dias} dias)</span>
-                  </div>
-                ))
-              ) : (
-                <span>Nenhum cliente vencendo</span>
-              )}
-              {dashboardData.clientesVencendo.length > 3 && (
-                <div className="text-xs text-muted-foreground">
-                  +{dashboardData.clientesVencendo.length - 3} outros...
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Apps Vencendo (30 dias)</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{dashboardData.appsVencendo.length}</div>
-            <div className="text-xs text-muted-foreground mt-2 space-y-1">
-              {dashboardData.appsVencendo.length > 0 ? (
-                dashboardData.appsVencendo.slice(0, 3).map((app, index) => (
-                  <div key={index} className="text-xs">
-                    <span className="font-medium">{app.nome}</span> - {app.aplicativo} 
-                    <span className="text-orange-600"> ({app.dias} dias)</span>
-                  </div>
-                ))
-              ) : (
-                <span>Nenhum app vencendo</span>
-              )}
-              {dashboardData.appsVencendo.length > 3 && (
-                <div className="text-xs text-muted-foreground">
-                  +{dashboardData.appsVencendo.length - 3} outros...
-                </div>
-              )}
-            </div>
           </CardContent>
         </Card>
       </div>
