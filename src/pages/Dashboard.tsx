@@ -1,32 +1,11 @@
+
 import { LayoutGrid, Users, TrendingUp, Calendar, DollarSign, AlertTriangle, Smartphone, Monitor, MapPin, Server, UserCheck, UserX } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from "recharts";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useState } from "react";
 
-// Cores mais variadas e vibrantes para os gráficos de pizza
-const COLORS = [
-  'hsl(var(--primary))',      // Azul primário
-  'hsl(var(--secondary))',    // Cinza secundário
-  'hsl(var(--accent))',       // Cor de accent
-  '#10B981',                  // Verde esmeralda
-  '#F59E0B',                  // Âmbar
-  '#EF4444',                  // Vermelho
-  '#8B5CF6',                  // Violeta
-  '#06B6D4',                  // Ciano
-  '#84CC16',                  // Lima
-  '#F97316',                  // Laranja
-  '#EC4899',                  // Rosa
-  '#6366F1',                  // Índigo
-  '#14B8A6',                  // Teal
-  '#F472B6',                  // Rosa claro
-  '#A78BFA',                  // Violeta claro
-  '#34D399',                  // Verde claro
-  '#FBBF24',                  // Amarelo
-  '#FB7185',                  // Rosa coral
-  '#60A5FA',                  // Azul claro
-  '#A3A3A3'                   // Cinza neutro
-];
+const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted))', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4', '#84CC16', '#F97316', '#EC4899'];
 
 const Dashboard = () => {
   const { dashboardData, loading } = useDashboard();
@@ -247,7 +226,7 @@ const Dashboard = () => {
             <CardTitle>Evolução de Clientes Ativos</CardTitle>
             <CardDescription>Últimos 12 meses</CardDescription>
           </CardHeader>
-          <CardContent className="pl-0 md:pl-2">
+          <CardContent className="pl-2 md:pl-6">
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={dashboardData.evolucaoClientes}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -271,7 +250,7 @@ const Dashboard = () => {
             <CardTitle>Evolução de Pagamentos</CardTitle>
             <CardDescription>Últimos 12 meses (R$)</CardDescription>
           </CardHeader>
-          <CardContent className="pl-0 md:pl-2">
+          <CardContent className="pl-2 md:pl-6">
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={dashboardData.evolucaoPagamentos}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -308,10 +287,11 @@ const Dashboard = () => {
                   labelLine={false}
                   label={({ value }) => value}
                   outerRadius={80}
+                  fill="#8884d8"
                   dataKey="value"
                 >
                   {dashboardData.distribuicaoDispositivo.map((entry, index) => (
-                    <Cell key={`cell-dispositivo-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip content={<CustomTooltip />} />
@@ -336,10 +316,11 @@ const Dashboard = () => {
                   labelLine={false}
                   label={({ value }) => value}
                   outerRadius={80}
+                  fill="#8884d8"
                   dataKey="value"
                 >
                   {dashboardData.distribuicaoAplicativo.map((entry, index) => (
-                    <Cell key={`cell-aplicativo-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip content={<CustomTooltip />} />
@@ -366,10 +347,11 @@ const Dashboard = () => {
                   labelLine={false}
                   label={({ value }) => value}
                   outerRadius={80}
+                  fill="#8884d8"
                   dataKey="value"
                 >
                   {dashboardData.distribuicaoUF.map((entry, index) => (
-                    <Cell key={`cell-uf-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip content={<CustomTooltip />} />
@@ -394,10 +376,11 @@ const Dashboard = () => {
                   labelLine={false}
                   label={({ value }) => value}
                   outerRadius={80}
+                  fill="#8884d8"
                   dataKey="value"
                 >
                   {dashboardData.distribuicaoServidor.map((entry, index) => (
-                    <Cell key={`cell-servidor-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip content={<CustomTooltip />} />
