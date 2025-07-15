@@ -1,11 +1,11 @@
+
 import { useState, useEffect } from 'react';
 import { MessageSquare, Send, Edit3 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { useTemplates } from '@/hooks/useTemplates';
 import { useTemplateFormatter, TemplateData } from '@/hooks/useTemplateFormatter';
 import { toast } from '@/hooks/use-toast';
@@ -18,7 +18,7 @@ interface TemplateModalProps {
 
 export const TemplateModal = ({ isOpen, onClose, templateData }: TemplateModalProps) => {
   const { templates, loading } = useTemplates();
-  const { formatTemplate, formatForWhatsApp, availableVariables } = useTemplateFormatter();
+  const { formatTemplate, formatForWhatsApp } = useTemplateFormatter();
   
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
   const [editableMessage, setEditableMessage] = useState<string>('');
@@ -49,20 +49,6 @@ export const TemplateModal = ({ isOpen, onClose, templateData }: TemplateModalPr
     onClose();
   };
 
-  const getTipoBadge = (tipo: string) => {
-    const types = {
-      a_vencer: { label: "A Vencer", variant: "default" as const },
-      vence_hoje: { label: "Vence Hoje", variant: "destructive" as const },
-      vencido: { label: "Vencido", variant: "destructive" as const },
-      pago: { label: "Pago", variant: "secondary" as const },
-      cobranca: { label: "Cobrança", variant: "destructive" as const },
-      renovacao: { label: "Renovação", variant: "default" as const },
-      boas_vindas: { label: "Boas-vindas", variant: "secondary" as const },
-      lembrete: { label: "Lembrete", variant: "outline" as const }
-    };
-    return types[tipo as keyof typeof types] || { label: tipo, variant: "outline" as const };
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -84,15 +70,7 @@ export const TemplateModal = ({ isOpen, onClose, templateData }: TemplateModalPr
               <SelectContent>
                 {templates.map((template) => (
                   <SelectItem key={template.id} value={template.id}>
-                    <div className="flex items-center gap-2">
-                      <span>{template.nome}</span>
-                      <Badge {...getTipoBadge(template.tipo)} className="text-xs">
-                        {getTipoBadge(template.tipo).label}
-                      </Badge>
-                      {template.is_default && (
-                        <Badge variant="outline" className="text-xs">Padrão</Badge>
-                      )}
-                    </div>
+                    {template.nome}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -131,27 +109,6 @@ export const TemplateModal = ({ isOpen, onClose, templateData }: TemplateModalPr
               )}
             </div>
           )}
-
-          {/* Variáveis Disponíveis */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm">Variáveis Disponíveis</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-2">
-                {availableVariables.map((variable) => (
-                  <div key={variable.key} className="flex items-center justify-between">
-                    <Badge variant="secondary" className="text-xs">
-                      {variable.key}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">
-                      {variable.description}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
 
           {/* Botões de Ação */}
           <div className="flex gap-3 pt-4">
