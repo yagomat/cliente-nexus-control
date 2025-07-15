@@ -105,8 +105,8 @@ const Clientes = () => {
   };
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden">
-      <div className="p-6 w-full max-w-7xl mx-auto">
+    <div className="min-h-screen w-full overflow-x-hidden">
+      <div className="p-3 sm:p-6 w-full max-w-7xl mx-auto">
         <ClienteHeader />
 
         <div className="mt-6 w-full">
@@ -158,7 +158,7 @@ const Clientes = () => {
               <p className="text-muted-foreground">Nenhum cliente encontrado.</p>
             </div>
           ) : (
-            <div className="w-full">
+            <div className="w-full overflow-hidden">
               {viewMode === "lista" ? (
                 <div className="space-y-4">
                   {clientesPaginados.map((cliente) => (
