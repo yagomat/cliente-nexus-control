@@ -4,6 +4,7 @@ import { usePagamentos } from "@/hooks/usePagamentos";
 import { calcularStatusCliente } from "@/utils/clienteUtils";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Check, X } from "lucide-react";
 
 interface ClienteMatrixViewProps {
@@ -71,51 +72,54 @@ export const ClienteMatrixView = ({ clientes, clientesFiltrados }: ClienteMatrix
 
   return (
     <div className="w-full">
-      <div className="rounded-md border overflow-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="sticky left-0 bg-background border-r min-w-[200px] font-semibold">
-                Cliente
-              </TableHead>
-              {meses.map((mes) => (
-                <TableHead key={mes.numero} className="text-center min-w-[60px] font-semibold">
-                  {mes.nome}
+      <ScrollArea className="w-full">
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="sticky left-0 bg-background border-r min-w-[200px] max-w-[200px] font-semibold z-10">
+                  Cliente
                 </TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {clientesFiltrados.map((cliente) => (
-              <TableRow key={cliente.id} className="hover:bg-muted/50">
-                <TableCell className="sticky left-0 bg-background border-r font-medium">
-                  <div className="flex flex-col">
-                    <span className="font-semibold">{cliente.nome}</span>
-                    <span className="text-xs text-muted-foreground">
-                      Venc: {cliente.dia_vencimento}
-                    </span>
-                  </div>
-                </TableCell>
-                {meses.map((mes) => {
-                  const buttonStyle = getButtonStyle(cliente.id, mes.numero);
-                  return (
-                    <TableCell key={mes.numero} className="text-center p-2">
-                      <Button
-                        variant={buttonStyle.variant}
-                        className={buttonStyle.className}
-                        onClick={() => handlePagamentoClick(cliente.id, mes.numero)}
-                        title={`${cliente.nome} - ${mes.nome}/${anoAtual}`}
-                      >
-                        {buttonStyle.icon}
-                      </Button>
-                    </TableCell>
-                  );
-                })}
+                {meses.map((mes) => (
+                  <TableHead key={mes.numero} className="text-center w-[60px] min-w-[60px] font-semibold">
+                    {mes.nome}
+                  </TableHead>
+                ))}
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+            </TableHeader>
+            <TableBody>
+              {clientesFiltrados.map((cliente) => (
+                <TableRow key={cliente.id} className="hover:bg-muted/50">
+                  <TableCell className="sticky left-0 bg-background border-r font-medium min-w-[200px] max-w-[200px] z-10">
+                    <div className="flex flex-col">
+                      <span className="font-semibold truncate">{cliente.nome}</span>
+                      <span className="text-xs text-muted-foreground">
+                        Venc: {cliente.dia_vencimento}
+                      </span>
+                    </div>
+                  </TableCell>
+                  {meses.map((mes) => {
+                    const buttonStyle = getButtonStyle(cliente.id, mes.numero);
+                    return (
+                      <TableCell key={mes.numero} className="text-center p-2 w-[60px] min-w-[60px]">
+                        <Button
+                          variant={buttonStyle.variant}
+                          className={buttonStyle.className}
+                          onClick={() => handlePagamentoClick(cliente.id, mes.numero)}
+                          title={`${cliente.nome} - ${mes.nome}/${anoAtual}`}
+                        >
+                          {buttonStyle.icon}
+                        </Button>
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
       
       {clientesFiltrados.length === 0 && (
         <div className="text-center py-8">
