@@ -10,10 +10,9 @@ import { Check, X } from "lucide-react";
 interface ClienteMatrixViewProps {
   clientes: any[];
   clientesFiltrados: any[];
-  selectedYear: number;
 }
 
-export const ClienteMatrixView = ({ clientes, clientesFiltrados, selectedYear }: ClienteMatrixViewProps) => {
+export const ClienteMatrixView = ({ clientes, clientesFiltrados }: ClienteMatrixViewProps) => {
   const { getPagamentoDoMes, handlePagamentoMes } = usePagamentos();
   
   const meses = [
@@ -31,8 +30,10 @@ export const ClienteMatrixView = ({ clientes, clientesFiltrados, selectedYear }:
     { numero: 12, nome: "Dez" },
   ];
 
+  const anoAtual = new Date().getFullYear();
+
   const getButtonStyle = (clienteId: string, mes: number) => {
-    const pagamento = getPagamentoDoMes(clienteId, mes, selectedYear);
+    const pagamento = getPagamentoDoMes(clienteId, mes, anoAtual);
     
     if (!pagamento || pagamento.status === 'removido') {
       return { 
@@ -66,22 +67,22 @@ export const ClienteMatrixView = ({ clientes, clientesFiltrados, selectedYear }:
   };
 
   const handlePagamentoClick = async (clienteId: string, mes: number) => {
-    await handlePagamentoMes(clienteId, mes, selectedYear);
+    await handlePagamentoMes(clienteId, mes, anoAtual);
   };
 
   return (
-    <div className="w-full">
-      <div className="border rounded-md overflow-hidden">
-        <ScrollArea className="w-full">
-          <div className="min-w-max">
-            <Table>
+    <div className="w-full max-w-full overflow-hidden">
+      <div className="border rounded-md">
+        <ScrollArea className="w-full max-w-full" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
+          <div className="min-w-fit">
+            <Table className="w-full">
               <TableHeader>
                 <TableRow>
-                  <TableHead className="sticky left-0 bg-background border-r w-32 sm:w-48 min-w-32 sm:min-w-48 font-semibold z-20">
+                  <TableHead className="sticky left-0 bg-background border-r w-48 min-w-48 max-w-48 font-semibold z-20">
                     Cliente
                   </TableHead>
                   {meses.map((mes) => (
-                    <TableHead key={mes.numero} className="text-center w-12 sm:w-16 min-w-12 sm:min-w-16 font-semibold">
+                    <TableHead key={mes.numero} className="text-center w-16 min-w-16 max-w-16 font-semibold">
                       {mes.nome}
                     </TableHead>
                   ))}
@@ -90,9 +91,9 @@ export const ClienteMatrixView = ({ clientes, clientesFiltrados, selectedYear }:
               <TableBody>
                 {clientesFiltrados.map((cliente) => (
                   <TableRow key={cliente.id} className="hover:bg-muted/50">
-                    <TableCell className="sticky left-0 bg-background border-r font-medium w-32 sm:w-48 min-w-32 sm:min-w-48 z-10 p-2 sm:p-3">
+                    <TableCell className="sticky left-0 bg-background border-r font-medium w-48 min-w-48 max-w-48 z-10 p-3">
                       <div className="flex flex-col gap-1">
-                        <span className="font-semibold text-xs sm:text-sm truncate" title={cliente.nome}>
+                        <span className="font-semibold text-sm truncate" title={cliente.nome}>
                           {cliente.nome}
                         </span>
                         <span className="text-xs text-muted-foreground">
@@ -103,16 +104,14 @@ export const ClienteMatrixView = ({ clientes, clientesFiltrados, selectedYear }:
                     {meses.map((mes) => {
                       const buttonStyle = getButtonStyle(cliente.id, mes.numero);
                       return (
-                        <TableCell key={mes.numero} className="text-center p-1 sm:p-2 w-12 sm:w-16 min-w-12 sm:min-w-16">
+                        <TableCell key={mes.numero} className="text-center p-2 w-16 min-w-16 max-w-16">
                           <Button
                             variant={buttonStyle.variant}
-                            className={`w-6 h-6 sm:w-8 sm:h-8 p-0 ${buttonStyle.className.replace('w-8 h-8', '')}`}
+                            className={buttonStyle.className}
                             onClick={() => handlePagamentoClick(cliente.id, mes.numero)}
-                            title={`${cliente.nome} - ${mes.nome}/${selectedYear}`}
+                            title={`${cliente.nome} - ${mes.nome}/${anoAtual}`}
                           >
-                            <span className="h-2 w-2 sm:h-3 sm:w-3">
-                              {buttonStyle.icon}
-                            </span>
+                            {buttonStyle.icon}
                           </Button>
                         </TableCell>
                       );
@@ -133,24 +132,24 @@ export const ClienteMatrixView = ({ clientes, clientesFiltrados, selectedYear }:
       )}
       
       <div className="mt-4 text-sm text-muted-foreground">
-        <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
+        <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 sm:w-4 sm:h-4 bg-green-500 rounded flex items-center justify-center">
-              <Check className="h-1.5 w-1.5 sm:h-2 sm:w-2 text-white" />
+            <div className="w-4 h-4 bg-green-500 rounded flex items-center justify-center">
+              <Check className="h-2 w-2 text-white" />
             </div>
-            <span className="text-xs sm:text-sm">Pago</span>
+            <span>Pago</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 sm:w-4 sm:h-4 bg-blue-500 rounded flex items-center justify-center">
-              <Check className="h-1.5 w-1.5 sm:h-2 sm:w-2 text-white" />
+            <div className="w-4 h-4 bg-blue-500 rounded flex items-center justify-center">
+              <Check className="h-2 w-2 text-white" />
             </div>
-            <span className="text-xs sm:text-sm">Promoção</span>
+            <span>Promoção</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 sm:w-4 sm:h-4 border border-red-200 rounded flex items-center justify-center">
-              <X className="h-1.5 w-1.5 sm:h-2 sm:w-2 text-red-500" />
+            <div className="w-4 h-4 border border-red-200 rounded flex items-center justify-center">
+              <X className="h-2 w-2 text-red-500" />
             </div>
-            <span className="text-xs sm:text-sm">Não pago</span>
+            <span>Não pago</span>
           </div>
         </div>
       </div>

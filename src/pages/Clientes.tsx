@@ -12,15 +12,12 @@ import { Button } from "@/components/ui/button";
 import { Grid, List } from "lucide-react";
 
 const Clientes = () => {
-  const anoAtual = new Date().getFullYear();
-  
   const [filtroStatus, setFiltroStatus] = useState("todos");
   const [ordenacao, setOrdenacao] = useState("cadastro");
   const [busca, setBusca] = useState("");
   const [viewMode, setViewMode] = useState("lista"); // "lista" ou "matriz"
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [selectedYear, setSelectedYear] = useState(anoAtual);
   
   const { clientes, loading, fetchClientes } = useClientes();
   const { pagamentos, getPagamentoMesAtual, getPagamentoDoMes, handlePagamento } = usePagamentos();
@@ -84,33 +81,13 @@ const Clientes = () => {
     setCurrentPage(1);
   };
 
-  const handleViewModeChange = (mode: string) => {
-    setViewMode(mode);
-    // Se estiver saindo do modo matriz, volta para o ano atual
-    if (mode !== "matriz" && selectedYear !== anoAtual) {
-      setSelectedYear(anoAtual);
-    }
-  };
-
-  const handleYearChange = (year: number) => {
-    setSelectedYear(year);
-  };
-
-  const handleClearFilters = () => {
-    setFiltroStatus("todos");
-    setOrdenacao("cadastro");
-    setBusca("");
-    setSelectedYear(anoAtual);
-    setCurrentPage(1);
-  };
-
   return (
-    <div className="min-h-screen w-full overflow-x-hidden">
-      <div className="p-3 sm:p-6 w-full max-w-7xl mx-auto">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden">
+      <div className="p-4 w-full max-w-7xl mx-auto">
         <ClienteHeader />
 
         <div className="mt-6 w-full">
-          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
             <ClienteFilters
               busca={busca}
               setBusca={handleBuscaChange}
@@ -120,18 +97,14 @@ const Clientes = () => {
               setOrdenacao={handleOrdenacaoChange}
               clientesFiltrados={clientesFiltrados}
               totalClientes={clientes.length}
-              showYearFilter={viewMode === "matriz"}
-              selectedYear={selectedYear}
-              onYearChange={handleYearChange}
-              onClearFilters={handleClearFilters}
             />
 
-            {/* Seletor de modo de visualização */}
+            {/* Seletor de modo de visualização - movido para o lado direito */}
             <div className="flex gap-2 flex-shrink-0">
               <Button
                 variant={viewMode === "lista" ? "default" : "outline"}
                 size="sm"
-                onClick={() => handleViewModeChange("lista")}
+                onClick={() => setViewMode("lista")}
                 className="flex items-center gap-2"
               >
                 <List className="h-4 w-4" />
@@ -140,7 +113,7 @@ const Clientes = () => {
               <Button
                 variant={viewMode === "matriz" ? "default" : "outline"}
                 size="sm"
-                onClick={() => handleViewModeChange("matriz")}
+                onClick={() => setViewMode("matriz")}
                 className="flex items-center gap-2"
               >
                 <Grid className="h-4 w-4" />
@@ -158,7 +131,7 @@ const Clientes = () => {
               <p className="text-muted-foreground">Nenhum cliente encontrado.</p>
             </div>
           ) : (
-            <div className="w-full overflow-hidden">
+            <div className="w-full">
               {viewMode === "lista" ? (
                 <div className="space-y-4">
                   {clientesPaginados.map((cliente) => (
@@ -176,7 +149,6 @@ const Clientes = () => {
                 <ClienteMatrixView 
                   clientes={clientes}
                   clientesFiltrados={clientesFiltrados}
-                  selectedYear={selectedYear}
                 />
               )}
             </div>
