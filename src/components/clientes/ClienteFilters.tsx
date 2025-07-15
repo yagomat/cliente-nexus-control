@@ -1,7 +1,8 @@
 
-import { Search, Filter, SortAsc } from "lucide-react";
+import { Search, Filter, SortAsc, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 
 interface ClienteFiltersProps {
   busca: string;
@@ -12,6 +13,10 @@ interface ClienteFiltersProps {
   setOrdenacao: (ordenacao: string) => void;
   clientesFiltrados: any[];
   totalClientes: number;
+  showYearFilter: boolean;
+  selectedYear: number;
+  onYearChange: (year: number) => void;
+  onClearFilters: () => void;
 }
 
 export const ClienteFilters = ({
@@ -22,8 +27,22 @@ export const ClienteFilters = ({
   ordenacao,
   setOrdenacao,
   clientesFiltrados,
-  totalClientes
+  totalClientes,
+  showYearFilter,
+  selectedYear,
+  onYearChange,
+  onClearFilters
 }: ClienteFiltersProps) => {
+  // Gerar opções de anos (4 anos para trás e 4 para frente)
+  const gerarOpcoesAnos = () => {
+    const anoAtual = new Date().getFullYear();
+    const opcoes = [];
+    for (let i = -4; i <= 4; i++) {
+      opcoes.push(anoAtual + i);
+    }
+    return opcoes;
+  };
+
   return (
     <div className="space-y-4 flex-1">
       {/* Campo de busca */}
@@ -67,6 +86,36 @@ export const ClienteFilters = ({
             </SelectContent>
           </Select>
         </div>
+
+        {/* Filtro de ano - só aparece no modo matriz */}
+        {showYearFilter && (
+          <div className="flex items-center gap-2 flex-1">
+            <span className="text-sm text-muted-foreground whitespace-nowrap">Ano:</span>
+            <Select value={selectedYear.toString()} onValueChange={(valor) => onYearChange(parseInt(valor))}>
+              <SelectTrigger className="flex-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {gerarOpcoesAnos().map(ano => (
+                  <SelectItem key={ano} value={ano.toString()}>
+                    {ano}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+        {/* Botão de limpar filtros */}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onClearFilters}
+          className="flex items-center gap-2 flex-shrink-0"
+        >
+          <X className="h-4 w-4" />
+          Limpar
+        </Button>
       </div>
 
       {/* Contador de resultados */}

@@ -10,9 +10,10 @@ import { Check, X } from "lucide-react";
 interface ClienteMatrixViewProps {
   clientes: any[];
   clientesFiltrados: any[];
+  selectedYear: number;
 }
 
-export const ClienteMatrixView = ({ clientes, clientesFiltrados }: ClienteMatrixViewProps) => {
+export const ClienteMatrixView = ({ clientes, clientesFiltrados, selectedYear }: ClienteMatrixViewProps) => {
   const { getPagamentoDoMes, handlePagamentoMes } = usePagamentos();
   
   const meses = [
@@ -30,10 +31,8 @@ export const ClienteMatrixView = ({ clientes, clientesFiltrados }: ClienteMatrix
     { numero: 12, nome: "Dez" },
   ];
 
-  const anoAtual = new Date().getFullYear();
-
   const getButtonStyle = (clienteId: string, mes: number) => {
-    const pagamento = getPagamentoDoMes(clienteId, mes, anoAtual);
+    const pagamento = getPagamentoDoMes(clienteId, mes, selectedYear);
     
     if (!pagamento || pagamento.status === 'removido') {
       return { 
@@ -67,11 +66,11 @@ export const ClienteMatrixView = ({ clientes, clientesFiltrados }: ClienteMatrix
   };
 
   const handlePagamentoClick = async (clienteId: string, mes: number) => {
-    await handlePagamentoMes(clienteId, mes, anoAtual);
+    await handlePagamentoMes(clienteId, mes, selectedYear);
   };
 
   return (
-    <div className="w-full max-w-full overflow-hidden">
+    <div className="w-full max-w-full">
       <div className="border rounded-md">
         <ScrollArea className="w-full max-w-full" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
           <div className="min-w-fit">
@@ -109,7 +108,7 @@ export const ClienteMatrixView = ({ clientes, clientesFiltrados }: ClienteMatrix
                             variant={buttonStyle.variant}
                             className={buttonStyle.className}
                             onClick={() => handlePagamentoClick(cliente.id, mes.numero)}
-                            title={`${cliente.nome} - ${mes.nome}/${anoAtual}`}
+                            title={`${cliente.nome} - ${mes.nome}/${selectedYear}`}
                           >
                             {buttonStyle.icon}
                           </Button>
