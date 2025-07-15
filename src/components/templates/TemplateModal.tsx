@@ -1,11 +1,10 @@
 
 import { useState, useEffect } from 'react';
-import { MessageSquare, Send, Edit3 } from 'lucide-react';
+import { MessageSquare, Send } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent } from '@/components/ui/card';
 import { useTemplates } from '@/hooks/useTemplates';
 import { useTemplateFormatter, TemplateData } from '@/hooks/useTemplateFormatter';
 import { toast } from '@/hooks/use-toast';
@@ -22,7 +21,6 @@ export const TemplateModal = ({ isOpen, onClose, templateData }: TemplateModalPr
   
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
   const [editableMessage, setEditableMessage] = useState<string>('');
-  const [isEditing, setIsEditing] = useState(false);
 
   const selectedTemplate = templates.find(t => t.id === selectedTemplateId);
 
@@ -30,7 +28,6 @@ export const TemplateModal = ({ isOpen, onClose, templateData }: TemplateModalPr
     if (selectedTemplate) {
       const formattedMessage = formatTemplate(selectedTemplate.mensagem, templateData);
       setEditableMessage(formattedMessage);
-      setIsEditing(false);
     }
   }, [selectedTemplate, templateData, formatTemplate]);
 
@@ -77,36 +74,16 @@ export const TemplateModal = ({ isOpen, onClose, templateData }: TemplateModalPr
             </Select>
           </div>
 
-          {/* Preview da Mensagem */}
+          {/* Mensagem Editável */}
           {selectedTemplate && (
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium">Mensagem:</label>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => setIsEditing(!isEditing)}
-                  className="h-8 px-2"
-                >
-                  <Edit3 className="h-3 w-3 mr-1" />
-                  {isEditing ? 'Cancelar' : 'Editar'}
-                </Button>
-              </div>
-
-              {isEditing ? (
-                <Textarea
-                  value={editableMessage}
-                  onChange={(e) => setEditableMessage(e.target.value)}
-                  placeholder="Digite sua mensagem..."
-                  className="min-h-[120px]"
-                />
-              ) : (
-                <Card>
-                  <CardContent className="p-4">
-                    <p className="text-sm whitespace-pre-wrap">{editableMessage}</p>
-                  </CardContent>
-                </Card>
-              )}
+              <label className="text-sm font-medium">Mensagem:</label>
+              <Textarea
+                value={editableMessage}
+                onChange={(e) => setEditableMessage(e.target.value)}
+                placeholder="Digite sua mensagem..."
+                className="min-h-[120px]"
+              />
             </div>
           )}
 
