@@ -1,6 +1,7 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Phone, Server, MapPin, User, DollarSign, Monitor, Smartphone } from "lucide-react";
+import { Calendar, Phone, Server, MapPin, User, DollarSign, Monitor, Smartphone, Key } from "lucide-react";
 import { calcularDiasParaVencer, calcularStatusCliente, getVencimentoColor, getVencimentoTexto } from "@/utils/clienteUtils";
 
 interface ClienteViewModalProps {
@@ -21,7 +22,7 @@ export const ClienteViewModal = ({ isOpen, onClose, cliente, getPagamentoMesAtua
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
-            <span>Informações do Cliente</span>
+            <span>Cadastrado em: {new Date(cliente.created_at).toLocaleDateString('pt-BR')}</span>
             <Badge className={clienteAtivo ? "bg-green-100 text-green-700 border-green-200" : "bg-red-100 text-red-700 border-red-200"}>
               {clienteAtivo ? "Ativo" : "Inativo"}
             </Badge>
@@ -101,6 +102,7 @@ export const ClienteViewModal = ({ isOpen, onClose, cliente, getPagamentoMesAtua
               </div>
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
+                  <Key className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">Senha:</span>
                   <span className="text-sm font-medium">{cliente.senha_aplicativo || "-"}</span>
                 </div>
@@ -139,6 +141,7 @@ export const ClienteViewModal = ({ isOpen, onClose, cliente, getPagamentoMesAtua
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
+                    <Key className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm text-muted-foreground">Senha:</span>
                     <span className="text-sm font-medium">{cliente.senha_aplicativo_2 || "-"}</span>
                   </div>
@@ -169,21 +172,16 @@ export const ClienteViewModal = ({ isOpen, onClose, cliente, getPagamentoMesAtua
                   {cliente.tela_adicional ? "Sim" : "Não"}
                 </Badge>
               </div>
-              {cliente.observacoes && (
-                <div className="space-y-1">
-                  <span className="text-sm text-muted-foreground">Observações:</span>
-                  <p className="text-sm bg-muted p-3 rounded-md">{cliente.observacoes}</p>
-                </div>
-              )}
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Cadastrado em:</span>
-                <span className="text-sm font-medium">
-                  {new Date(cliente.created_at).toLocaleDateString('pt-BR')}
-                </span>
-              </div>
             </div>
           </div>
+
+          {/* Observações */}
+          {cliente.observacoes && (
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold text-foreground">Observações</h3>
+              <p className="text-sm bg-muted p-3 rounded-md">{cliente.observacoes}</p>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
