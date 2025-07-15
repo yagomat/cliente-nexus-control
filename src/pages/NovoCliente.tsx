@@ -22,7 +22,7 @@ import { useDadosCadastro } from "@/hooks/useDadosCadastro";
 import { toast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
-  nome: z.string().min(1, "Nome é obrigatório"),
+  nome: z.string().min(1, "Nome é obrigatório").max(45, "Nome deve ter no máximo 45 caracteres"),
   telefone: z.string().min(10, "Telefone deve ter pelo menos 10 dígitos"),
   uf: z.string().optional(),
   servidor: z.string().min(1, "Servidor é obrigatório"),
@@ -39,7 +39,7 @@ const formSchema = z.object({
   usuario_aplicativo_2: z.string().optional(),
   senha_aplicativo_2: z.string().optional(),
   data_licenca_aplicativo_2: z.date().optional(),
-  observacoes: z.string().optional(),
+  observacoes: z.string().max(150, "Observações devem ter no máximo 150 caracteres").optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -142,13 +142,19 @@ export default function NovoCliente() {
               <Input
                 id="nome"
                 placeholder="Digite o nome do cliente"
+                maxLength={45}
                 {...form.register("nome")}
               />
-              {form.formState.errors.nome && (
-                <p className="text-sm text-destructive mt-1">
-                  {form.formState.errors.nome.message}
-                </p>
-              )}
+              <div className="flex justify-between items-center mt-1">
+                {form.formState.errors.nome && (
+                  <p className="text-sm text-destructive">
+                    {form.formState.errors.nome.message}
+                  </p>
+                )}
+                <div className="text-sm text-muted-foreground ml-auto">
+                  {form.watch("nome")?.length || 0}/45
+                </div>
+              </div>
             </div>
 
             <div>
@@ -464,9 +470,13 @@ export default function NovoCliente() {
               <Textarea
                 id="observacoes"
                 placeholder="Observações sobre o cliente"
+                maxLength={150}
                 rows={4}
                 {...form.register("observacoes")}
               />
+              <div className="text-sm text-muted-foreground text-right">
+                {form.watch("observacoes")?.length || 0}/150
+              </div>
             </div>
           </CardContent>
         </Card>
