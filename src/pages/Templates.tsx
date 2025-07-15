@@ -126,9 +126,14 @@ const Templates = () => {
       {/* View Modal */}
       {selectedTemplate && (
         <TemplateModal
-          template={selectedTemplate}
-          open={viewModalOpen}
-          setOpen={setViewModalOpen}
+          templateData={{
+            cliente: {
+              nome: "Cliente Exemplo",
+              telefone: "11999999999"
+            }
+          }}
+          isOpen={viewModalOpen}
+          onClose={() => setViewModalOpen(false)}
         />
       )}
 
@@ -141,7 +146,7 @@ const Templates = () => {
             setEditModalOpen(false);
             setEditTemplate(null);
           }}
-          onSubmit={(data) => handleUpdate(editTemplate.id, data)}
+          onSave={(data) => handleUpdate(editTemplate.id, data)}
         />
       )}
 
@@ -149,7 +154,7 @@ const Templates = () => {
       <TemplateFormModal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
-        onSubmit={handleCreate}
+        onSave={handleCreate}
       />
     </div>
   );
