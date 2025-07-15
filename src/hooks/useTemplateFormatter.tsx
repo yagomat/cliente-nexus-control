@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -16,7 +16,7 @@ export const useTemplateFormatter = () => {
     return 'Boa noite';
   };
 
-  const formatTemplate = (template: string, data: TemplateData) => {
+  const formatTemplate = useCallback((template: string, data: TemplateData) => {
     const { cliente, vencimentoInfo } = data;
     
     const placeholders = {
@@ -45,7 +45,7 @@ export const useTemplateFormatter = () => {
     });
 
     return formattedMessage;
-  };
+  }, []);
 
   const formatForWhatsApp = (message: string, telefone: string) => {
     const phoneNumber = telefone.replace(/\D/g, '');

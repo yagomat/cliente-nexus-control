@@ -22,15 +22,16 @@ export const TemplateModal = ({ isOpen, onClose, templateData }: TemplateModalPr
   
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
   const [editableMessage, setEditableMessage] = useState<string>('');
+  const [isUserEditing, setIsUserEditing] = useState<boolean>(false);
 
   const selectedTemplate = templates.find(t => t.id === selectedTemplateId);
 
   useEffect(() => {
-    if (selectedTemplate) {
+    if (selectedTemplate && !isUserEditing) {
       const formattedMessage = formatTemplate(selectedTemplate.mensagem, templateData);
       setEditableMessage(formattedMessage);
     }
-  }, [selectedTemplate, templateData, formatTemplate]);
+  }, [selectedTemplate, templateData]);
 
   const handleSendWhatsApp = () => {
     if (!editableMessage.trim()) {
@@ -49,6 +50,7 @@ export const TemplateModal = ({ isOpen, onClose, templateData }: TemplateModalPr
 
   const handleMessageChange = (value: string) => {
     setEditableMessage(value);
+    setIsUserEditing(true);
   };
 
   return (
