@@ -71,9 +71,9 @@ export const ClienteMatrixView = ({ clientes, clientesFiltrados }: ClienteMatrix
   };
 
   return (
-    <div className="w-full max-w-full overflow-hidden">
+    <div className="w-full">
       <div className="border rounded-md">
-        <ScrollArea className="w-full max-w-full" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
+        <ScrollArea className="w-full">
           <div className="min-w-fit">
             <Table className="w-full">
               <TableHeader>
