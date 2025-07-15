@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Phone, Server, MapPin, User, DollarSign, Monitor, Smartphone, Key } from "lucide-react";
@@ -74,6 +73,12 @@ export const ClienteViewModal = ({ isOpen, onClose, cliente, getPagamentoMesAtua
                   <span className={`text-sm font-medium ${getVencimentoColor(diasParaVencer)}`}>
                     {getVencimentoTexto(diasParaVencer)}
                   </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Tela Adicional:</span>
+                  <Badge variant={cliente.tela_adicional ? "default" : "secondary"}>
+                    {cliente.tela_adicional ? "Sim" : "Não"}
+                  </Badge>
                 </div>
               </div>
             </div>
@@ -161,19 +166,6 @@ export const ClienteViewModal = ({ isOpen, onClose, cliente, getPagamentoMesAtua
               </div>
             </div>
           )}
-
-          {/* Informações Adicionais */}
-          <div className="space-y-3">
-            <h3 className="text-lg font-semibold text-foreground">Informações Adicionais</h3>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Tela Adicional:</span>
-                <Badge variant={cliente.tela_adicional ? "default" : "secondary"}>
-                  {cliente.tela_adicional ? "Sim" : "Não"}
-                </Badge>
-              </div>
-            </div>
-          </div>
 
           {/* Observações */}
           {cliente.observacoes && (
