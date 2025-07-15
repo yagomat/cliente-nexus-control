@@ -1,218 +1,245 @@
+
 import { useState } from "react";
-import { Plus, Building2, Users, Server, Smartphone } from "lucide-react";
+import { Plus, Building2, Users, Server, Smartphone, Trash2, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDadosCadastro } from "@/hooks/useDadosCadastro";
 import { toast } from "sonner";
 
 const DadosCadastro = () => {
   const {
-    dados,
+    servidores,
+    aplicativos,
+    dispositivos,
+    valoresPlano,
     loading,
-    fetchDados,
-    createDado,
-    updateDado,
-    deleteDado,
+    adicionarServidor,
+    removerServidor,
+    adicionarAplicativo,
+    removerAplicativo,
+    adicionarDispositivo,
+    removerDispositivo,
+    adicionarValorPlano,
+    removerValorPlano,
   } = useDadosCadastro();
-  const [nomeEmpresa, setNomeEmpresa] = useState("");
-  const [totalClientes, setTotalClientes] = useState("");
-  const [servidor, setServidor] = useState("");
-  const [dispositivo, setDispositivo] = useState("");
-  const [editId, setEditId] = useState<string | null>(null);
 
-  const handleCreate = async () => {
-    if (!nomeEmpresa || !totalClientes || !servidor || !dispositivo) {
-      toast.error("Por favor, preencha todos os campos.");
+  const [novoServidor, setNovoServidor] = useState("");
+  const [novoAplicativo, setNovoAplicativo] = useState("");
+  const [novoDispositivo, setNovoDispositivo] = useState("");
+  const [novoValor, setNovoValor] = useState("");
+
+  const handleAdicionarServidor = async () => {
+    if (!novoServidor.trim()) {
+      toast.error("Por favor, insira um nome para o servidor.");
       return;
     }
-
-    const novoDado = {
-      nome_empresa: nomeEmpresa,
-      total_clientes: parseInt(totalClientes),
-      servidor: servidor,
-      dispositivo_smart: dispositivo,
-    };
-
-    try {
-      await createDado(novoDado);
-      toast.success("Dado de cadastro criado com sucesso!");
-      setNomeEmpresa("");
-      setTotalClientes("");
-      setServidor("");
-      setDispositivo("");
-      fetchDados();
-    } catch (error: any) {
-      toast.error(`Erro ao criar dado: ${error.message}`);
-    }
+    await adicionarServidor(novoServidor);
+    setNovoServidor("");
   };
 
-  const handleUpdate = async () => {
-    if (!editId || !nomeEmpresa || !totalClientes || !servidor || !dispositivo) {
-      toast.error("Por favor, preencha todos os campos.");
+  const handleAdicionarAplicativo = async () => {
+    if (!novoAplicativo.trim()) {
+      toast.error("Por favor, insira um nome para o aplicativo.");
       return;
     }
+    await adicionarAplicativo(novoAplicativo);
+    setNovoAplicativo("");
+  };
 
-    const dadoAtualizado = {
-      id: editId,
-      nome_empresa: nomeEmpresa,
-      total_clientes: parseInt(totalClientes),
-      servidor: servidor,
-      dispositivo_smart: dispositivo,
-    };
-
-    try {
-      await updateDado(dadoAtualizado);
-      toast.success("Dado de cadastro atualizado com sucesso!");
-      setNomeEmpresa("");
-      setTotalClientes("");
-      setServidor("");
-      setDispositivo("");
-      setEditId(null);
-      fetchDados();
-    } catch (error: any) {
-      toast.error(`Erro ao atualizar dado: ${error.message}`);
+  const handleAdicionarDispositivo = async () => {
+    if (!novoDispositivo.trim()) {
+      toast.error("Por favor, insira um nome para o dispositivo.");
+      return;
     }
+    await adicionarDispositivo(novoDispositivo);
+    setNovoDispositivo("");
   };
 
-  const handleDelete = async (id: string) => {
-    try {
-      await deleteDado(id);
-      toast.success("Dado de cadastro excluído com sucesso!");
-      fetchDados();
-    } catch (error: any) {
-      toast.error(`Erro ao excluir dado: ${error.message}`);
+  const handleAdicionarValor = async () => {
+    const valor = parseFloat(novoValor);
+    if (isNaN(valor) || valor <= 0) {
+      toast.error("Por favor, insira um valor válido.");
+      return;
     }
+    await adicionarValorPlano(valor);
+    setNovoValor("");
   };
 
-  const handleEdit = (dado: any) => {
-    setEditId(dado.id);
-    setNomeEmpresa(dado.nome_empresa);
-    setTotalClientes(String(dado.total_clientes));
-    setServidor(dado.servidor);
-    setDispositivo(dado.dispositivo_smart);
-  };
+  if (loading) {
+    return (
+      <div className="container mx-auto p-4">
+        <div className="flex items-center justify-center h-64">
+          <p>Carregando dados...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Card para adicionar dados */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Adicionar Dados de Cadastro</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div>
-              <Input
-                type="text"
-                placeholder="Nome da Empresa"
-                value={nomeEmpresa}
-                onChange={(e) => setNomeEmpresa(e.target.value)}
-              />
-            </div>
-            <div>
-              <Input
-                type="number"
-                placeholder="Total de Clientes"
-                value={totalClientes}
-                onChange={(e) => setTotalClientes(e.target.value)}
-              />
-            </div>
-            <div>
-              <Input
-                type="text"
-                placeholder="Servidor"
-                value={servidor}
-                onChange={(e) => setServidor(e.target.value)}
-              />
-            </div>
-            <div>
-              <Input
-                type="text"
-                placeholder="Dispositivo Smart"
-                value={dispositivo}
-                onChange={(e) => setDispositivo(e.target.value)}
-              />
-            </div>
-            <div className="flex justify-end">
-              {editId ? (
-                <Button variant="secondary" onClick={handleUpdate}>
-                  Atualizar
-                </Button>
-              ) : (
-                <Button onClick={handleCreate}>
+      <Tabs defaultValue="servidores" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="servidores">
+            <Server className="mr-2 h-4 w-4" />
+            Servidores
+          </TabsTrigger>
+          <TabsTrigger value="aplicativos">
+            <Smartphone className="mr-2 h-4 w-4" />
+            Aplicativos
+          </TabsTrigger>
+          <TabsTrigger value="dispositivos">
+            <Building2 className="mr-2 h-4 w-4" />
+            Dispositivos
+          </TabsTrigger>
+          <TabsTrigger value="valores">
+            <Users className="mr-2 h-4 w-4" />
+            Valores
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="servidores" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Gerenciar Servidores</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Nome do servidor"
+                  value={novoServidor}
+                  onChange={(e) => setNovoServidor(e.target.value)}
+                />
+                <Button onClick={handleAdicionarServidor}>
                   <Plus className="mr-2 h-4 w-4" />
                   Adicionar
                 </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Card para listar dados */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Dados de Cadastro</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <p>Carregando dados...</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                  <thead>
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Empresa
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Clientes
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Servidor
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Dispositivo
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Ações
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200 dark:divide-gray-700">
-                    {dados.map((dado) => (
-                      <tr key={dado.id}>
-                        <td className="px-6 py-4 whitespace-nowrap">{dado.nome_empresa}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{dado.total_clientes}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{dado.servidor}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{dado.dispositivo_smart}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right space-x-2">
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => handleEdit(dado)}
-                          >
-                            <Users className="mr-2 h-4 w-4" />
-                            Editar
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => handleDelete(dado.id)}
-                          >
-                            <Server className="mr-2 h-4 w-4" />
-                            Excluir
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
               </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+              <div className="space-y-2">
+                {servidores.map((servidor) => (
+                  <div key={servidor.id} className="flex items-center justify-between p-2 border rounded">
+                    <span>{servidor.nome}</span>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => removerServidor(servidor.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="aplicativos" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Gerenciar Aplicativos</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Nome do aplicativo"
+                  value={novoAplicativo}
+                  onChange={(e) => setNovoAplicativo(e.target.value)}
+                />
+                <Button onClick={handleAdicionarAplicativo}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Adicionar
+                </Button>
+              </div>
+              <div className="space-y-2">
+                {aplicativos.map((aplicativo) => (
+                  <div key={aplicativo.id} className="flex items-center justify-between p-2 border rounded">
+                    <span>{aplicativo.nome}</span>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => removerAplicativo(aplicativo.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="dispositivos" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Gerenciar Dispositivos</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Nome do dispositivo"
+                  value={novoDispositivo}
+                  onChange={(e) => setNovoDispositivo(e.target.value)}
+                />
+                <Button onClick={handleAdicionarDispositivo}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Adicionar
+                </Button>
+              </div>
+              <div className="space-y-2">
+                {dispositivos.map((dispositivo) => (
+                  <div key={dispositivo.id} className="flex items-center justify-between p-2 border rounded">
+                    <span>{dispositivo.nome}</span>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => removerDispositivo(dispositivo.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="valores" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Gerenciar Valores dos Planos</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  placeholder="Valor do plano"
+                  value={novoValor}
+                  onChange={(e) => setNovoValor(e.target.value)}
+                />
+                <Button onClick={handleAdicionarValor}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Adicionar
+                </Button>
+              </div>
+              <div className="space-y-2">
+                {valoresPlano.map((valor) => (
+                  <div key={valor.id} className="flex items-center justify-between p-2 border rounded">
+                    <span>R$ {valor.valor.toFixed(2)}</span>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => removerValorPlano(valor.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
