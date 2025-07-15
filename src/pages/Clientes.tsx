@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import { useClientes } from "@/hooks/useClientes";
 import { usePagamentos } from "@/hooks/usePagamentos";
@@ -85,97 +84,99 @@ const Clientes = () => {
   };
 
   return (
-    <div className="p-4 max-w-7xl mx-auto">
-      <ClienteHeader />
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden">
+      <div className="p-4 w-full max-w-7xl mx-auto">
+        <ClienteHeader />
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
-        <TabsList className="grid w-full grid-cols-2 max-w-lg">
-          <TabsTrigger value="clientes">Clientes</TabsTrigger>
-          <TabsTrigger value="pagamentos">Pagamentos</TabsTrigger>
-        </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6 w-full">
+          <TabsList className="grid w-full grid-cols-2 max-w-lg">
+            <TabsTrigger value="clientes">Clientes</TabsTrigger>
+            <TabsTrigger value="pagamentos">Pagamentos</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="clientes" className="mt-6">
-          <ClienteFilters
-            busca={busca}
-            setBusca={handleBuscaChange}
-            filtroStatus={filtroStatus}
-            setFiltroStatus={handleFiltroChange}
-            ordenacao={ordenacao}
-            setOrdenacao={handleOrdenacaoChange}
-            clientesFiltrados={clientesFiltrados}
-            totalClientes={clientes.length}
-          />
-
-          {/* Seletor de modo de visualização */}
-          <div className="flex gap-2 mb-4">
-            <Button
-              variant={viewMode === "lista" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setViewMode("lista")}
-              className="flex items-center gap-2"
-            >
-              <List className="h-4 w-4" />
-              Lista
-            </Button>
-            <Button
-              variant={viewMode === "matriz" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setViewMode("matriz")}
-              className="flex items-center gap-2"
-            >
-              <Grid className="h-4 w-4" />
-              Matriz
-            </Button>
-          </div>
-
-          {loading ? (
-            <div className="text-center py-8">
-              <p>Carregando clientes...</p>
-            </div>
-          ) : clientesFiltrados.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">Nenhum cliente encontrado.</p>
-            </div>
-          ) : (
-            <>
-              {viewMode === "lista" ? (
-                <div className="space-y-4">
-                  {clientesPaginados.map((cliente) => (
-                    <ClienteCard
-                      key={cliente.id}
-                      cliente={cliente}
-                      getPagamentoMesAtual={getPagamentoMesAtual}
-                      getPagamentoDoMes={getPagamentoDoMes}
-                      onPagamento={handlePagamento}
-                      onClienteDeleted={fetchClientes}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <ClienteMatrixView 
-                  clientes={clientes}
-                  clientesFiltrados={clientesFiltrados}
-                />
-              )}
-            </>
-          )}
-
-          {viewMode === "lista" && (
-            <ClientePagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              itemsPerPage={itemsPerPage}
-              totalItems={clientesFiltrados.length}
-              onPageChange={handlePageChange}
-              onItemsPerPageChange={handleItemsPerPageChange}
+          <TabsContent value="clientes" className="mt-6 w-full">
+            <ClienteFilters
+              busca={busca}
+              setBusca={handleBuscaChange}
+              filtroStatus={filtroStatus}
+              setFiltroStatus={handleFiltroChange}
+              ordenacao={ordenacao}
+              setOrdenacao={handleOrdenacaoChange}
+              clientesFiltrados={clientesFiltrados}
+              totalClientes={clientes.length}
             />
-          )}
-        </TabsContent>
 
-        <TabsContent value="pagamentos" className="mt-6">
-          <PagamentosView />
-        </TabsContent>
-      </Tabs>
+            {/* Seletor de modo de visualização */}
+            <div className="flex gap-2 mb-4">
+              <Button
+                variant={viewMode === "lista" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setViewMode("lista")}
+                className="flex items-center gap-2"
+              >
+                <List className="h-4 w-4" />
+                Lista
+              </Button>
+              <Button
+                variant={viewMode === "matriz" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setViewMode("matriz")}
+                className="flex items-center gap-2"
+              >
+                <Grid className="h-4 w-4" />
+                Matriz
+              </Button>
+            </div>
+
+            {loading ? (
+              <div className="text-center py-8">
+                <p>Carregando clientes...</p>
+              </div>
+            ) : clientesFiltrados.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">Nenhum cliente encontrado.</p>
+              </div>
+            ) : (
+              <div className="w-full">
+                {viewMode === "lista" ? (
+                  <div className="space-y-4">
+                    {clientesPaginados.map((cliente) => (
+                      <ClienteCard
+                        key={cliente.id}
+                        cliente={cliente}
+                        getPagamentoMesAtual={getPagamentoMesAtual}
+                        getPagamentoDoMes={getPagamentoDoMes}
+                        onPagamento={handlePagamento}
+                        onClienteDeleted={fetchClientes}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <ClienteMatrixView 
+                    clientes={clientes}
+                    clientesFiltrados={clientesFiltrados}
+                  />
+                )}
+              </div>
+            )}
+
+            {viewMode === "lista" && (
+              <ClientePagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                itemsPerPage={itemsPerPage}
+                totalItems={clientesFiltrados.length}
+                onPageChange={handlePageChange}
+                onItemsPerPageChange={handleItemsPerPageChange}
+              />
+            )}
+          </TabsContent>
+
+          <TabsContent value="pagamentos" className="mt-6">
+            <PagamentosView />
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 };
