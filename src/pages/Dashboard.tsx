@@ -1,4 +1,3 @@
-
 import { LayoutGrid, Users, TrendingUp, Calendar, DollarSign, AlertTriangle, Smartphone, Monitor, MapPin, Server, UserCheck, UserX } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from "recharts";
@@ -309,11 +308,10 @@ const Dashboard = () => {
                   labelLine={false}
                   label={({ value }) => value}
                   outerRadius={80}
-                  fill="#8884d8"
                   dataKey="value"
                 >
                   {dashboardData.distribuicaoDispositivo.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell key={`cell-dispositivo-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip content={<CustomTooltip />} />
@@ -338,11 +336,10 @@ const Dashboard = () => {
                   labelLine={false}
                   label={({ value }) => value}
                   outerRadius={80}
-                  fill="#8884d8"
                   dataKey="value"
                 >
                   {dashboardData.distribuicaoAplicativo.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell key={`cell-aplicativo-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip content={<CustomTooltip />} />
@@ -369,11 +366,10 @@ const Dashboard = () => {
                   labelLine={false}
                   label={({ value }) => value}
                   outerRadius={80}
-                  fill="#8884d8"
                   dataKey="value"
                 >
                   {dashboardData.distribuicaoUF.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell key={`cell-uf-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip content={<CustomTooltip />} />
@@ -398,11 +394,10 @@ const Dashboard = () => {
                   labelLine={false}
                   label={({ value }) => value}
                   outerRadius={80}
-                  fill="#8884d8"
                   dataKey="value"
                 >
                   {dashboardData.distribuicaoServidor.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell key={`cell-servidor-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip content={<CustomTooltip />} />
