@@ -82,8 +82,8 @@ const Clientes = () => {
   };
 
   return (
-    <div className="min-h-screen w-full">
-      <div className="px-4 py-4 w-full max-w-7xl mx-auto">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden">
+      <div className="p-4 w-full max-w-7xl mx-auto">
         <ClienteHeader />
 
         <div className="mt-6 w-full">
