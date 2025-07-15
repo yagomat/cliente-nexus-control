@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useClientes } from "@/hooks/useClientes";
 import { usePagamentos } from "@/hooks/usePagamentos";
@@ -31,18 +30,18 @@ const PagamentosView = () => {
 
   // Gerar meses do ano
   const mesesDoAno = [
-    { numero: 1, nome: 'Jan' },
-    { numero: 2, nome: 'Fev' },
-    { numero: 3, nome: 'Mar' },
-    { numero: 4, nome: 'Abr' },
-    { numero: 5, nome: 'Mai' },
-    { numero: 6, nome: 'Jun' },
-    { numero: 7, nome: 'Jul' },
-    { numero: 8, nome: 'Ago' },
-    { numero: 9, nome: 'Set' },
-    { numero: 10, nome: 'Out' },
-    { numero: 11, nome: 'Nov' },
-    { numero: 12, nome: 'Dez' },
+    { numero: 1, nome: 'Janeiro' },
+    { numero: 2, nome: 'Fevereiro' },
+    { numero: 3, nome: 'Março' },
+    { numero: 4, nome: 'Abril' },
+    { numero: 5, nome: 'Maio' },
+    { numero: 6, nome: 'Junho' },
+    { numero: 7, nome: 'Julho' },
+    { numero: 8, nome: 'Agosto' },
+    { numero: 9, nome: 'Setembro' },
+    { numero: 10, nome: 'Outubro' },
+    { numero: 11, nome: 'Novembro' },
+    { numero: 12, nome: 'Dezembro' },
   ];
 
   const getStatusButton = (clienteId: string, mes: number, ano: number) => {
@@ -53,10 +52,10 @@ const PagamentosView = () => {
       return (
         <Button
           size="sm"
-          className="w-8 h-8 bg-green-500 hover:bg-green-600 text-white p-0"
+          className="w-12 h-12 bg-green-500 hover:bg-green-600 text-white"
           onClick={() => handlePagamentoMes(clienteId, mes, ano)}
         >
-          <Check className="h-3 w-3" />
+          <Check className="h-4 w-4" />
         </Button>
       );
     }
@@ -65,10 +64,10 @@ const PagamentosView = () => {
       return (
         <Button
           size="sm"
-          className="w-8 h-8 bg-blue-500 hover:bg-blue-600 text-white p-0"
+          className="w-12 h-12 bg-blue-500 hover:bg-blue-600 text-white"
           onClick={() => handlePagamentoMes(clienteId, mes, ano)}
         >
-          <Check className="h-3 w-3" />
+          <Check className="h-4 w-4" />
         </Button>
       );
     }
@@ -77,16 +76,16 @@ const PagamentosView = () => {
       <Button
         size="sm"
         variant="outline"
-        className="w-8 h-8 border-red-300 hover:bg-red-50 p-0"
+        className="w-12 h-12 border-red-300 hover:bg-red-50"
         onClick={() => handlePagamentoMes(clienteId, mes, ano)}
       >
-        <X className="h-3 w-3 text-red-500" />
+        <X className="h-4 w-4 text-red-500" />
       </Button>
     );
   };
 
   return (
-    <div className="space-y-6 p-4 w-full max-w-full">
+    <div className="space-y-6">
       {/* Filtro de Ano */}
       <div className="flex items-center gap-4">
         <Calendar className="h-5 w-5" />
@@ -104,29 +103,39 @@ const PagamentosView = () => {
         </Select>
       </div>
 
-      {/* Tabela de Pagamentos - Layout Responsivo */}
-      <div className="w-full overflow-x-auto">
-        <div className="min-w-full">
-          {/* Cabeçalho da Tabela */}
-          <div className="border rounded-lg bg-white">
-            <div className="grid grid-cols-13 gap-1 p-3 bg-muted/50 border-b font-medium text-sm">
-              <div className="col-span-1 text-left">Nome</div>
-              {mesesDoAno.map((mes) => (
-                <div key={mes.numero} className="col-span-1 text-center">
-                  {mes.nome}
-                </div>
-              ))}
+      {/* Tabela de Pagamentos */}
+      <div className="border rounded-lg overflow-hidden">
+        <div className="flex">
+          {/* Coluna fixa com nomes */}
+          <div className="bg-muted/50 border-r w-48 flex-shrink-0">
+            <div className="h-14 flex items-center justify-center border-b font-medium">
+              Nome
             </div>
+            {clientes.map((cliente) => (
+              <div
+                key={cliente.id}
+                className="h-16 flex items-center px-4 border-b text-sm"
+              >
+                {cliente.nome}
+              </div>
+            ))}
+          </div>
 
-            {/* Linhas dos Clientes */}
-            <div className="divide-y">
-              {clientes.map((cliente) => (
-                <div key={cliente.id} className="grid grid-cols-13 gap-1 p-3 items-center hover:bg-muted/30">
-                  <div className="col-span-1 font-medium text-sm truncate pr-2">
-                    {cliente.nome}
+          {/* Colunas dos meses com scroll horizontal */}
+          <div className="flex-1 overflow-x-auto">
+            <div className="flex min-w-max">
+              {mesesDoAno.map((mes) => (
+                <div key={mes.numero} className="w-24 flex-shrink-0 border-r last:border-r-0">
+                  <div className="h-14 flex items-center justify-center border-b font-medium bg-muted/50 text-xs">
+                    {mes.nome}
+                    <br />
+                    {anoSelecionado}
                   </div>
-                  {mesesDoAno.map((mes) => (
-                    <div key={`${cliente.id}-${mes.numero}`} className="col-span-1 flex justify-center">
+                  {clientes.map((cliente) => (
+                    <div
+                      key={`${cliente.id}-${mes.numero}`}
+                      className="h-16 flex items-center justify-center border-b"
+                    >
                       {getStatusButton(cliente.id, mes.numero, anoSelecionado)}
                     </div>
                   ))}
@@ -136,12 +145,6 @@ const PagamentosView = () => {
           </div>
         </div>
       </div>
-
-      {clientes.length === 0 && (
-        <div className="text-center py-8">
-          <p className="text-muted-foreground">Nenhum cliente encontrado.</p>
-        </div>
-      )}
     </div>
   );
 };
