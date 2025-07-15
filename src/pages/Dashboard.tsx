@@ -3,11 +3,60 @@ import { LayoutGrid, Users, TrendingUp, Calendar, DollarSign, AlertTriangle, Sma
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from "recharts";
 import { useDashboard } from "@/hooks/useDashboard";
+import { useState } from "react";
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted))', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
 
 const Dashboard = () => {
   const { dashboardData, loading } = useDashboard();
+  const [selectedSegments, setSelectedSegments] = useState<Record<string, string | null>>({
+    dispositivo: null,
+    aplicativo: null,
+    uf: null,
+    servidor: null
+  });
+
+  const handleSegmentClick = (chartType: string, name: string) => {
+    setSelectedSegments(prev => ({
+      ...prev,
+      [chartType]: prev[chartType] === name ? null : name
+    }));
+  };
+
+  const CustomLegend = ({ data, chartType }: { data: Array<{ name: string; value: number }>, chartType: string }) => {
+    const total = data.reduce((sum, item) => sum + item.value, 0);
+    
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
+        {data.map((item, index) => {
+          const percentage = ((item.value / total) * 100).toFixed(1);
+          const isSelected = selectedSegments[chartType] === item.name;
+          
+          return (
+            <div 
+              key={item.name}
+              className="flex items-center justify-between p-2 rounded cursor-pointer hover:bg-muted/50 transition-colors"
+              onClick={() => handleSegmentClick(chartType, item.name)}
+            >
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-3 h-3 rounded-sm shrink-0"
+                  style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                />
+                <span className="text-sm font-medium truncate">{item.name}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold">{item.value}</span>
+                {isSelected && (
+                  <span className="text-xs text-muted-foreground">({percentage}%)</span>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
 
   if (loading) {
     return (
@@ -159,7 +208,7 @@ const Dashboard = () => {
             <CardTitle>Evolução de Clientes Ativos</CardTitle>
             <CardDescription>Últimos 12 meses</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pl-2 md:pl-6">
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={dashboardData.evolucaoClientes}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -183,7 +232,7 @@ const Dashboard = () => {
             <CardTitle>Evolução de Pagamentos</CardTitle>
             <CardDescription>Últimos 12 meses (R$)</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pl-2 md:pl-6">
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={dashboardData.evolucaoPagamentos}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -206,9 +255,9 @@ const Dashboard = () => {
       {/* Gráficos de distribuição */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-2 md:pb-6">
             <CardTitle>Distribuição por Dispositivo</CardTitle>
-            <CardDescription>Configuração de telas</CardDescription>
+            <CardDescription>Dispositivos Smart (Telas 1 e 2)</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -218,7 +267,7 @@ const Dashboard = () => {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  label={({ value }) => value}
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
@@ -230,13 +279,14 @@ const Dashboard = () => {
                 <Tooltip />
               </PieChart>
             </ResponsiveContainer>
+            <CustomLegend data={dashboardData.distribuicaoDispositivo} chartType="dispositivo" />
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-2 md:pb-6">
             <CardTitle>Distribuição por Aplicativo</CardTitle>
-            <CardDescription>Apps mais utilizados</CardDescription>
+            <CardDescription>Apps mais utilizados (Telas 1 e 2)</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -246,7 +296,7 @@ const Dashboard = () => {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  label={({ value }) => value}
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
@@ -258,13 +308,14 @@ const Dashboard = () => {
                 <Tooltip />
               </PieChart>
             </ResponsiveContainer>
+            <CustomLegend data={dashboardData.distribuicaoAplicativo} chartType="aplicativo" />
           </CardContent>
         </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-2 md:pb-6">
             <CardTitle>Distribuição por UF</CardTitle>
             <CardDescription>Estados dos clientes</CardDescription>
           </CardHeader>
@@ -276,7 +327,7 @@ const Dashboard = () => {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  label={({ value }) => value}
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
@@ -288,11 +339,12 @@ const Dashboard = () => {
                 <Tooltip />
               </PieChart>
             </ResponsiveContainer>
+            <CustomLegend data={dashboardData.distribuicaoUF} chartType="uf" />
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-2 md:pb-6">
             <CardTitle>Distribuição por Servidor</CardTitle>
             <CardDescription>Servidores utilizados</CardDescription>
           </CardHeader>
@@ -304,7 +356,7 @@ const Dashboard = () => {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  label={({ value }) => value}
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
@@ -316,6 +368,7 @@ const Dashboard = () => {
                 <Tooltip />
               </PieChart>
             </ResponsiveContainer>
+            <CustomLegend data={dashboardData.distribuicaoServidor} chartType="servidor" />
           </CardContent>
         </Card>
       </div>
