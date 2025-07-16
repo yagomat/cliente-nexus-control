@@ -21,8 +21,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { useDadosCadastro } from "@/hooks/useDadosCadastro";
 import { toast } from "@/hooks/use-toast";
 const formSchema = z.object({
-  nome: z.string().min(1, "Nome é obrigatório").max(45, "Nome deve ter no máximo 45 caracteres"),
-  telefone: z.string().min(10, "Telefone deve ter pelo menos 10 dígitos"),
+  nome: z.string().min(1, "Nome é obrigatório").max(40, "Nome deve ter no máximo 40 caracteres"),
+  telefone: z.string().min(11, "Telefone deve ter 11 dígitos").max(11, "Telefone deve ter 11 dígitos"),
+  codigo_pais: z.string().min(1, "Código do país é obrigatório").max(3, "Código deve ter no máximo 3 dígitos").regex(/^\d+$/, "Apenas números são permitidos"),
   uf: z.string().optional(),
   servidor: z.string().min(1, "Servidor é obrigatório"),
   dia_vencimento: z.number().min(1).max(31),
@@ -64,7 +65,8 @@ export default function EditarCliente() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       dia_vencimento: 1,
-      tela_adicional: false
+      tela_adicional: false,
+      codigo_pais: "55"
     }
   });
   useEffect(() => {
@@ -93,6 +95,7 @@ export default function EditarCliente() {
       form.reset({
         nome: data.nome,
         telefone: data.telefone,
+        codigo_pais: "55",
         uf: data.uf || undefined,
         servidor: data.servidor,
         dia_vencimento: data.dia_vencimento,
@@ -190,31 +193,40 @@ export default function EditarCliente() {
           <CardContent className="space-y-4">
             <div>
               <Label htmlFor="nome">Nome *</Label>
-              <Input id="nome" placeholder="Digite o nome do cliente" maxLength={45} {...form.register("nome")} />
+              <Input id="nome" placeholder="Digite o nome do cliente" maxLength={40} {...form.register("nome")} />
               <div className="flex justify-between items-center mt-1">
                 {form.formState.errors.nome && <p className="text-sm text-destructive">
                     {form.formState.errors.nome.message}
                   </p>}
                 <div className="text-sm text-muted-foreground ml-auto">
-                  {form.watch("nome")?.length || 0}/45
+                  {form.watch("nome")?.length || 0}/40
                 </div>
               </div>
             </div>
 
             <div>
-              <Label>Código do País</Label>
-              <div className="flex items-center gap-2 p-3 border rounded-md bg-muted">
-                <span className="text-lg">🇧🇷</span>
-                <span>+55</span>
-                <span>Brasil</span>
+              <Label htmlFor="codigo_pais">Código do País *</Label>
+              <Input
+                id="codigo_pais"
+                placeholder="55"
+                maxLength={3}
+                {...form.register("codigo_pais")}
+              />
+              {form.formState.errors.codigo_pais && (
+                <p className="text-sm text-destructive mt-1">
+                  {form.formState.errors.codigo_pais.message}
+                </p>
+              )}
+              <div className="text-sm text-muted-foreground text-right">
+                {form.watch("codigo_pais")?.length || 0}/3
               </div>
             </div>
 
             <div>
               <Label htmlFor="telefone">Telefone</Label>
-              <Input id="telefone" placeholder="(00) 00000-0000" maxLength={15} {...form.register("telefone")} />
+              <Input id="telefone" placeholder="(00) 00000-0000" maxLength={11} {...form.register("telefone")} />
               <div className="text-sm text-muted-foreground text-right">
-                {form.watch("telefone")?.length || 0}/15
+                {form.watch("telefone")?.length || 0}/11
               </div>
             </div>
 
@@ -244,6 +256,11 @@ export default function EditarCliente() {
                     </SelectItem>)}
                 </SelectContent>
               </Select>
+              {form.formState.errors.servidor && (
+                <p className="text-sm text-destructive mt-1">
+                  {form.formState.errors.servidor.message}
+                </p>
+              )}
             </div>
 
             <div>
@@ -309,6 +326,11 @@ export default function EditarCliente() {
                     </SelectItem>)}
                 </SelectContent>
               </Select>
+              {form.formState.errors.aplicativo && (
+                <p className="text-sm text-destructive mt-1">
+                  {form.formState.errors.aplicativo.message}
+                </p>
+              )}
             </div>
 
             <div>

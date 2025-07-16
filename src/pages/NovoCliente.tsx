@@ -24,6 +24,7 @@ import { toast } from "@/hooks/use-toast";
 const formSchema = z.object({
   nome: z.string().min(1, "Nome é obrigatório").max(40, "Nome deve ter no máximo 40 caracteres"),
   telefone: z.string().min(11, "Telefone deve ter 11 dígitos").max(11, "Telefone deve ter 11 dígitos"),
+  codigo_pais: z.string().min(1, "Código do país é obrigatório").max(3, "Código deve ter no máximo 3 dígitos").regex(/^\d+$/, "Apenas números são permitidos"),
   uf: z.string().optional(),
   servidor: z.string().min(1, "Servidor é obrigatório"),
   dia_vencimento: z.number().min(1).max(31),
@@ -63,6 +64,7 @@ export default function NovoCliente() {
     defaultValues: {
       dia_vencimento: 1,
       tela_adicional: false,
+      codigo_pais: "55",
     },
   });
 
@@ -158,11 +160,20 @@ export default function NovoCliente() {
             </div>
 
             <div>
-              <Label>Código do País</Label>
-              <div className="flex items-center gap-2 p-3 border rounded-md bg-muted">
-                <span className="text-lg">🇧🇷</span>
-                <span>+55</span>
-                <span>Brasil</span>
+              <Label htmlFor="codigo_pais">Código do País *</Label>
+              <Input
+                id="codigo_pais"
+                placeholder="55"
+                maxLength={3}
+                {...form.register("codigo_pais")}
+              />
+              {form.formState.errors.codigo_pais && (
+                <p className="text-sm text-destructive mt-1">
+                  {form.formState.errors.codigo_pais.message}
+                </p>
+              )}
+              <div className="text-sm text-muted-foreground text-right">
+                {form.watch("codigo_pais")?.length || 0}/3
               </div>
             </div>
 
@@ -209,6 +220,11 @@ export default function NovoCliente() {
                   ))}
                 </SelectContent>
               </Select>
+              {form.formState.errors.servidor && (
+                <p className="text-sm text-destructive mt-1">
+                  {form.formState.errors.servidor.message}
+                </p>
+              )}
             </div>
 
             <div>
@@ -283,6 +299,11 @@ export default function NovoCliente() {
                   ))}
                 </SelectContent>
               </Select>
+              {form.formState.errors.aplicativo && (
+                <p className="text-sm text-destructive mt-1">
+                  {form.formState.errors.aplicativo.message}
+                </p>
+              )}
             </div>
 
             <div>
