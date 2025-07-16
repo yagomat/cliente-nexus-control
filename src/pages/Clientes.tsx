@@ -109,7 +109,7 @@ const Clientes = () => {
         <ClienteHeader />
 
         <div className="mt-6 w-full">
-          <div className="flex flex-col sm:flex-row sm:items-start gap-4 mb-4">
+          <div className="mb-4">
             <ClienteFilters
               busca={busca}
               setBusca={handleBuscaChange}
@@ -124,9 +124,15 @@ const Clientes = () => {
               showAnoFilter={viewMode === "matriz"}
               onLimparFiltros={handleLimparFiltros}
             />
+          </div>
 
-            {/* Seletor de modo de visualização - alinhado à direita */}
-            <div className="flex gap-2 flex-shrink-0 ml-auto">
+          {/* Linha com contagem e botões de visualização */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="text-sm text-muted-foreground">
+              {clientesFiltrados.length} de {clientes.length} clientes
+            </div>
+            
+            <div className="flex gap-2">
               <Button
                 variant={viewMode === "lista" ? "default" : "outline"}
                 size="sm"

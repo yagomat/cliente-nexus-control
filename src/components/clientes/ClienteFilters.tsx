@@ -116,14 +116,6 @@ export const ClienteFilters = ({
         </Button>
       </div>
 
-      {/* Contador de resultados */}
-      <div className="text-sm text-muted-foreground">
-        {clientesFiltrados.length === totalClientes ? (
-          `${totalClientes} cliente${totalClientes !== 1 ? 's' : ''}`
-        ) : (
-          `${clientesFiltrados.length} de ${totalClientes} cliente${totalClientes !== 1 ? 's' : ''}`
-        )}
-      </div>
     </div>
   );
 };
