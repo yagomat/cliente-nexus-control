@@ -82,7 +82,7 @@ const Clientes = () => {
   };
 
   return (
-    <div className="max-w-none mx-auto px-6 py-6">
+    <div>
         <ClienteHeader />
 
         <div className="mt-6 w-full">

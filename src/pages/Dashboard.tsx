@@ -87,7 +87,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="max-w-none mx-auto px-6 py-6 space-y-8">
+    <div className="space-y-8">
       {/* Cards de alerta - clientes e apps vencendo */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20 dark:border-yellow-800">
