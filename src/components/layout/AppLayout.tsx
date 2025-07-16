@@ -11,8 +11,8 @@ export function AppLayout() {
         <AppSidebar />
         <div className="flex-1 flex flex-col">
           <Header />
-          <main className="flex-1 overflow-auto flex justify-center">
-            <div className="w-full max-w-full px-4">
+          <main className="flex-1 overflow-auto">
+            <div className="w-full h-full">
               <Outlet />
             </div>
           </main>
