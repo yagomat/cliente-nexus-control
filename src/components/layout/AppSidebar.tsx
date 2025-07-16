@@ -31,6 +31,7 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
+  const isCollapsed = state === "collapsed";
 
   const isActive = (path: string) => currentPath === path;
   const getNavClass = ({ isActive }: { isActive: boolean }) =>
@@ -39,11 +40,14 @@ export function AppSidebar() {
       : "hover:bg-accent hover:text-accent-foreground";
 
   return (
-    <Sidebar className={state === "collapsed" ? "w-14" : "w-60"}>
+    <Sidebar 
+      className={isCollapsed ? "w-16" : "w-60"} 
+      collapsible="icon"
+    >
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-lg font-bold text-primary mb-4">
-            {state !== "collapsed" && "Gestor Connect"}
+          <SidebarGroupLabel className={`text-lg font-bold text-primary mb-4 ${isCollapsed ? 'sr-only' : ''}`}>
+            Gestor Connect
           </SidebarGroupLabel>
           
           <SidebarGroupContent>
@@ -51,9 +55,13 @@ export function AppSidebar() {
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild className="mb-1">
-                    <NavLink to={item.url} className={getNavClass}>
-                      <item.icon className="h-5 w-5" />
-                      {state !== "collapsed" && <span>{item.title}</span>}
+                    <NavLink 
+                      to={item.url} 
+                      className={getNavClass}
+                      title={isCollapsed ? item.title : undefined}
+                    >
+                      <item.icon className="h-5 w-5 shrink-0" />
+                      {!isCollapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
