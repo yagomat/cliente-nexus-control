@@ -83,7 +83,7 @@ const Clientes = () => {
 
   return (
     <div className="min-h-screen w-full overflow-x-hidden">
-      <div className="p-6 w-full max-w-full mx-auto">
+      <div className="py-4 w-full max-w-full mx-auto">
         <ClienteHeader />
 
         <div className="mt-6 w-full">
