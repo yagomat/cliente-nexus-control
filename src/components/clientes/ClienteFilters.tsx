@@ -13,6 +13,10 @@ interface ClienteFiltersProps {
   setOrdenacao: (ordenacao: string) => void;
   clientesFiltrados: any[];
   totalClientes: number;
+  anoFiltro?: number;
+  setAnoFiltro?: (ano: number) => void;
+  showAnoFilter?: boolean;
+  onLimparFiltros?: () => void;
 }
 
 export const ClienteFilters = ({
@@ -23,8 +27,15 @@ export const ClienteFilters = ({
   ordenacao,
   setOrdenacao,
   clientesFiltrados,
-  totalClientes
+  totalClientes,
+  anoFiltro,
+  setAnoFiltro,
+  showAnoFilter = false,
+  onLimparFiltros
 }: ClienteFiltersProps) => {
+  // Gerar anos disponíveis (4 anos atrás até 4 anos à frente)
+  const anoAtual = new Date().getFullYear();
+  const anosDisponiveis = Array.from({ length: 9 }, (_, i) => anoAtual - 4 + i);
   return (
     <div className="space-y-4 flex-1">
       {/* Campo de busca */}
@@ -68,6 +79,25 @@ export const ClienteFilters = ({
             </SelectContent>
           </Select>
         </div>
+
+        {/* Filtro de ano - só aparece no modo matriz */}
+        {showAnoFilter && anoFiltro && setAnoFiltro && (
+          <div className="flex items-center gap-2 flex-1">
+            <span className="text-sm text-muted-foreground whitespace-nowrap">Ano:</span>
+            <Select value={anoFiltro.toString()} onValueChange={(value) => setAnoFiltro(parseInt(value))}>
+              <SelectTrigger className="flex-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {anosDisponiveis.map((ano) => (
+                  <SelectItem key={ano} value={ano.toString()}>
+                    {ano}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </div>
 
       {/* Botão Limpar Filtros */}
@@ -75,11 +105,11 @@ export const ClienteFilters = ({
         <Button 
           variant="outline" 
           size="sm"
-          onClick={() => {
+          onClick={onLimparFiltros || (() => {
             setBusca("");
             setFiltroStatus("todos");
             setOrdenacao("cadastro");
-          }}
+          })}
           className="text-muted-foreground hover:text-foreground"
         >
           Limpar Filtros

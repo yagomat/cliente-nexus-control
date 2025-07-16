@@ -6,14 +6,19 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useSidebar } from "@/components/ui/sidebar";
+import { ClientePagination } from "@/components/clientes/ClientePagination";
 import { Check, X } from "lucide-react";
 
 interface ClienteMatrixViewProps {
   clientes: any[];
   clientesFiltrados: any[];
+  anoFiltro: number;
+  currentPage: number;
+  itemsPerPage: number;
+  onPageChange: (page: number) => void;
 }
 
-export const ClienteMatrixView = ({ clientes, clientesFiltrados }: ClienteMatrixViewProps) => {
+export const ClienteMatrixView = ({ clientes, clientesFiltrados, anoFiltro, currentPage, itemsPerPage, onPageChange }: ClienteMatrixViewProps) => {
   const { getPagamentoDoMes, handlePagamentoMes } = usePagamentos();
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
@@ -33,10 +38,14 @@ export const ClienteMatrixView = ({ clientes, clientesFiltrados }: ClienteMatrix
     { numero: 12, nome: "Dez" },
   ];
 
-  const anoAtual = new Date().getFullYear();
+  // Paginação dos clientes
+  const totalPages = Math.ceil(clientesFiltrados.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const clientesPaginados = clientesFiltrados.slice(startIndex, endIndex);
 
   const getButtonStyle = (clienteId: string, mes: number) => {
-    const pagamento = getPagamentoDoMes(clienteId, mes, anoAtual);
+    const pagamento = getPagamentoDoMes(clienteId, mes, anoFiltro);
     
     if (!pagamento || pagamento.status === 'removido') {
       return { 
@@ -70,7 +79,7 @@ export const ClienteMatrixView = ({ clientes, clientesFiltrados }: ClienteMatrix
   };
 
   const handlePagamentoClick = async (clienteId: string, mes: number) => {
-    await handlePagamentoMes(clienteId, mes, anoAtual);
+    await handlePagamentoMes(clienteId, mes, anoFiltro);
   };
 
   // Calculate available width based on sidebar state
@@ -99,22 +108,25 @@ export const ClienteMatrixView = ({ clientes, clientesFiltrados }: ClienteMatrix
             <Table className="w-full">
               <TableHeader>
                 <TableRow>
-                  <TableHead className="sticky left-0 bg-background border-r w-48 min-w-48 max-w-48 font-semibold z-20">
+                  <TableHead className="sticky left-0 bg-background border-r w-24 min-w-24 max-w-24 font-semibold z-20">
                     Cliente
                   </TableHead>
                   {meses.map((mes) => (
                     <TableHead key={mes.numero} className="text-center w-16 min-w-16 max-w-16 font-semibold">
-                      {mes.nome}
+                      <div className="flex flex-col">
+                        <span>{mes.nome}</span>
+                        <span className="text-xs text-muted-foreground font-normal">{anoFiltro}</span>
+                      </div>
                     </TableHead>
                   ))}
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {clientesFiltrados.map((cliente) => (
+                {clientesPaginados.map((cliente) => (
                   <TableRow key={cliente.id} className="hover:bg-muted/50">
-                    <TableCell className="sticky left-0 bg-background border-r font-medium w-48 min-w-48 max-w-48 z-10 p-3">
+                    <TableCell className="sticky left-0 bg-background border-r font-medium w-24 min-w-24 max-w-24 z-10 p-2">
                       <div className="flex flex-col gap-1">
-                        <span className="font-semibold text-sm truncate" title={cliente.nome}>
+                        <span className="font-semibold text-xs leading-tight break-words" title={cliente.nome}>
                           {cliente.nome}
                         </span>
                         <span className="text-xs text-muted-foreground">
@@ -130,7 +142,7 @@ export const ClienteMatrixView = ({ clientes, clientesFiltrados }: ClienteMatrix
                             variant={buttonStyle.variant}
                             className={buttonStyle.className}
                             onClick={() => handlePagamentoClick(cliente.id, mes.numero)}
-                            title={`${cliente.nome} - ${mes.nome}/${anoAtual}`}
+                            title={`${cliente.nome} - ${mes.nome}/${anoFiltro}`}
                           >
                             {buttonStyle.icon}
                           </Button>
@@ -152,6 +164,16 @@ export const ClienteMatrixView = ({ clientes, clientesFiltrados }: ClienteMatrix
         </div>
       )}
       
+      {/* Paginação */}
+      <ClientePagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        itemsPerPage={itemsPerPage}
+        totalItems={clientesFiltrados.length}
+        onPageChange={onPageChange}
+        onItemsPerPageChange={() => {}} // Não usado no modo matriz
+      />
+
       <div className="mt-4 text-sm text-muted-foreground">
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-2">

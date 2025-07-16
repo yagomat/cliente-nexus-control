@@ -16,6 +16,7 @@ const Clientes = () => {
   const [ordenacao, setOrdenacao] = useState("cadastro");
   const [busca, setBusca] = useState("");
   const [viewMode, setViewMode] = useState("lista"); // "lista" ou "matriz"
+  const [anoFiltro, setAnoFiltro] = useState(new Date().getFullYear());
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   
@@ -81,12 +82,34 @@ const Clientes = () => {
     setCurrentPage(1);
   };
 
+  const handleAnoFiltroChange = (novoAno: number) => {
+    setAnoFiltro(novoAno);
+    setCurrentPage(1);
+  };
+
+  const handleViewModeChange = (novoMode: string) => {
+    setViewMode(novoMode);
+    if (novoMode === "lista") {
+      // Ao sair do modo matriz, volta para o ano vigente
+      setAnoFiltro(new Date().getFullYear());
+    }
+    setCurrentPage(1);
+  };
+
+  const handleLimparFiltros = () => {
+    setBusca("");
+    setFiltroStatus("todos");
+    setOrdenacao("cadastro");
+    setAnoFiltro(new Date().getFullYear()); // Volta para o ano vigente
+    setCurrentPage(1);
+  };
+
   return (
     <div>
         <ClienteHeader />
 
         <div className="mt-6 w-full">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-start gap-4 mb-4">
             <ClienteFilters
               busca={busca}
               setBusca={handleBuscaChange}
@@ -96,27 +119,31 @@ const Clientes = () => {
               setOrdenacao={handleOrdenacaoChange}
               clientesFiltrados={clientesFiltrados}
               totalClientes={clientes.length}
+              anoFiltro={anoFiltro}
+              setAnoFiltro={handleAnoFiltroChange}
+              showAnoFilter={viewMode === "matriz"}
+              onLimparFiltros={handleLimparFiltros}
             />
 
-            {/* Seletor de modo de visualização - movido para o lado direito */}
-            <div className="flex gap-2 flex-shrink-0">
+            {/* Seletor de modo de visualização - alinhado à direita */}
+            <div className="flex gap-2 flex-shrink-0 ml-auto">
               <Button
                 variant={viewMode === "lista" ? "default" : "outline"}
                 size="sm"
-                onClick={() => setViewMode("lista")}
+                onClick={() => handleViewModeChange("lista")}
                 className="flex items-center gap-2"
               >
                 <List className="h-4 w-4" />
-                Lista
+                Clientes
               </Button>
               <Button
                 variant={viewMode === "matriz" ? "default" : "outline"}
                 size="sm"
-                onClick={() => setViewMode("matriz")}
+                onClick={() => handleViewModeChange("matriz")}
                 className="flex items-center gap-2"
               >
                 <Grid className="h-4 w-4" />
-                Matriz
+                Pagamentos
               </Button>
             </div>
           </div>
@@ -148,6 +175,10 @@ const Clientes = () => {
                 <ClienteMatrixView 
                   clientes={clientes}
                   clientesFiltrados={clientesFiltrados}
+                  anoFiltro={anoFiltro}
+                  currentPage={currentPage}
+                  itemsPerPage={itemsPerPage}
+                  onPageChange={handlePageChange}
                 />
               )}
             </div>
