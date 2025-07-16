@@ -20,10 +20,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useDadosCadastro } from "@/hooks/useDadosCadastro";
 import { toast } from "@/hooks/use-toast";
-
 const formSchema = z.object({
-  nome: z.string().min(1, "Nome é obrigatório").max(40, "Nome deve ter no máximo 40 caracteres"),
-  telefone: z.string().min(11, "Telefone deve ter 11 dígitos").max(11, "Telefone deve ter 11 dígitos"),
+  nome: z.string().min(1, "Nome é obrigatório").max(45, "Nome deve ter no máximo 45 caracteres"),
+  telefone: z.string().min(10, "Telefone deve ter pelo menos 10 dígitos"),
   uf: z.string().optional(),
   servidor: z.string().min(1, "Servidor é obrigatório"),
   dia_vencimento: z.number().min(1).max(31),
@@ -39,57 +38,52 @@ const formSchema = z.object({
   usuario_aplicativo_2: z.string().optional(),
   senha_aplicativo_2: z.string().optional(),
   data_licenca_aplicativo_2: z.date().optional(),
-  observacoes: z.string().max(150, "Observações devem ter no máximo 150 caracteres").optional(),
+  observacoes: z.string().max(150, "Observações devem ter no máximo 150 caracteres").optional()
 });
-
 type FormData = z.infer<typeof formSchema>;
-
-const estados = [
-  "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", 
-  "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", 
-  "RS", "RO", "RR", "SC", "SP", "SE", "TO"
-];
-
+const estados = ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"];
 export default function EditarCliente() {
   const navigate = useNavigate();
-  const { id } = useParams();
-  const { user } = useAuth();
-  const { servidores, aplicativos, dispositivos, valoresPlano } = useDadosCadastro();
+  const {
+    id
+  } = useParams();
+  const {
+    user
+  } = useAuth();
+  const {
+    servidores,
+    aplicativos,
+    dispositivos,
+    valoresPlano
+  } = useDadosCadastro();
   const [isLoading, setIsLoading] = useState(false);
   const [loadingCliente, setLoadingCliente] = useState(true);
   const [dateOpen, setDateOpen] = useState(false);
   const [dateOpen2, setDateOpen2] = useState(false);
-
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       dia_vencimento: 1,
-      tela_adicional: false,
-    },
+      tela_adicional: false
+    }
   });
-
   useEffect(() => {
     if (id && user) {
       loadCliente();
     }
   }, [id, user]);
-
   const loadCliente = async () => {
     try {
-      const { data, error } = await supabase
-        .from('clientes')
-        .select('*')
-        .eq('id', id)
-        .eq('user_id', user?.id)
-        .single();
-
+      const {
+        data,
+        error
+      } = await supabase.from('clientes').select('*').eq('id', id).eq('user_id', user?.id).single();
       if (error) throw error;
-
       if (!data) {
         toast({
           title: "Cliente não encontrado",
           description: "O cliente não foi encontrado ou você não tem permissão para editá-lo.",
-          variant: "destructive",
+          variant: "destructive"
         });
         navigate('/clientes');
         return;
@@ -114,25 +108,22 @@ export default function EditarCliente() {
         usuario_aplicativo_2: data.usuario_aplicativo_2 || undefined,
         senha_aplicativo_2: data.senha_aplicativo_2 || undefined,
         data_licenca_aplicativo_2: data.data_licenca_aplicativo_2 ? new Date(data.data_licenca_aplicativo_2) : undefined,
-        observacoes: data.observacoes || undefined,
+        observacoes: data.observacoes || undefined
       });
-
     } catch (error) {
       console.error('Erro ao carregar cliente:', error);
       toast({
         title: "Erro ao carregar cliente",
         description: "Tente novamente mais tarde.",
-        variant: "destructive",
+        variant: "destructive"
       });
       navigate('/clientes');
     } finally {
       setLoadingCliente(false);
     }
   };
-
   const onSubmit = async (data: FormData) => {
     if (!user || !id) return;
-    
     setIsLoading(true);
     try {
       const updateData = {
@@ -154,54 +145,38 @@ export default function EditarCliente() {
         senha_aplicativo_2: data.senha_aplicativo_2 || null,
         data_licenca_aplicativo_2: data.data_licenca_aplicativo_2?.toISOString().split('T')[0] || null,
         observacoes: data.observacoes || null,
-        updated_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
-
-      const { error } = await supabase
-        .from('clientes')
-        .update(updateData)
-        .eq('id', id)
-        .eq('user_id', user.id);
-
+      const {
+        error
+      } = await supabase.from('clientes').update(updateData).eq('id', id).eq('user_id', user.id);
       if (error) throw error;
-
       toast({
         title: "Cliente atualizado com sucesso!",
-        description: "As informações do cliente foram atualizadas.",
+        description: "As informações do cliente foram atualizadas."
       });
-
       navigate('/clientes');
     } catch (error) {
       console.error('Erro ao atualizar cliente:', error);
       toast({
         title: "Erro ao atualizar cliente",
         description: "Tente novamente mais tarde.",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setIsLoading(false);
     }
   };
-
   if (loadingCliente) {
-    return (
-      <div className="container mx-auto p-6 max-w-2xl">
+    return <div className="container mx-auto p-6 max-w-2xl">
         <div className="flex items-center justify-center h-32">
           <p>Carregando dados do cliente...</p>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="container mx-auto p-6 max-w-2xl">
+  return <div className="container mx-auto p-6 max-w-2xl">
       <div className="flex items-center gap-4 mb-6">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/clientes')}
-          className="flex items-center gap-2"
-        >
+        <Button variant="ghost" size="sm" onClick={() => navigate('/clientes')} className="flex items-center gap-2">
           <ArrowLeft className="h-4 w-4" />
           Voltar
         </Button>
@@ -215,20 +190,13 @@ export default function EditarCliente() {
           <CardContent className="space-y-4">
             <div>
               <Label htmlFor="nome">Nome *</Label>
-              <Input
-                id="nome"
-                placeholder="Digite o nome do cliente"
-                maxLength={40}
-                {...form.register("nome")}
-              />
+              <Input id="nome" placeholder="Digite o nome do cliente" maxLength={45} {...form.register("nome")} />
               <div className="flex justify-between items-center mt-1">
-                {form.formState.errors.nome && (
-                  <p className="text-sm text-destructive">
+                {form.formState.errors.nome && <p className="text-sm text-destructive">
                     {form.formState.errors.nome.message}
-                  </p>
-                )}
+                  </p>}
                 <div className="text-sm text-muted-foreground ml-auto">
-                  {form.watch("nome")?.length || 0}/40
+                  {form.watch("nome")?.length || 0}/45
                 </div>
               </div>
             </div>
@@ -244,83 +212,66 @@ export default function EditarCliente() {
 
             <div>
               <Label htmlFor="telefone">Telefone</Label>
-              <Input
-                id="telefone"
-                placeholder="(00) 00000-0000"
-                maxLength={11}
-                {...form.register("telefone")}
-              />
+              <Input id="telefone" placeholder="(00) 00000-0000" maxLength={15} {...form.register("telefone")} />
               <div className="text-sm text-muted-foreground text-right">
-                {form.watch("telefone")?.length || 0}/11
+                {form.watch("telefone")?.length || 0}/15
               </div>
             </div>
 
             <div>
               <Label htmlFor="uf">UF</Label>
-              <Select value={form.watch("uf") || ""} onValueChange={(value) => form.setValue("uf", value)}>
+              <Select value={form.watch("uf") || ""} onValueChange={value => form.setValue("uf", value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione um estado" />
                 </SelectTrigger>
                 <SelectContent>
-                  {estados.map((estado) => (
-                    <SelectItem key={estado} value={estado}>
+                  {estados.map(estado => <SelectItem key={estado} value={estado}>
                       {estado}
-                    </SelectItem>
-                  ))}
+                    </SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
 
             <div>
               <Label htmlFor="servidor">Servidor *</Label>
-              <Select value={form.watch("servidor") || ""} onValueChange={(value) => form.setValue("servidor", value)}>
+              <Select value={form.watch("servidor") || ""} onValueChange={value => form.setValue("servidor", value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione um servidor" />
                 </SelectTrigger>
                 <SelectContent>
-                  {servidores.map((servidor) => (
-                    <SelectItem key={servidor.id} value={servidor.nome}>
+                  {servidores.map(servidor => <SelectItem key={servidor.id} value={servidor.nome}>
                       {servidor.nome}
-                    </SelectItem>
-                  ))}
+                    </SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
 
             <div>
               <Label htmlFor="dia_vencimento">Dia de Vencimento *</Label>
-              <Select 
-                value={form.watch("dia_vencimento")?.toString() || "1"}
-                onValueChange={(value) => form.setValue("dia_vencimento", parseInt(value))}
-              >
+              <Select value={form.watch("dia_vencimento")?.toString() || "1"} onValueChange={value => form.setValue("dia_vencimento", parseInt(value))}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {Array.from({ length: 31 }, (_, i) => i + 1).map((dia) => (
-                    <SelectItem key={dia} value={dia.toString()}>
+                  {Array.from({
+                  length: 31
+                }, (_, i) => i + 1).map(dia => <SelectItem key={dia} value={dia.toString()}>
                       {dia}
-                    </SelectItem>
-                  ))}
+                    </SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
 
             <div>
               <Label htmlFor="valor_plano">Valor do Plano (R$)</Label>
-              <Select 
-                value={form.watch("valor_plano")?.toString() || ""}
-                onValueChange={(value) => form.setValue("valor_plano", parseFloat(value))}
-              >
+              <Select value={form.watch("valor_plano")?.toString() || ""} onValueChange={value => form.setValue("valor_plano", parseFloat(value))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o valor" />
                 </SelectTrigger>
                 <SelectContent>
-                  {valoresPlano.map((valor) => (
-                    <SelectItem key={valor.id} value={valor.valor.toString()}>
+                  {valoresPlano.map(valor => <SelectItem key={valor.id} value={valor.valor.toString()}>
                       R$ {valor.valor.toFixed(2)}
-                    </SelectItem>
-                  ))}
+                    </SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -334,50 +285,35 @@ export default function EditarCliente() {
           <CardContent className="space-y-4">
             <div>
               <Label htmlFor="dispositivo_smart">Dispositivo Smart</Label>
-              <Select 
-                value={form.watch("dispositivo_smart") || ""}
-                onValueChange={(value) => form.setValue("dispositivo_smart", value)}
-              >
+              <Select value={form.watch("dispositivo_smart") || ""} onValueChange={value => form.setValue("dispositivo_smart", value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione um dispositivo" />
                 </SelectTrigger>
                 <SelectContent>
-                  {dispositivos.map((dispositivo) => (
-                    <SelectItem key={dispositivo.id} value={dispositivo.nome}>
+                  {dispositivos.map(dispositivo => <SelectItem key={dispositivo.id} value={dispositivo.nome}>
                       {dispositivo.nome}
-                    </SelectItem>
-                  ))}
+                    </SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
 
             <div>
               <Label htmlFor="aplicativo">Aplicativo *</Label>
-              <Select 
-                value={form.watch("aplicativo") || ""}
-                onValueChange={(value) => form.setValue("aplicativo", value)}
-              >
+              <Select value={form.watch("aplicativo") || ""} onValueChange={value => form.setValue("aplicativo", value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione um aplicativo" />
                 </SelectTrigger>
                 <SelectContent>
-                  {aplicativos.map((app) => (
-                    <SelectItem key={app.id} value={app.nome}>
+                  {aplicativos.map(app => <SelectItem key={app.id} value={app.nome}>
                       {app.nome}
-                    </SelectItem>
-                  ))}
+                    </SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
 
             <div>
               <Label htmlFor="usuario_aplicativo">Usuário do Aplicativo</Label>
-              <Input
-                id="usuario_aplicativo"
-                placeholder="Digite o usuário"
-                maxLength={25}
-                {...form.register("usuario_aplicativo")}
-              />
+              <Input id="usuario_aplicativo" placeholder="Digite o usuário" maxLength={25} {...form.register("usuario_aplicativo")} />
               <div className="text-sm text-muted-foreground text-right">
                 {form.watch("usuario_aplicativo")?.length || 0}/25
               </div>
@@ -385,13 +321,7 @@ export default function EditarCliente() {
 
             <div>
               <Label htmlFor="senha_aplicativo">Senha do Aplicativo</Label>
-              <Input
-                id="senha_aplicativo"
-                type="password"
-                placeholder="Digite a senha"
-                maxLength={25}
-                {...form.register("senha_aplicativo")}
-              />
+              <Input id="senha_aplicativo" type="password" placeholder="Digite a senha" maxLength={25} {...form.register("senha_aplicativo")} />
               <div className="text-sm text-muted-foreground text-right">
                 {form.watch("senha_aplicativo")?.length || 0}/25
               </div>
@@ -401,100 +331,66 @@ export default function EditarCliente() {
               <Label>Data de Licença do Aplicativo</Label>
               <Popover open={dateOpen} onOpenChange={setDateOpen}>
                 <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !form.watch("data_licenca_aplicativo") && "text-muted-foreground"
-                    )}
-                  >
+                  <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !form.watch("data_licenca_aplicativo") && "text-muted-foreground")}>
                     <Calendar className="mr-2 h-4 w-4" />
-                    {form.watch("data_licenca_aplicativo") ? (
-                      format(form.watch("data_licenca_aplicativo")!, "PPP", { locale: ptBR })
-                    ) : (
-                      <span>Selecione uma data</span>
-                    )}
+                    {form.watch("data_licenca_aplicativo") ? format(form.watch("data_licenca_aplicativo")!, "PPP", {
+                    locale: ptBR
+                  }) : <span>Selecione uma data</span>}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <CalendarComponent
-                    mode="single"
-                    selected={form.watch("data_licenca_aplicativo")}
-                    onSelect={(date) => {
-                      form.setValue("data_licenca_aplicativo", date);
-                      setDateOpen(false);
-                    }}
-                    initialFocus
-                    className="pointer-events-auto"
-                  />
+                  <CalendarComponent mode="single" selected={form.watch("data_licenca_aplicativo")} onSelect={date => {
+                  form.setValue("data_licenca_aplicativo", date);
+                  setDateOpen(false);
+                }} initialFocus className="pointer-events-auto" />
                 </PopoverContent>
               </Popover>
             </div>
 
             <div className="flex items-center space-x-2">
-              <Switch
-                id="tela_adicional"
-                checked={form.watch("tela_adicional")}
-                onCheckedChange={(checked) => form.setValue("tela_adicional", checked)}
-              />
+              <Switch id="tela_adicional" checked={form.watch("tela_adicional")} onCheckedChange={checked => form.setValue("tela_adicional", checked)} />
               <Label htmlFor="tela_adicional">Acrescentar uma tela adicional</Label>
             </div>
           </CardContent>
         </Card>
 
         {/* Tela Principal 2 - Exibida condicionalmente */}
-        {form.watch("tela_adicional") && (
-          <Card>
+        {form.watch("tela_adicional") && <Card>
             <CardHeader>
-              <CardTitle>Tela Principal 2</CardTitle>
+              <CardTitle>Tela Adicional</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
                <div>
                  <Label htmlFor="dispositivo_smart_2">Dispositivo Smart 2</Label>
-                 <Select 
-                   value={form.watch("dispositivo_smart_2") || ""}
-                   onValueChange={(value) => form.setValue("dispositivo_smart_2", value)}
-                 >
+                 <Select value={form.watch("dispositivo_smart_2") || ""} onValueChange={value => form.setValue("dispositivo_smart_2", value)}>
                    <SelectTrigger>
                      <SelectValue placeholder="Selecione um dispositivo" />
                    </SelectTrigger>
                    <SelectContent>
-                     {dispositivos.map((dispositivo) => (
-                       <SelectItem key={dispositivo.id} value={dispositivo.nome}>
+                     {dispositivos.map(dispositivo => <SelectItem key={dispositivo.id} value={dispositivo.nome}>
                          {dispositivo.nome}
-                       </SelectItem>
-                     ))}
+                       </SelectItem>)}
                    </SelectContent>
                  </Select>
                </div>
 
                <div>
                  <Label htmlFor="aplicativo_2">Aplicativo 2</Label>
-                 <Select 
-                   value={form.watch("aplicativo_2") || ""}
-                   onValueChange={(value) => form.setValue("aplicativo_2", value)}
-                 >
+                 <Select value={form.watch("aplicativo_2") || ""} onValueChange={value => form.setValue("aplicativo_2", value)}>
                    <SelectTrigger>
                      <SelectValue placeholder="Selecione um aplicativo" />
                    </SelectTrigger>
                    <SelectContent>
-                     {aplicativos.map((app) => (
-                       <SelectItem key={app.id} value={app.nome}>
+                     {aplicativos.map(app => <SelectItem key={app.id} value={app.nome}>
                          {app.nome}
-                       </SelectItem>
-                     ))}
+                       </SelectItem>)}
                    </SelectContent>
                  </Select>
                </div>
 
               <div>
                 <Label htmlFor="usuario_aplicativo_2">Usuário do Aplicativo 2</Label>
-                <Input
-                  id="usuario_aplicativo_2"
-                  placeholder="Digite o usuário"
-                  maxLength={25}
-                  {...form.register("usuario_aplicativo_2")}
-                />
+                <Input id="usuario_aplicativo_2" placeholder="Digite o usuário" maxLength={25} {...form.register("usuario_aplicativo_2")} />
                 <div className="text-sm text-muted-foreground text-right">
                   {form.watch("usuario_aplicativo_2")?.length || 0}/25
                 </div>
@@ -502,13 +398,7 @@ export default function EditarCliente() {
 
               <div>
                 <Label htmlFor="senha_aplicativo_2">Senha do Aplicativo 2</Label>
-                <Input
-                  id="senha_aplicativo_2"
-                  type="password"
-                  placeholder="Digite a senha"
-                  maxLength={25}
-                  {...form.register("senha_aplicativo_2")}
-                />
+                <Input id="senha_aplicativo_2" type="password" placeholder="Digite a senha" maxLength={25} {...form.register("senha_aplicativo_2")} />
                 <div className="text-sm text-muted-foreground text-right">
                   {form.watch("senha_aplicativo_2")?.length || 0}/25
                 </div>
@@ -518,38 +408,23 @@ export default function EditarCliente() {
                 <Label>Data de Licença do Aplicativo 2</Label>
                 <Popover open={dateOpen2} onOpenChange={setDateOpen2}>
                   <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !form.watch("data_licenca_aplicativo_2") && "text-muted-foreground"
-                      )}
-                    >
+                    <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !form.watch("data_licenca_aplicativo_2") && "text-muted-foreground")}>
                       <Calendar className="mr-2 h-4 w-4" />
-                      {form.watch("data_licenca_aplicativo_2") ? (
-                        format(form.watch("data_licenca_aplicativo_2")!, "PPP", { locale: ptBR })
-                      ) : (
-                        <span>Selecione uma data</span>
-                      )}
+                      {form.watch("data_licenca_aplicativo_2") ? format(form.watch("data_licenca_aplicativo_2")!, "PPP", {
+                    locale: ptBR
+                  }) : <span>Selecione uma data</span>}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
-                    <CalendarComponent
-                      mode="single"
-                      selected={form.watch("data_licenca_aplicativo_2")}
-                      onSelect={(date) => {
-                        form.setValue("data_licenca_aplicativo_2", date);
-                        setDateOpen2(false);
-                      }}
-                      initialFocus
-                      className="pointer-events-auto"
-                    />
+                    <CalendarComponent mode="single" selected={form.watch("data_licenca_aplicativo_2")} onSelect={date => {
+                  form.setValue("data_licenca_aplicativo_2", date);
+                  setDateOpen2(false);
+                }} initialFocus className="pointer-events-auto" />
                   </PopoverContent>
                 </Popover>
               </div>
             </CardContent>
-          </Card>
-        )}
+          </Card>}
 
         <Card>
           <CardHeader>
@@ -558,13 +433,7 @@ export default function EditarCliente() {
           <CardContent>
             <div>
               <Label htmlFor="observacoes">Observações</Label>
-              <Textarea
-                id="observacoes"
-                placeholder="Digite observações sobre o cliente..."
-                maxLength={150}
-                rows={4}
-                {...form.register("observacoes")}
-              />
+              <Textarea id="observacoes" placeholder="Digite observações sobre o cliente..." maxLength={150} rows={4} {...form.register("observacoes")} />
               <div className="text-sm text-muted-foreground text-right">
                 {form.watch("observacoes")?.length || 0}/150
               </div>
@@ -573,23 +442,13 @@ export default function EditarCliente() {
         </Card>
 
         <div className="flex gap-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => navigate('/clientes')}
-            className="flex-1"
-          >
+          <Button type="button" variant="outline" onClick={() => navigate('/clientes')} className="flex-1">
             Cancelar
           </Button>
-          <Button
-            type="submit"
-            disabled={isLoading}
-            className="flex-1 bg-blue-600 hover:bg-blue-700"
-          >
+          <Button type="submit" disabled={isLoading} className="flex-1 bg-blue-600 hover:bg-blue-700">
             {isLoading ? "Salvando..." : "Salvar Alterações"}
           </Button>
         </div>
       </form>
-    </div>
-  );
+    </div>;
 }
