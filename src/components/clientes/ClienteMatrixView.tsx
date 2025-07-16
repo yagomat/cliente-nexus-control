@@ -108,7 +108,7 @@ export const ClienteMatrixView = ({ clientes, clientesFiltrados, anoFiltro, curr
             <Table className="w-full">
               <TableHeader>
                 <TableRow>
-                  <TableHead className="sticky left-0 bg-background border-r w-24 min-w-24 max-w-24 font-semibold z-20">
+                  <TableHead className="sticky left-0 bg-background border-r w-32 min-w-32 max-w-32 font-semibold z-20">
                     Cliente
                   </TableHead>
                   {meses.map((mes) => (
@@ -124,13 +124,13 @@ export const ClienteMatrixView = ({ clientes, clientesFiltrados, anoFiltro, curr
               <TableBody>
                 {clientesPaginados.map((cliente) => (
                   <TableRow key={cliente.id} className="hover:bg-muted/50">
-                    <TableCell className="sticky left-0 bg-background border-r font-medium w-24 min-w-24 max-w-24 z-10 p-2">
+                    <TableCell className="sticky left-0 bg-background border-r font-medium w-32 min-w-32 max-w-32 z-10 p-2">
                       <div className="flex flex-col gap-1">
                         <span className="font-semibold text-xs leading-tight break-words" title={cliente.nome}>
                           {cliente.nome}
                         </span>
                         <span className="text-xs text-muted-foreground">
-                          Venc: {cliente.dia_vencimento}
+                          {cliente.dia_vencimento}
                         </span>
                       </div>
                     </TableCell>
