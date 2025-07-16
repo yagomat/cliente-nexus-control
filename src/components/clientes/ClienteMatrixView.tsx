@@ -100,62 +100,51 @@ export const ClienteMatrixView = ({ clientes, clientesFiltrados, anoFiltro, curr
   return (
     <div className="w-full overflow-hidden">
       <div className="border rounded-md">
-        <ScrollArea 
-          className="w-full" 
-          style={{ maxWidth: getMaxWidth() }}
-        >
-          <div className="min-w-fit">
-            <Table className="w-full">
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="sticky left-0 bg-background border-r w-32 min-w-32 max-w-32 font-semibold z-20">
-                    Cliente
+        <div className="overflow-x-auto">
+          <Table className="w-full">
+            <TableHeader>
+              <TableRow>
+                <TableHead className="sticky left-0 bg-background border-r w-32 min-w-32 max-w-32 font-semibold z-20">
+                  Cliente
+                </TableHead>
+                {meses.map((mes) => (
+                  <TableHead key={mes.numero} className="text-center w-16 min-w-16 max-w-16 font-semibold">
+                    <div className="flex flex-col">
+                      <span>{mes.nome}</span>
+                      <span className="text-xs text-muted-foreground font-normal">{anoFiltro}</span>
+                    </div>
                   </TableHead>
-                  {meses.map((mes) => (
-                    <TableHead key={mes.numero} className="text-center w-16 min-w-16 max-w-16 font-semibold">
-                      <div className="flex flex-col">
-                        <span>{mes.nome}</span>
-                        <span className="text-xs text-muted-foreground font-normal">{anoFiltro}</span>
-                      </div>
-                    </TableHead>
-                  ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {clientesPaginados.map((cliente) => (
-                  <TableRow key={cliente.id} className="hover:bg-muted/50">
-                    <TableCell className="sticky left-0 bg-background border-r font-medium w-32 min-w-32 max-w-32 z-10 p-2">
-                      <div className="flex flex-col gap-1">
-                        <span className="font-semibold text-xs leading-tight break-words" title={cliente.nome}>
-                          {cliente.nome}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {cliente.dia_vencimento}
-                        </span>
-                      </div>
-                    </TableCell>
-                    {meses.map((mes) => {
-                      const buttonStyle = getButtonStyle(cliente.id, mes.numero);
-                      return (
-                        <TableCell key={mes.numero} className="text-center p-2 w-16 min-w-16 max-w-16">
-                          <Button
-                            variant={buttonStyle.variant}
-                            className={buttonStyle.className}
-                            onClick={() => handlePagamentoClick(cliente.id, mes.numero)}
-                            title={`${cliente.nome} - ${mes.nome}/${anoFiltro}`}
-                          >
-                            {buttonStyle.icon}
-                          </Button>
-                        </TableCell>
-                      );
-                    })}
-                  </TableRow>
                 ))}
-              </TableBody>
-            </Table>
-          </div>
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {clientesPaginados.map((cliente) => (
+                <TableRow key={cliente.id} className="hover:bg-muted/50">
+                  <TableCell className="sticky left-0 bg-background border-r font-medium w-32 min-w-32 max-w-32 z-10 p-2">
+                    <div className="font-semibold text-xs leading-tight break-words" title={cliente.nome}>
+                      {cliente.nome}
+                    </div>
+                  </TableCell>
+                  {meses.map((mes) => {
+                    const buttonStyle = getButtonStyle(cliente.id, mes.numero);
+                    return (
+                      <TableCell key={mes.numero} className="text-center p-2 w-16 min-w-16 max-w-16">
+                        <Button
+                          variant={buttonStyle.variant}
+                          className={buttonStyle.className}
+                          onClick={() => handlePagamentoClick(cliente.id, mes.numero)}
+                          title={`${cliente.nome} - ${mes.nome}/${anoFiltro}`}
+                        >
+                          {buttonStyle.icon}
+                        </Button>
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </div>
       
       {clientesFiltrados.length === 0 && (
