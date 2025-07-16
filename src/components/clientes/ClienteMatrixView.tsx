@@ -5,6 +5,7 @@ import { calcularStatusCliente } from "@/utils/clienteUtils";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { useSidebar } from "@/components/ui/sidebar";
 import { Check, X } from "lucide-react";
 
 interface ClienteMatrixViewProps {
@@ -14,6 +15,8 @@ interface ClienteMatrixViewProps {
 
 export const ClienteMatrixView = ({ clientes, clientesFiltrados }: ClienteMatrixViewProps) => {
   const { getPagamentoDoMes, handlePagamentoMes } = usePagamentos();
+  const { state } = useSidebar();
+  const isCollapsed = state === "collapsed";
   
   const meses = [
     { numero: 1, nome: "Jan" },
@@ -70,10 +73,28 @@ export const ClienteMatrixView = ({ clientes, clientesFiltrados }: ClienteMatrix
     await handlePagamentoMes(clienteId, mes, anoAtual);
   };
 
+  // Calculate available width based on sidebar state
+  const getMaxWidth = () => {
+    if (typeof window === 'undefined') return 'calc(100vw - 2rem)';
+    
+    if (window.innerWidth < 768) {
+      // Mobile: account for padding only
+      return 'calc(100vw - 2rem)';
+    }
+    
+    // Desktop: account for sidebar width
+    const sidebarWidth = isCollapsed ? 64 : 240; // w-16 = 64px, w-60 = 240px
+    const padding = 32; // 2rem = 32px
+    return `calc(100vw - ${sidebarWidth + padding}px)`;
+  };
+
   return (
-    <div className="w-full max-w-full overflow-hidden">
+    <div className="w-full overflow-hidden">
       <div className="border rounded-md">
-        <ScrollArea className="w-full max-w-full" style={{ maxWidth: 'calc(100vw - 2rem)' }}>
+        <ScrollArea 
+          className="w-full" 
+          style={{ maxWidth: getMaxWidth() }}
+        >
           <div className="min-w-fit">
             <Table className="w-full">
               <TableHeader>
