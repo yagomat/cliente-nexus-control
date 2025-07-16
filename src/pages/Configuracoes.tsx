@@ -80,6 +80,7 @@ const Configuracoes = () => {
               value={profile.nome}
               onChange={(e) => setProfile({ ...profile, nome: e.target.value })}
               placeholder="Seu nome"
+              maxLength={40}
             />
           </div>
           <div>
@@ -89,6 +90,7 @@ const Configuracoes = () => {
               value={profile.telefone}
               onChange={(e) => setProfile({ ...profile, telefone: e.target.value })}
               placeholder="Seu telefone"
+              maxLength={11}
             />
           </div>
           <Button onClick={handleSave}>Salvar Alterações</Button>

@@ -59,8 +59,8 @@ const DadosCadastro = () => {
 
   const handleAdicionarValor = async () => {
     const valor = parseFloat(novoValor);
-    if (isNaN(valor) || valor <= 0) {
-      toast.error("Por favor, insira um valor válido.");
+    if (isNaN(valor) || valor <= 0 || valor > 1000) {
+      toast.error("Por favor, insira um valor entre 0 e 1000.");
       return;
     }
     await adicionarValorPlano(valor);
@@ -110,6 +110,7 @@ const DadosCadastro = () => {
                   placeholder="Nome do servidor"
                   value={novoServidor}
                   onChange={(e) => setNovoServidor(e.target.value)}
+                  maxLength={25}
                 />
                 <Button onClick={handleAdicionarServidor}>
                   <Plus className="mr-2 h-4 w-4" />
@@ -145,6 +146,7 @@ const DadosCadastro = () => {
                   placeholder="Nome do aplicativo"
                   value={novoAplicativo}
                   onChange={(e) => setNovoAplicativo(e.target.value)}
+                  maxLength={25}
                 />
                 <Button onClick={handleAdicionarAplicativo}>
                   <Plus className="mr-2 h-4 w-4" />
@@ -180,6 +182,7 @@ const DadosCadastro = () => {
                   placeholder="Nome do dispositivo"
                   value={novoDispositivo}
                   onChange={(e) => setNovoDispositivo(e.target.value)}
+                  maxLength={25}
                 />
                 <Button onClick={handleAdicionarDispositivo}>
                   <Plus className="mr-2 h-4 w-4" />
@@ -216,6 +219,9 @@ const DadosCadastro = () => {
                   placeholder="Valor do plano"
                   value={novoValor}
                   onChange={(e) => setNovoValor(e.target.value)}
+                  min="0"
+                  max="1000"
+                  step="0.01"
                 />
                 <Button onClick={handleAdicionarValor}>
                   <Plus className="mr-2 h-4 w-4" />

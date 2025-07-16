@@ -22,8 +22,8 @@ import { useDadosCadastro } from "@/hooks/useDadosCadastro";
 import { toast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
-  nome: z.string().min(1, "Nome é obrigatório").max(45, "Nome deve ter no máximo 45 caracteres"),
-  telefone: z.string().min(10, "Telefone deve ter pelo menos 10 dígitos"),
+  nome: z.string().min(1, "Nome é obrigatório").max(40, "Nome deve ter no máximo 40 caracteres"),
+  telefone: z.string().min(11, "Telefone deve ter 11 dígitos").max(11, "Telefone deve ter 11 dígitos"),
   uf: z.string().optional(),
   servidor: z.string().min(1, "Servidor é obrigatório"),
   dia_vencimento: z.number().min(1).max(31),
@@ -142,7 +142,7 @@ export default function NovoCliente() {
               <Input
                 id="nome"
                 placeholder="Digite o nome do cliente"
-                maxLength={45}
+                maxLength={40}
                 {...form.register("nome")}
               />
               <div className="flex justify-between items-center mt-1">
@@ -152,7 +152,7 @@ export default function NovoCliente() {
                   </p>
                 )}
                 <div className="text-sm text-muted-foreground ml-auto">
-                  {form.watch("nome")?.length || 0}/45
+                  {form.watch("nome")?.length || 0}/40
                 </div>
               </div>
             </div>
@@ -171,11 +171,11 @@ export default function NovoCliente() {
               <Input
                 id="telefone"
                 placeholder="(00) 00000-0000"
-                maxLength={15}
+                maxLength={11}
                 {...form.register("telefone")}
               />
               <div className="text-sm text-muted-foreground text-right">
-                {form.watch("telefone")?.length || 0}/15
+                {form.watch("telefone")?.length || 0}/11
               </div>
             </div>
 
