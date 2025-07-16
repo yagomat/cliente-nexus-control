@@ -226,7 +226,7 @@ const Dashboard = () => {
             <CardTitle>Evolução de Clientes Ativos</CardTitle>
             <CardDescription>Últimos 12 meses</CardDescription>
           </CardHeader>
-          <CardContent className="pl-2 md:pl-6">
+          <CardContent className="pl-1 md:pl-2">
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={dashboardData.evolucaoClientes}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -250,7 +250,7 @@ const Dashboard = () => {
             <CardTitle>Evolução de Pagamentos</CardTitle>
             <CardDescription>Últimos 12 meses (R$)</CardDescription>
           </CardHeader>
-          <CardContent className="pl-2 md:pl-6">
+          <CardContent className="pl-1 md:pl-2">
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={dashboardData.evolucaoPagamentos}>
                 <CartesianGrid strokeDasharray="3 3" />
