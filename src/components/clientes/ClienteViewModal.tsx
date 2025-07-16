@@ -2,22 +2,22 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Phone, Server, MapPin, User, DollarSign, Monitor, Smartphone, Key } from "lucide-react";
 import { calcularDiasParaVencer, calcularStatusCliente, getVencimentoColor, getVencimentoTexto } from "@/utils/clienteUtils";
-
 interface ClienteViewModalProps {
   isOpen: boolean;
   onClose: () => void;
   cliente: any | null;
   getPagamentoMesAtual: (clienteId: string) => any;
 }
-
-export const ClienteViewModal = ({ isOpen, onClose, cliente, getPagamentoMesAtual }: ClienteViewModalProps) => {
+export const ClienteViewModal = ({
+  isOpen,
+  onClose,
+  cliente,
+  getPagamentoMesAtual
+}: ClienteViewModalProps) => {
   if (!cliente) return null;
-
   const diasParaVencer = calcularDiasParaVencer(cliente.dia_vencimento);
   const clienteAtivo = calcularStatusCliente(cliente, getPagamentoMesAtual);
-
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+  return <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
@@ -80,7 +80,7 @@ export const ClienteViewModal = ({ isOpen, onClose, cliente, getPagamentoMesAtua
 
           {/* Aplicativo Principal */}
           <div className="space-y-3">
-            <h3 className="text-lg font-semibold text-foreground">Aplicativo Principal</h3>
+            <h3 className="text-lg font-semibold text-foreground">Tela Principal</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
@@ -122,9 +122,8 @@ export const ClienteViewModal = ({ isOpen, onClose, cliente, getPagamentoMesAtua
           </div>
 
           {/* Aplicativo Secundário */}
-          {cliente.aplicativo_2 && (
-            <div className="space-y-3">
-              <h3 className="text-lg font-semibold text-foreground">Aplicativo Secundário</h3>
+          {cliente.aplicativo_2 && <div className="space-y-3">
+              <h3 className="text-lg font-semibold text-foreground">Tela Adicional</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
@@ -158,18 +157,14 @@ export const ClienteViewModal = ({ isOpen, onClose, cliente, getPagamentoMesAtua
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            </div>}
 
           {/* Observações */}
-          {cliente.observacoes && (
-            <div className="space-y-3">
+          {cliente.observacoes && <div className="space-y-3">
               <h3 className="text-lg font-semibold text-foreground">Observações</h3>
               <p className="text-sm bg-muted p-3 rounded-md">{cliente.observacoes}</p>
-            </div>
-          )}
+            </div>}
         </div>
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>;
 };
