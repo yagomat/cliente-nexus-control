@@ -1,19 +1,17 @@
 
 import { useState } from "react";
-import { Plus, Edit, Trash2, Eye } from "lucide-react";
+import { Plus, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTemplates } from "@/hooks/useTemplates";
-import { TemplateModal } from "@/components/templates/TemplateModal";
+
 import { TemplateFormModal } from "@/components/templates/TemplateFormModal";
 import { toast } from "sonner";
 
 const Templates = () => {
   const { templates, loading, createTemplate, updateTemplate, deleteTemplate } = useTemplates();
-  const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [editTemplate, setEditTemplate] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [viewModalOpen, setViewModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
 
   const handleCreate = async (data: any) => {
@@ -51,10 +49,6 @@ const Templates = () => {
     }
   };
 
-  const handleView = (template: any) => {
-    setSelectedTemplate(template);
-    setViewModalOpen(true);
-  };
 
   const handleEdit = (template: any) => {
     setEditTemplate(template);
@@ -113,19 +107,6 @@ const Templates = () => {
         ))}
       </div>
 
-      {/* View Modal */}
-      {selectedTemplate && (
-        <TemplateModal
-          templateData={{
-            cliente: {
-              nome: "Cliente Exemplo",
-              telefone: "11999999999"
-            }
-          }}
-          isOpen={viewModalOpen}
-          onClose={() => setViewModalOpen(false)}
-        />
-      )}
 
       {/* Edit Modal */}
       {editTemplate && (
