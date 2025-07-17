@@ -88,6 +88,7 @@ export const TemplateFormModal = ({ isOpen, onClose, onSave, template }: Templat
               value={formData.nome}
               onChange={(e) => setFormData(prev => ({ ...prev, nome: e.target.value }))}
               placeholder="Ex: Cobrança Padrão"
+              maxLength={25}
               required
             />
           </div>
@@ -100,6 +101,7 @@ export const TemplateFormModal = ({ isOpen, onClose, onSave, template }: Templat
               onChange={(e) => setFormData(prev => ({ ...prev, mensagem: e.target.value }))}
               placeholder="Digite sua mensagem usando as variáveis disponíveis..."
               className="min-h-[120px]"
+              maxLength={300}
               required
             />
           </div>
@@ -110,17 +112,17 @@ export const TemplateFormModal = ({ isOpen, onClose, onSave, template }: Templat
               <CardTitle className="text-sm">Variáveis Disponíveis</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {availableVariables.map((variable) => (
-                  <div key={variable.key} className="flex items-center justify-between">
+                  <div key={variable.key} className="flex items-center justify-between gap-2">
                     <Badge 
                       variant="secondary" 
-                      className="text-xs cursor-pointer hover:bg-secondary/80"
+                      className="text-xs cursor-pointer hover:bg-secondary/80 shrink-0"
                       onClick={() => insertVariable(variable.key)}
                     >
                       {variable.key}
                     </Badge>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-muted-foreground text-right">
                       {variable.description}
                     </span>
                   </div>
