@@ -90,18 +90,8 @@ const Templates = () => {
               <p className="text-sm text-gray-600 mb-4 line-clamp-3">
                 {template.mensagem}
               </p>
-              <div className="flex justify-between items-center">
-                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                  {template.tipo}
-                </span>
+              <div className="flex justify-end items-center">
                 <div className="space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleView(template)}
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
                   <Button
                     variant="outline"
                     size="sm"
