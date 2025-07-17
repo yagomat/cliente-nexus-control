@@ -68,7 +68,10 @@ const Templates = () => {
   return (
     <div className="container mx-auto p-4 space-y-6">
       <div className="flex justify-end">
-        <Button onClick={() => setShowCreateModal(true)}>
+        <Button 
+          onClick={() => setShowCreateModal(true)}
+          disabled={templates.length >= 10}
+        >
           <Plus className="mr-2 h-4 w-4" />
           Novo Template
         </Button>

@@ -48,6 +48,16 @@ export const useTemplates = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado');
 
+      // Verificar se já atingiu o limite de 10 templates
+      if (templates.length >= 10) {
+        toast({
+          title: "Limite atingido",
+          description: "Você pode criar no máximo 10 templates.",
+          variant: "destructive",
+        });
+        throw new Error('Limite de templates atingido');
+      }
+
       const { data, error } = await supabase
         .from('templates')
         .insert([{ ...template, user_id: user.id, tipo: 'personalizado' }])
