@@ -22,7 +22,6 @@ export const TemplateFormModal = ({ isOpen, onClose, onSave, template }: Templat
   const { availableVariables } = useTemplateFormatter();
   const [formData, setFormData] = useState({
     nome: '',
-    tipo: '',
     mensagem: '',
     is_default: false
   });
@@ -31,14 +30,12 @@ export const TemplateFormModal = ({ isOpen, onClose, onSave, template }: Templat
     if (template) {
       setFormData({
         nome: template.nome,
-        tipo: template.tipo,
         mensagem: template.mensagem,
         is_default: template.is_default
       });
     } else {
       setFormData({
         nome: '',
-        tipo: '',
         mensagem: '',
         is_default: false
       });
@@ -48,7 +45,7 @@ export const TemplateFormModal = ({ isOpen, onClose, onSave, template }: Templat
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await onSave(formData);
+      await onSave({ ...formData, tipo: 'personalizado' });
       onClose();
     } catch (error) {
       // Error handling is done in the hook
@@ -72,17 +69,6 @@ export const TemplateFormModal = ({ isOpen, onClose, onSave, template }: Templat
     }
   };
 
-  const tiposTemplate = [
-    { value: 'a_vencer', label: 'A Vencer' },
-    { value: 'vence_hoje', label: 'Vence Hoje' },
-    { value: 'vencido', label: 'Vencido' },
-    { value: 'pago', label: 'Pago' },
-    { value: 'cobranca', label: 'Cobrança' },
-    { value: 'renovacao', label: 'Renovação' },
-    { value: 'boas_vindas', label: 'Boas-vindas' },
-    { value: 'lembrete', label: 'Lembrete' },
-    { value: 'personalizado', label: 'Personalizado' }
-  ];
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -95,33 +81,15 @@ export const TemplateFormModal = ({ isOpen, onClose, onSave, template }: Templat
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="nome">Nome do Template</Label>
-              <Input
-                id="nome"
-                value={formData.nome}
-                onChange={(e) => setFormData(prev => ({ ...prev, nome: e.target.value }))}
-                placeholder="Ex: Cobrança Padrão"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="tipo">Tipo</Label>
-              <Select value={formData.tipo} onValueChange={(value) => setFormData(prev => ({ ...prev, tipo: value }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  {tiposTemplate.map((tipo) => (
-                    <SelectItem key={tipo.value} value={tipo.value}>
-                      {tipo.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="nome">Nome do Template</Label>
+            <Input
+              id="nome"
+              value={formData.nome}
+              onChange={(e) => setFormData(prev => ({ ...prev, nome: e.target.value }))}
+              placeholder="Ex: Cobrança Padrão"
+              required
+            />
           </div>
 
           <div className="space-y-2">

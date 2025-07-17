@@ -58,17 +58,11 @@ export const useTemplateFormatter = () => {
   const availableVariables = useMemo(() => [
     { key: '{nome}', description: 'Nome completo do cliente' },
     { key: '{primeiro_nome}', description: 'Primeiro nome do cliente' },
-    { key: '{telefone}', description: 'Telefone do cliente' },
     { key: '{valor_plano}', description: 'Valor do plano' },
-    { key: '{servidor}', description: 'Servidor do cliente' },
     { key: '{aplicativo}', description: 'Aplicativo IPTV' },
-    { key: '{usuario_aplicativo}', description: 'Usuário do aplicativo' },
-    { key: '{senha_aplicativo}', description: 'Senha do aplicativo' },
     { key: '{saudacao}', description: 'Saudação baseada na hora' },
     { key: '{data_vencimento}', description: 'Data de vencimento' },
-    { key: '{dias_vencimento}', description: 'Dias para vencimento' },
-    { key: '{uf}', description: 'UF do cliente' },
-    { key: '{observacoes}', description: 'Observações do cliente' }
+    { key: '{dias_vencimento}', description: 'Dias para vencimento' }
   ], []);
 
   return {

@@ -50,7 +50,7 @@ export const useTemplates = () => {
 
       const { data, error } = await supabase
         .from('templates')
-        .insert([{ ...template, user_id: user.id }])
+        .insert([{ ...template, user_id: user.id, tipo: 'personalizado' }])
         .select()
         .single();
 
