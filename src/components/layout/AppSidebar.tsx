@@ -1,4 +1,3 @@
-
 import { NavLink, useLocation } from "react-router-dom";
 import { 
   LayoutGrid, 
@@ -47,7 +46,10 @@ export function AppSidebar() {
       : "hover:bg-accent hover:text-accent-foreground";
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar 
+      className={isCollapsed ? "w-16" : "w-60"} 
+      collapsible="icon"
+    >
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className={`text-lg font-bold text-primary mb-4 ${isCollapsed ? 'sr-only' : ''}`}>

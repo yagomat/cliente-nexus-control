@@ -1,6 +1,6 @@
-
+import { useState } from "react";
 import { Outlet } from "react-router-dom";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { Header } from "./Header";
 
@@ -9,14 +9,14 @@ export function AppLayout() {
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
         <AppSidebar />
-        <SidebarInset>
+        <div className="flex-1 flex flex-col min-w-0">
           <Header />
           <main className="flex-1 overflow-auto px-6 py-6">
             <div className="max-w-none mx-auto">
               <Outlet />
             </div>
           </main>
-        </SidebarInset>
+        </div>
       </div>
     </SidebarProvider>
   );
