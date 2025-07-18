@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Plus, Building2, Users, Server, Smartphone, Trash2, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDadosCadastro } from "@/hooks/useDadosCadastro";
 import { toast } from "sonner";
-
 const DadosCadastro = () => {
   const {
     servidores,
@@ -22,14 +20,12 @@ const DadosCadastro = () => {
     adicionarDispositivo,
     removerDispositivo,
     adicionarValorPlano,
-    removerValorPlano,
+    removerValorPlano
   } = useDadosCadastro();
-
   const [novoServidor, setNovoServidor] = useState("");
   const [novoAplicativo, setNovoAplicativo] = useState("");
   const [novoDispositivo, setNovoDispositivo] = useState("");
   const [novoValor, setNovoValor] = useState("");
-
   const handleAdicionarServidor = async () => {
     if (!novoServidor.trim()) {
       toast.error("Por favor, insira um nome para o servidor.");
@@ -38,7 +34,6 @@ const DadosCadastro = () => {
     await adicionarServidor(novoServidor);
     setNovoServidor("");
   };
-
   const handleAdicionarAplicativo = async () => {
     if (!novoAplicativo.trim()) {
       toast.error("Por favor, insira um nome para o aplicativo.");
@@ -47,7 +42,6 @@ const DadosCadastro = () => {
     await adicionarAplicativo(novoAplicativo);
     setNovoAplicativo("");
   };
-
   const handleAdicionarDispositivo = async () => {
     if (!novoDispositivo.trim()) {
       toast.error("Por favor, insira um nome para o dispositivo.");
@@ -56,7 +50,6 @@ const DadosCadastro = () => {
     await adicionarDispositivo(novoDispositivo);
     setNovoDispositivo("");
   };
-
   const handleAdicionarValor = async () => {
     const valor = parseFloat(novoValor);
     if (isNaN(valor) || valor <= 0 || valor > 1000) {
@@ -66,19 +59,14 @@ const DadosCadastro = () => {
     await adicionarValorPlano(valor);
     setNovoValor("");
   };
-
   if (loading) {
-    return (
-      <div className="container mx-auto p-4">
+    return <div className="container mx-auto p-4">
         <div className="flex items-center justify-center h-64">
           <p>Carregando dados...</p>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="container mx-auto p-4">
+  return <div className="container mx-auto p-4 px-0 py-0">
       <Tabs defaultValue="servidores" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="servidores">
@@ -106,30 +94,19 @@ const DadosCadastro = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-2">
-                <Input
-                  placeholder="Nome do servidor"
-                  value={novoServidor}
-                  onChange={(e) => setNovoServidor(e.target.value)}
-                  maxLength={25}
-                />
+                <Input placeholder="Nome do servidor" value={novoServidor} onChange={e => setNovoServidor(e.target.value)} maxLength={25} />
                 <Button onClick={handleAdicionarServidor}>
                   <Plus className="mr-2 h-4 w-4" />
                   Adicionar
                 </Button>
               </div>
               <div className="space-y-2">
-                {servidores.map((servidor) => (
-                  <div key={servidor.id} className="flex items-center justify-between p-2 border rounded">
+                {servidores.map(servidor => <div key={servidor.id} className="flex items-center justify-between p-2 border rounded">
                     <span>{servidor.nome}</span>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => removerServidor(servidor.id)}
-                    >
+                    <Button variant="destructive" size="sm" onClick={() => removerServidor(servidor.id)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
-                  </div>
-                ))}
+                  </div>)}
               </div>
             </CardContent>
           </Card>
@@ -142,30 +119,19 @@ const DadosCadastro = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-2">
-                <Input
-                  placeholder="Nome do aplicativo"
-                  value={novoAplicativo}
-                  onChange={(e) => setNovoAplicativo(e.target.value)}
-                  maxLength={25}
-                />
+                <Input placeholder="Nome do aplicativo" value={novoAplicativo} onChange={e => setNovoAplicativo(e.target.value)} maxLength={25} />
                 <Button onClick={handleAdicionarAplicativo}>
                   <Plus className="mr-2 h-4 w-4" />
                   Adicionar
                 </Button>
               </div>
               <div className="space-y-2">
-                {aplicativos.map((aplicativo) => (
-                  <div key={aplicativo.id} className="flex items-center justify-between p-2 border rounded">
+                {aplicativos.map(aplicativo => <div key={aplicativo.id} className="flex items-center justify-between p-2 border rounded">
                     <span>{aplicativo.nome}</span>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => removerAplicativo(aplicativo.id)}
-                    >
+                    <Button variant="destructive" size="sm" onClick={() => removerAplicativo(aplicativo.id)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
-                  </div>
-                ))}
+                  </div>)}
               </div>
             </CardContent>
           </Card>
@@ -178,30 +144,19 @@ const DadosCadastro = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-2">
-                <Input
-                  placeholder="Nome do dispositivo"
-                  value={novoDispositivo}
-                  onChange={(e) => setNovoDispositivo(e.target.value)}
-                  maxLength={25}
-                />
+                <Input placeholder="Nome do dispositivo" value={novoDispositivo} onChange={e => setNovoDispositivo(e.target.value)} maxLength={25} />
                 <Button onClick={handleAdicionarDispositivo}>
                   <Plus className="mr-2 h-4 w-4" />
                   Adicionar
                 </Button>
               </div>
               <div className="space-y-2">
-                {dispositivos.map((dispositivo) => (
-                  <div key={dispositivo.id} className="flex items-center justify-between p-2 border rounded">
+                {dispositivos.map(dispositivo => <div key={dispositivo.id} className="flex items-center justify-between p-2 border rounded">
                     <span>{dispositivo.nome}</span>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => removerDispositivo(dispositivo.id)}
-                    >
+                    <Button variant="destructive" size="sm" onClick={() => removerDispositivo(dispositivo.id)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
-                  </div>
-                ))}
+                  </div>)}
               </div>
             </CardContent>
           </Card>
@@ -214,40 +169,24 @@ const DadosCadastro = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-2">
-                <Input
-                  type="number"
-                  placeholder="Valor do plano"
-                  value={novoValor}
-                  onChange={(e) => setNovoValor(e.target.value)}
-                  min="0"
-                  max="1000"
-                  step="0.01"
-                />
+                <Input type="number" placeholder="Valor do plano" value={novoValor} onChange={e => setNovoValor(e.target.value)} min="0" max="1000" step="0.01" />
                 <Button onClick={handleAdicionarValor}>
                   <Plus className="mr-2 h-4 w-4" />
                   Adicionar
                 </Button>
               </div>
               <div className="space-y-2">
-                {valoresPlano.map((valor) => (
-                  <div key={valor.id} className="flex items-center justify-between p-2 border rounded">
+                {valoresPlano.map(valor => <div key={valor.id} className="flex items-center justify-between p-2 border rounded">
                     <span>R$ {valor.valor.toFixed(2)}</span>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => removerValorPlano(valor.id)}
-                    >
+                    <Button variant="destructive" size="sm" onClick={() => removerValorPlano(valor.id)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
-                  </div>
-                ))}
+                  </div>)}
               </div>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>;
 };
-
 export default DadosCadastro;
