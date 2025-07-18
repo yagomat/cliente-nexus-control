@@ -47,7 +47,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar 
-      className={isCollapsed ? "w-16" : "w-60"} 
+      className={`fixed left-0 top-0 z-50 h-screen border-r ${isCollapsed ? "w-16" : "w-60"}`} 
       collapsible="icon"
     >
       <SidebarContent>
