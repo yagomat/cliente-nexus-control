@@ -51,10 +51,10 @@ export const ClienteFilters = ({
 
       {/* Filtros e ordenação em linha */}
       <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 z-10" />
+        <div className="flex items-center gap-2 flex-1">
+          <Filter className="h-4 w-4 text-muted-foreground" />
           <Select value={filtroStatus} onValueChange={setFiltroStatus}>
-            <SelectTrigger className="pl-10">
+            <SelectTrigger className="flex-1">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -65,10 +65,10 @@ export const ClienteFilters = ({
           </Select>
         </div>
 
-        <div className="relative flex-1">
-          <SortAsc className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 z-10" />
+        <div className="flex items-center gap-2 flex-1">
+          <SortAsc className="h-4 w-4 text-muted-foreground" />
           <Select value={ordenacao} onValueChange={setOrdenacao}>
-            <SelectTrigger className="pl-10">
+            <SelectTrigger className="flex-1">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
