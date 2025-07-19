@@ -9,7 +9,7 @@ import { ClienteCard } from "@/components/clientes/ClienteCard";
 import { ClientePagination } from "@/components/clientes/ClientePagination";
 import { ClienteMatrixView } from "@/components/clientes/ClienteMatrixView";
 import { Button } from "@/components/ui/button";
-import { Grid, List } from "lucide-react";
+import { Grid, List, Check, Gift, X } from "lucide-react";
 
 const Clientes = () => {
   const [filtroStatus, setFiltroStatus] = useState("todos");
@@ -176,6 +176,28 @@ const Clientes = () => {
                       onClienteDeleted={fetchClientes}
                     />
                   ))}
+                  
+                  {/* Explicativo dos botões - modo lista */}
+                  <div className="flex justify-center items-center gap-6 p-4 bg-muted/50 rounded-lg border text-sm mt-6">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 bg-green-500 rounded flex items-center justify-center">
+                        <Check className="h-3 w-3 text-white" />
+                      </div>
+                      <span>Pago</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center">
+                        <Gift className="h-3 w-3 text-white" />
+                      </div>
+                      <span>Promoção</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 border border-red-300 rounded flex items-center justify-center">
+                        <X className="h-3 w-3 text-red-500" />
+                      </div>
+                      <span>Não pago</span>
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <ClienteMatrixView 

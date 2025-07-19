@@ -5,7 +5,7 @@ import { usePagamentos } from "@/hooks/usePagamentos";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Calendar, X, Check } from "lucide-react";
+import { Calendar, X, Check, Gift } from "lucide-react";
 
 const PagamentosView = () => {
   const anoAtual = new Date().getFullYear();
@@ -74,7 +74,7 @@ const PagamentosView = () => {
           className="w-24 h-8 bg-blue-500 hover:bg-blue-600 text-white"
           onClick={() => handlePagamentoMes(clienteId, mesSelecionado, anoSelecionado)}
         >
-          <Check className="h-4 w-4 mr-1" />
+          <Gift className="h-4 w-4 mr-1" />
           Promoção
         </Button>
       );
@@ -166,6 +166,28 @@ const PagamentosView = () => {
             )}
           </TableBody>
         </Table>
+      </div>
+
+      {/* Explicativo dos botões */}
+      <div className="flex justify-center items-center gap-6 p-4 bg-muted/50 rounded-lg border text-sm">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 bg-green-500 rounded flex items-center justify-center">
+            <Check className="h-3 w-3 text-white" />
+          </div>
+          <span>Pago</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center">
+            <Gift className="h-3 w-3 text-white" />
+          </div>
+          <span>Promoção</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 border border-red-300 rounded flex items-center justify-center">
+            <X className="h-3 w-3 text-red-500" />
+          </div>
+          <span>Não pago</span>
+        </div>
       </div>
     </div>
   );
