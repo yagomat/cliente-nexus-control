@@ -177,7 +177,7 @@ export default function EditarCliente() {
         </div>
       </div>;
   }
-  return <div className="container mx-auto p-6 max-w-2xl px-0 py-0">
+  return <div className="container mx-auto p-6 max-w-2xl py-0 px-0">
       <div className="flex items-center gap-4 mb-6">
         <Button variant="ghost" size="sm" onClick={() => navigate('/clientes')} className="flex items-center gap-2">
           <ArrowLeft className="h-4 w-4" />
