@@ -177,7 +177,7 @@ export default function EditarCliente() {
         </div>
       </div>;
   }
-  return <div className="container mx-auto p-6 max-w-2xl">
+  return <div className="container mx-auto p-6 max-w-2xl px-0 py-0">
       <div className="flex items-center gap-4 mb-6">
         <Button variant="ghost" size="sm" onClick={() => navigate('/clientes')} className="flex items-center gap-2">
           <ArrowLeft className="h-4 w-4" />
@@ -206,17 +206,10 @@ export default function EditarCliente() {
 
             <div>
               <Label htmlFor="codigo_pais">Código do País *</Label>
-              <Input
-                id="codigo_pais"
-                placeholder="55"
-                maxLength={3}
-                {...form.register("codigo_pais")}
-              />
-              {form.formState.errors.codigo_pais && (
-                <p className="text-sm text-destructive mt-1">
+              <Input id="codigo_pais" placeholder="55" maxLength={3} {...form.register("codigo_pais")} />
+              {form.formState.errors.codigo_pais && <p className="text-sm text-destructive mt-1">
                   {form.formState.errors.codigo_pais.message}
-                </p>
-              )}
+                </p>}
               <div className="text-sm text-muted-foreground text-right">
                 {form.watch("codigo_pais")?.length || 0}/3
               </div>
@@ -256,11 +249,9 @@ export default function EditarCliente() {
                     </SelectItem>)}
                 </SelectContent>
               </Select>
-              {form.formState.errors.servidor && (
-                <p className="text-sm text-destructive mt-1">
+              {form.formState.errors.servidor && <p className="text-sm text-destructive mt-1">
                   {form.formState.errors.servidor.message}
-                </p>
-              )}
+                </p>}
             </div>
 
             <div>
@@ -326,11 +317,9 @@ export default function EditarCliente() {
                     </SelectItem>)}
                 </SelectContent>
               </Select>
-              {form.formState.errors.aplicativo && (
-                <p className="text-sm text-destructive mt-1">
+              {form.formState.errors.aplicativo && <p className="text-sm text-destructive mt-1">
                   {form.formState.errors.aplicativo.message}
-                </p>
-              )}
+                </p>}
             </div>
 
             <div>
