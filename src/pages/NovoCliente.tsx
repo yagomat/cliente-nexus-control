@@ -125,50 +125,54 @@ export default function NovoCliente() {
             <CardTitle>Informações Básicas</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="nome">Nome *</Label>
-              <Input id="nome" placeholder="Digite o nome do cliente" maxLength={40} {...form.register("nome")} />
-              <div className="flex justify-between items-center mt-1">
-                {form.formState.errors.nome && <p className="text-sm text-destructive">
-                    {form.formState.errors.nome.message}
-                  </p>}
-                <div className="text-sm text-muted-foreground ml-auto">
-                  {form.watch("nome")?.length || 0}/40
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="md:col-span-2">
+                <Label htmlFor="nome">Nome *</Label>
+                <Input id="nome" placeholder="Digite o nome do cliente" maxLength={40} {...form.register("nome")} />
+                <div className="flex justify-between items-center mt-1">
+                  {form.formState.errors.nome && <p className="text-sm text-destructive">
+                      {form.formState.errors.nome.message}
+                    </p>}
+                  <div className="text-sm text-muted-foreground ml-auto">
+                    {form.watch("nome")?.length || 0}/40
+                  </div>
                 </div>
               </div>
-            </div>
-
-            <div>
-              <Label htmlFor="codigo_pais">Código do País *</Label>
-              <Input id="codigo_pais" placeholder="55" maxLength={3} {...form.register("codigo_pais")} />
-              {form.formState.errors.codigo_pais && <p className="text-sm text-destructive mt-1">
-                  {form.formState.errors.codigo_pais.message}
-                </p>}
-              <div className="text-sm text-muted-foreground text-right">
-                {form.watch("codigo_pais")?.length || 0}/3
+              
+              <div>
+                <Label htmlFor="uf">UF</Label>
+                <Select onValueChange={value => form.setValue("uf", value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um estado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {estados.map(estado => <SelectItem key={estado} value={estado}>
+                        {estado}
+                      </SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
-            <div>
-              <Label htmlFor="telefone">Telefone</Label>
-              <Input id="telefone" placeholder="(00) 00000-0000" maxLength={11} {...form.register("telefone")} />
-              <div className="text-sm text-muted-foreground text-right">
-                {form.watch("telefone")?.length || 0}/11
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <Label htmlFor="codigo_pais">Código do País *</Label>
+                <Input id="codigo_pais" placeholder="55" maxLength={3} {...form.register("codigo_pais")} />
+                {form.formState.errors.codigo_pais && <p className="text-sm text-destructive mt-1">
+                    {form.formState.errors.codigo_pais.message}
+                  </p>}
+                <div className="text-sm text-muted-foreground text-right">
+                  {form.watch("codigo_pais")?.length || 0}/3
+                </div>
               </div>
-            </div>
 
-            <div>
-              <Label htmlFor="uf">UF</Label>
-              <Select onValueChange={value => form.setValue("uf", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um estado" />
-                </SelectTrigger>
-                <SelectContent>
-                  {estados.map(estado => <SelectItem key={estado} value={estado}>
-                      {estado}
-                    </SelectItem>)}
-                </SelectContent>
-              </Select>
+              <div className="md:col-span-3">
+                <Label htmlFor="telefone">Telefone</Label>
+                <Input id="telefone" placeholder="(00) 00000-0000" maxLength={11} {...form.register("telefone")} />
+                <div className="text-sm text-muted-foreground text-right">
+                  {form.watch("telefone")?.length || 0}/11
+                </div>
+              </div>
             </div>
 
             <div>
@@ -188,34 +192,36 @@ export default function NovoCliente() {
                 </p>}
             </div>
 
-            <div>
-              <Label htmlFor="dia_vencimento">Dia de Vencimento *</Label>
-              <Select onValueChange={value => form.setValue("dia_vencimento", parseInt(value))} defaultValue="1">
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.from({
-                  length: 31
-                }, (_, i) => i + 1).map(dia => <SelectItem key={dia} value={dia.toString()}>
-                      {dia}
-                    </SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="dia_vencimento">Dia de Vencimento *</Label>
+                <Select onValueChange={value => form.setValue("dia_vencimento", parseInt(value))} defaultValue="1">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({
+                    length: 31
+                  }, (_, i) => i + 1).map(dia => <SelectItem key={dia} value={dia.toString()}>
+                        {dia}
+                      </SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div>
-              <Label htmlFor="valor_plano">Valor do Plano (R$)</Label>
-              <Select onValueChange={value => form.setValue("valor_plano", parseFloat(value))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o valor" />
-                </SelectTrigger>
-                <SelectContent>
-                  {valoresPlano.map(valor => <SelectItem key={valor.id} value={valor.valor.toString()}>
-                      R$ {valor.valor.toFixed(2)}
-                    </SelectItem>)}
-                </SelectContent>
-              </Select>
+              <div>
+                <Label htmlFor="valor_plano">Valor do Plano (R$)</Label>
+                <Select onValueChange={value => form.setValue("valor_plano", parseFloat(value))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o valor" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {valoresPlano.map(valor => <SelectItem key={valor.id} value={valor.valor.toString()}>
+                        R$ {valor.valor.toFixed(2)}
+                      </SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -225,35 +231,37 @@ export default function NovoCliente() {
             <CardTitle>Tela Principal</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="dispositivo_smart">Dispositivo Smart</Label>
-              <Select onValueChange={value => form.setValue("dispositivo_smart", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um dispositivo" />
-                </SelectTrigger>
-                <SelectContent>
-                  {dispositivos.map(dispositivo => <SelectItem key={dispositivo.id} value={dispositivo.nome}>
-                      {dispositivo.nome}
-                    </SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="dispositivo_smart">Dispositivo Smart</Label>
+                <Select onValueChange={value => form.setValue("dispositivo_smart", value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um dispositivo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {dispositivos.map(dispositivo => <SelectItem key={dispositivo.id} value={dispositivo.nome}>
+                        {dispositivo.nome}
+                      </SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div>
-              <Label htmlFor="aplicativo">Aplicativo *</Label>
-              <Select onValueChange={value => form.setValue("aplicativo", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um aplicativo" />
-                </SelectTrigger>
-                <SelectContent>
-                  {aplicativos.map(app => <SelectItem key={app.id} value={app.nome}>
-                      {app.nome}
-                    </SelectItem>)}
-                </SelectContent>
-              </Select>
-              {form.formState.errors.aplicativo && <p className="text-sm text-destructive mt-1">
-                  {form.formState.errors.aplicativo.message}
-                </p>}
+              <div>
+                <Label htmlFor="aplicativo">Aplicativo *</Label>
+                <Select onValueChange={value => form.setValue("aplicativo", value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um aplicativo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {aplicativos.map(app => <SelectItem key={app.id} value={app.nome}>
+                        {app.nome}
+                      </SelectItem>)}
+                  </SelectContent>
+                </Select>
+                {form.formState.errors.aplicativo && <p className="text-sm text-destructive mt-1">
+                    {form.formState.errors.aplicativo.message}
+                  </p>}
+              </div>
             </div>
 
             <div>
@@ -305,32 +313,34 @@ export default function NovoCliente() {
               <CardTitle>Tela Adicional</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="dispositivo_smart_2">Dispositivo Smart 2</Label>
-                <Select onValueChange={value => form.setValue("dispositivo_smart_2", value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione um dispositivo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {dispositivos.map(dispositivo => <SelectItem key={dispositivo.id} value={dispositivo.nome}>
-                        {dispositivo.nome}
-                      </SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="dispositivo_smart_2">Dispositivo Smart 2</Label>
+                  <Select onValueChange={value => form.setValue("dispositivo_smart_2", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um dispositivo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {dispositivos.map(dispositivo => <SelectItem key={dispositivo.id} value={dispositivo.nome}>
+                          {dispositivo.nome}
+                        </SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              <div>
-                <Label htmlFor="aplicativo_2">Aplicativo 2</Label>
-                <Select onValueChange={value => form.setValue("aplicativo_2", value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione um aplicativo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {aplicativos.map(app => <SelectItem key={app.id} value={app.nome}>
-                        {app.nome}
-                      </SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <div>
+                  <Label htmlFor="aplicativo_2">Aplicativo 2</Label>
+                  <Select onValueChange={value => form.setValue("aplicativo_2", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um aplicativo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {aplicativos.map(app => <SelectItem key={app.id} value={app.nome}>
+                          {app.nome}
+                        </SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               <div>
