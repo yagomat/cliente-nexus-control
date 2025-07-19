@@ -302,7 +302,7 @@ export default function NovoCliente() {
         {/* Tela Principal 2 - Exibida condicionalmente */}
         {form.watch("tela_adicional") && <Card>
             <CardHeader>
-              <CardTitle>Tela Principal 2</CardTitle>
+              <CardTitle>Tela Adicional</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
