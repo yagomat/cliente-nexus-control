@@ -1,5 +1,5 @@
 
-import { Search, Filter, SortAsc } from "lucide-react";
+import { Search, Filter, SortAsc, Calendar } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -51,10 +51,10 @@ export const ClienteFilters = ({
 
       {/* Filtros e ordenação em linha */}
       <div className="flex flex-col sm:flex-row gap-3">
-        <div className="flex items-center gap-2 flex-1">
-          <Filter className="h-4 w-4 text-muted-foreground" />
+        <div className="relative flex-1">
+          <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 z-10 pointer-events-none" />
           <Select value={filtroStatus} onValueChange={setFiltroStatus}>
-            <SelectTrigger className="flex-1">
+            <SelectTrigger className="pl-10">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -65,10 +65,10 @@ export const ClienteFilters = ({
           </Select>
         </div>
 
-        <div className="flex items-center gap-2 flex-1">
-          <SortAsc className="h-4 w-4 text-muted-foreground" />
+        <div className="relative flex-1">
+          <SortAsc className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 z-10 pointer-events-none" />
           <Select value={ordenacao} onValueChange={setOrdenacao}>
-            <SelectTrigger className="flex-1">
+            <SelectTrigger className="pl-10">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -82,10 +82,10 @@ export const ClienteFilters = ({
 
         {/* Filtro de ano - só aparece no modo matriz */}
         {showAnoFilter && anoFiltro && setAnoFiltro && (
-          <div className="flex items-center gap-2 flex-1">
-            <span className="text-sm text-muted-foreground whitespace-nowrap">Ano:</span>
+          <div className="relative flex-1">
+            <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 z-10 pointer-events-none" />
             <Select value={anoFiltro.toString()} onValueChange={(value) => setAnoFiltro(parseInt(value))}>
-              <SelectTrigger className="flex-1">
+              <SelectTrigger className="pl-10">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
