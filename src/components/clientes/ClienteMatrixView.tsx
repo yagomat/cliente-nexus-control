@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useSidebar } from "@/components/ui/sidebar";
 import { ClientePagination } from "@/components/clientes/ClientePagination";
-import { Check, X } from "lucide-react";
+import { Check, X, Gift } from "lucide-react";
 
 interface ClienteMatrixViewProps {
   clientes: any[];
@@ -67,7 +67,7 @@ export const ClienteMatrixView = ({ clientes, clientesFiltrados, anoFiltro, curr
       return { 
         variant: "default" as const, 
         className: "w-8 h-8 p-0 bg-blue-500 hover:bg-blue-600",
-        icon: <Check className="h-3 w-3 text-white" />
+        icon: <Gift className="h-3 w-3 text-white" />
       };
     }
     
@@ -173,7 +173,7 @@ export const ClienteMatrixView = ({ clientes, clientesFiltrados, anoFiltro, curr
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 bg-blue-500 rounded flex items-center justify-center">
-              <Check className="h-2 w-2 text-white" />
+              <Gift className="h-2 w-2 text-white" />
             </div>
             <span>Promoção</span>
           </div>
