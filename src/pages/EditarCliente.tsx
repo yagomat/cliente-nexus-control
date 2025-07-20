@@ -198,43 +198,36 @@ export default function EditarCliente() {
                 {form.formState.errors.nome && <p className="text-sm text-destructive">
                     {form.formState.errors.nome.message}
                   </p>}
-                <div className="text-sm text-muted-foreground ml-auto">
-                  {form.watch("nome")?.length || 0}/40
-                </div>
               </div>
             </div>
 
-            <div>
-              <Label htmlFor="codigo_pais">Código do País *</Label>
-              <Input id="codigo_pais" placeholder="55" maxLength={3} {...form.register("codigo_pais")} />
-              {form.formState.errors.codigo_pais && <p className="text-sm text-destructive mt-1">
-                  {form.formState.errors.codigo_pais.message}
-                </p>}
-              <div className="text-sm text-muted-foreground text-right">
-                {form.watch("codigo_pais")?.length || 0}/3
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <Label htmlFor="uf">UF</Label>
+                <Select value={form.watch("uf") || ""} onValueChange={value => form.setValue("uf", value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um estado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {estados.map(estado => <SelectItem key={estado} value={estado}>
+                        {estado}
+                      </SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
-            </div>
 
-            <div>
-              <Label htmlFor="telefone">Telefone</Label>
-              <Input id="telefone" placeholder="(00) 00000-0000" maxLength={11} {...form.register("telefone")} />
-              <div className="text-sm text-muted-foreground text-right">
-                {form.watch("telefone")?.length || 0}/11
+              <div>
+                <Label htmlFor="codigo_pais">Código do País *</Label>
+                <Input id="codigo_pais" placeholder="55" maxLength={3} {...form.register("codigo_pais")} />
+                {form.formState.errors.codigo_pais && <p className="text-sm text-destructive mt-1">
+                    {form.formState.errors.codigo_pais.message}
+                  </p>}
               </div>
-            </div>
 
-            <div>
-              <Label htmlFor="uf">UF</Label>
-              <Select value={form.watch("uf") || ""} onValueChange={value => form.setValue("uf", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um estado" />
-                </SelectTrigger>
-                <SelectContent>
-                  {estados.map(estado => <SelectItem key={estado} value={estado}>
-                      {estado}
-                    </SelectItem>)}
-                </SelectContent>
-              </Select>
+              <div className="md:col-span-2">
+                <Label htmlFor="telefone">Telefone</Label>
+                <Input id="telefone" placeholder="(00) 00000-0000" maxLength={11} {...form.register("telefone")} />
+              </div>
             </div>
 
             <div>
@@ -254,34 +247,36 @@ export default function EditarCliente() {
                 </p>}
             </div>
 
-            <div>
-              <Label htmlFor="dia_vencimento">Dia de Vencimento *</Label>
-              <Select value={form.watch("dia_vencimento")?.toString() || "1"} onValueChange={value => form.setValue("dia_vencimento", parseInt(value))}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.from({
-                  length: 31
-                }, (_, i) => i + 1).map(dia => <SelectItem key={dia} value={dia.toString()}>
-                      {dia}
-                    </SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="dia_vencimento">Dia de Vencimento *</Label>
+                <Select value={form.watch("dia_vencimento")?.toString() || "1"} onValueChange={value => form.setValue("dia_vencimento", parseInt(value))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({
+                    length: 31
+                  }, (_, i) => i + 1).map(dia => <SelectItem key={dia} value={dia.toString()}>
+                        {dia}
+                      </SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div>
-              <Label htmlFor="valor_plano">Valor do Plano (R$)</Label>
-              <Select value={form.watch("valor_plano")?.toString() || ""} onValueChange={value => form.setValue("valor_plano", parseFloat(value))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o valor" />
-                </SelectTrigger>
-                <SelectContent>
-                  {valoresPlano.map(valor => <SelectItem key={valor.id} value={valor.valor.toString()}>
-                      R$ {valor.valor.toFixed(2)}
-                    </SelectItem>)}
-                </SelectContent>
-              </Select>
+              <div>
+                <Label htmlFor="valor_plano">Valor do Plano (R$)</Label>
+                <Select value={form.watch("valor_plano")?.toString() || ""} onValueChange={value => form.setValue("valor_plano", parseFloat(value))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o valor" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {valoresPlano.map(valor => <SelectItem key={valor.id} value={valor.valor.toString()}>
+                        R$ {valor.valor.toFixed(2)}
+                      </SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -291,50 +286,48 @@ export default function EditarCliente() {
             <CardTitle>Tela Principal</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="dispositivo_smart">Dispositivo Smart</Label>
-              <Select value={form.watch("dispositivo_smart") || ""} onValueChange={value => form.setValue("dispositivo_smart", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um dispositivo" />
-                </SelectTrigger>
-                <SelectContent>
-                  {dispositivos.map(dispositivo => <SelectItem key={dispositivo.id} value={dispositivo.nome}>
-                      {dispositivo.nome}
-                    </SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="dispositivo_smart">Dispositivo Smart</Label>
+                <Select value={form.watch("dispositivo_smart") || ""} onValueChange={value => form.setValue("dispositivo_smart", value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um dispositivo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {dispositivos.map(dispositivo => <SelectItem key={dispositivo.id} value={dispositivo.nome}>
+                        {dispositivo.nome}
+                      </SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div>
-              <Label htmlFor="aplicativo">Aplicativo *</Label>
-              <Select value={form.watch("aplicativo") || ""} onValueChange={value => form.setValue("aplicativo", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um aplicativo" />
-                </SelectTrigger>
-                <SelectContent>
-                  {aplicativos.map(app => <SelectItem key={app.id} value={app.nome}>
-                      {app.nome}
-                    </SelectItem>)}
-                </SelectContent>
-              </Select>
-              {form.formState.errors.aplicativo && <p className="text-sm text-destructive mt-1">
-                  {form.formState.errors.aplicativo.message}
-                </p>}
-            </div>
-
-            <div>
-              <Label htmlFor="usuario_aplicativo">Usuário do Aplicativo</Label>
-              <Input id="usuario_aplicativo" placeholder="Digite o usuário" maxLength={25} {...form.register("usuario_aplicativo")} />
-              <div className="text-sm text-muted-foreground text-right">
-                {form.watch("usuario_aplicativo")?.length || 0}/25
+              <div>
+                <Label htmlFor="aplicativo">Aplicativo *</Label>
+                <Select value={form.watch("aplicativo") || ""} onValueChange={value => form.setValue("aplicativo", value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um aplicativo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {aplicativos.map(app => <SelectItem key={app.id} value={app.nome}>
+                        {app.nome}
+                      </SelectItem>)}
+                  </SelectContent>
+                </Select>
+                {form.formState.errors.aplicativo && <p className="text-sm text-destructive mt-1">
+                    {form.formState.errors.aplicativo.message}
+                  </p>}
               </div>
             </div>
 
-            <div>
-              <Label htmlFor="senha_aplicativo">Senha do Aplicativo</Label>
-              <Input id="senha_aplicativo" type="password" placeholder="Digite a senha" maxLength={25} {...form.register("senha_aplicativo")} />
-              <div className="text-sm text-muted-foreground text-right">
-                {form.watch("senha_aplicativo")?.length || 0}/25
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="usuario_aplicativo">Usuário do Aplicativo</Label>
+                <Input id="usuario_aplicativo" placeholder="Digite o usuário" maxLength={25} {...form.register("usuario_aplicativo")} />
+              </div>
+
+              <div>
+                <Label htmlFor="senha_aplicativo">Senha do Aplicativo</Label>
+                <Input id="senha_aplicativo" type="password" placeholder="Digite a senha" maxLength={25} {...form.register("senha_aplicativo")} />
               </div>
             </div>
 
@@ -370,50 +363,48 @@ export default function EditarCliente() {
             <CardHeader>
               <CardTitle>Tela Adicional</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-               <div>
-                 <Label htmlFor="dispositivo_smart_2">Dispositivo Smart 2</Label>
-                 <Select value={form.watch("dispositivo_smart_2") || ""} onValueChange={value => form.setValue("dispositivo_smart_2", value)}>
-                   <SelectTrigger>
-                     <SelectValue placeholder="Selecione um dispositivo" />
-                   </SelectTrigger>
-                   <SelectContent>
-                     {dispositivos.map(dispositivo => <SelectItem key={dispositivo.id} value={dispositivo.nome}>
-                         {dispositivo.nome}
-                       </SelectItem>)}
-                   </SelectContent>
-                 </Select>
+             <CardContent className="space-y-4">
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <div>
+                   <Label htmlFor="dispositivo_smart_2">Dispositivo Smart 2</Label>
+                   <Select value={form.watch("dispositivo_smart_2") || ""} onValueChange={value => form.setValue("dispositivo_smart_2", value)}>
+                     <SelectTrigger>
+                       <SelectValue placeholder="Selecione um dispositivo" />
+                     </SelectTrigger>
+                     <SelectContent>
+                       {dispositivos.map(dispositivo => <SelectItem key={dispositivo.id} value={dispositivo.nome}>
+                           {dispositivo.nome}
+                         </SelectItem>)}
+                     </SelectContent>
+                   </Select>
+                 </div>
+
+                 <div>
+                   <Label htmlFor="aplicativo_2">Aplicativo 2</Label>
+                   <Select value={form.watch("aplicativo_2") || ""} onValueChange={value => form.setValue("aplicativo_2", value)}>
+                     <SelectTrigger>
+                       <SelectValue placeholder="Selecione um aplicativo" />
+                     </SelectTrigger>
+                     <SelectContent>
+                       {aplicativos.map(app => <SelectItem key={app.id} value={app.nome}>
+                           {app.nome}
+                         </SelectItem>)}
+                     </SelectContent>
+                   </Select>
+                 </div>
                </div>
 
-               <div>
-                 <Label htmlFor="aplicativo_2">Aplicativo 2</Label>
-                 <Select value={form.watch("aplicativo_2") || ""} onValueChange={value => form.setValue("aplicativo_2", value)}>
-                   <SelectTrigger>
-                     <SelectValue placeholder="Selecione um aplicativo" />
-                   </SelectTrigger>
-                   <SelectContent>
-                     {aplicativos.map(app => <SelectItem key={app.id} value={app.nome}>
-                         {app.nome}
-                       </SelectItem>)}
-                   </SelectContent>
-                 </Select>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <div>
+                   <Label htmlFor="usuario_aplicativo_2">Usuário do Aplicativo 2</Label>
+                   <Input id="usuario_aplicativo_2" placeholder="Digite o usuário" maxLength={25} {...form.register("usuario_aplicativo_2")} />
+                 </div>
+
+                 <div>
+                   <Label htmlFor="senha_aplicativo_2">Senha do Aplicativo 2</Label>
+                   <Input id="senha_aplicativo_2" type="password" placeholder="Digite a senha" maxLength={25} {...form.register("senha_aplicativo_2")} />
+                 </div>
                </div>
-
-              <div>
-                <Label htmlFor="usuario_aplicativo_2">Usuário do Aplicativo 2</Label>
-                <Input id="usuario_aplicativo_2" placeholder="Digite o usuário" maxLength={25} {...form.register("usuario_aplicativo_2")} />
-                <div className="text-sm text-muted-foreground text-right">
-                  {form.watch("usuario_aplicativo_2")?.length || 0}/25
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="senha_aplicativo_2">Senha do Aplicativo 2</Label>
-                <Input id="senha_aplicativo_2" type="password" placeholder="Digite a senha" maxLength={25} {...form.register("senha_aplicativo_2")} />
-                <div className="text-sm text-muted-foreground text-right">
-                  {form.watch("senha_aplicativo_2")?.length || 0}/25
-                </div>
-              </div>
 
               <div>
                 <Label>Data de Licença do Aplicativo 2</Label>
@@ -445,9 +436,6 @@ export default function EditarCliente() {
             <div>
               <Label htmlFor="observacoes">Observações</Label>
               <Textarea id="observacoes" placeholder="Digite observações sobre o cliente..." maxLength={150} rows={4} {...form.register("observacoes")} />
-              <div className="text-sm text-muted-foreground text-right">
-                {form.watch("observacoes")?.length || 0}/150
-              </div>
             </div>
           </CardContent>
         </Card>
