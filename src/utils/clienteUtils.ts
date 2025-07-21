@@ -1,13 +1,3 @@
-export const calcularDataVencimentoReal = (diaVencimento: number, mes: number, ano: number) => {
-  // Obter o último dia do mês
-  const ultimoDiaDoMes = new Date(ano, mes, 0).getDate();
-  
-  // Se o dia de vencimento é maior que o último dia do mês, usar o último dia
-  const diaEfetivo = Math.min(diaVencimento, ultimoDiaDoMes);
-  
-  return new Date(ano, mes - 1, diaEfetivo);
-};
-
 export const calcularVencimentoInteligente = (cliente: any, getPagamentoDoMes: (clienteId: string, mes: number, ano: number) => any) => {
   const hoje = new Date();
   const mesAtual = hoje.getMonth() + 1;
@@ -27,8 +17,8 @@ export const calcularVencimentoInteligente = (cliente: any, getPagamentoDoMes: (
       
       // Se não tem pagamento ou status não é válido, encontrou o gap
       if (!pagamento || (pagamento.status !== 'pago' && pagamento.status !== 'promocao')) {
-        // Calcular dias até o vencimento deste mês usando a data real
-        const dataVencimento = calcularDataVencimentoReal(cliente.dia_vencimento, mes, ano);
+        // Calcular dias até o vencimento deste mês (quando cliente se tornará inativo)
+        const dataVencimento = new Date(ano, mes - 1, cliente.dia_vencimento);
         const diffTime = dataVencimento.getTime() - hoje.getTime();
         const dias = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         
@@ -48,7 +38,7 @@ export const calcularVencimentoInteligente = (cliente: any, getPagamentoDoMes: (
     }
     
     // Se não encontrou gap em 12 meses, usar último mês verificado
-    const dataVencimento = calcularDataVencimentoReal(cliente.dia_vencimento, mes, ano);
+    const dataVencimento = new Date(ano, mes - 1, cliente.dia_vencimento);
     const diffTime = dataVencimento.getTime() - hoje.getTime();
     const dias = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
@@ -80,7 +70,7 @@ export const calcularVencimentoInteligente = (cliente: any, getPagamentoDoMes: (
           anoInativo++;
         }
         
-        const dataVencimento = calcularDataVencimentoReal(cliente.dia_vencimento, mesInativo, anoInativo);
+        const dataVencimento = new Date(anoInativo, mesInativo - 1, cliente.dia_vencimento);
         const diffTime = hoje.getTime() - dataVencimento.getTime();
         const dias = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         
@@ -99,17 +89,13 @@ export const calcularVencimentoInteligente = (cliente: any, getPagamentoDoMes: (
 
 export const calcularDiasParaVencer = (diaVencimento: number) => {
   const hoje = new Date();
-  const mesAtual = hoje.getMonth() + 1;
+  const mesAtual = hoje.getMonth();
   const anoAtual = hoje.getFullYear();
   
-  // Calcular próximo vencimento usando a data real
-  let proximoVencimento = calcularDataVencimentoReal(diaVencimento, mesAtual, anoAtual);
+  let proximoVencimento = new Date(anoAtual, mesAtual, diaVencimento);
   
   if (proximoVencimento < hoje) {
-    // Se já passou, calcular para o próximo mês
-    const proximoMes = mesAtual === 12 ? 1 : mesAtual + 1;
-    const proximoAno = mesAtual === 12 ? anoAtual + 1 : anoAtual;
-    proximoVencimento = calcularDataVencimentoReal(diaVencimento, proximoMes, proximoAno);
+    proximoVencimento = new Date(anoAtual, mesAtual + 1, diaVencimento);
   }
   
   const diffTime = proximoVencimento.getTime() - hoje.getTime();
@@ -120,6 +106,7 @@ export const calcularStatusCliente = (cliente: any, getPagamentoDoMes: (clienteI
   const hoje = new Date();
   const mesAtual = hoje.getMonth() + 1;
   const anoAtual = hoje.getFullYear();
+  const diaAtual = hoje.getDate();
   
   // Buscar pagamento do mês atual
   const pagamentoMesAtual = getPagamentoDoMes(cliente.id, mesAtual, anoAtual);
@@ -142,9 +129,7 @@ export const calcularStatusCliente = (cliente: any, getPagamentoDoMes: (clienteI
   
   // Se tem pagamento no mês anterior como pago/promoção E ainda não passou do dia de vencimento
   if (pagamentoMesAnterior && (pagamentoMesAnterior.status === 'pago' || pagamentoMesAnterior.status === 'promocao')) {
-    // Usar a data de vencimento real para o mês atual
-    const dataVencimentoMesAtual = calcularDataVencimentoReal(cliente.dia_vencimento, mesAtual, anoAtual);
-    return hoje <= dataVencimentoMesAtual;
+    return diaAtual <= cliente.dia_vencimento;
   }
   
   return false;
