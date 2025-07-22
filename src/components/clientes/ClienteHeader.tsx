@@ -1,25 +1,27 @@
 
 import { Link } from "react-router-dom";
-import { Users, Download, Upload } from "lucide-react";
+import { Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ExportarClientes } from "./ExportarClientes";
+import { ImportarClientes } from "./ImportarClientes";
 
-export const ClienteHeader = () => {
+interface ClienteHeaderProps {
+  clientes?: any[];
+  onImportComplete?: () => void;
+}
+
+export const ClienteHeader = ({ clientes = [], onImportComplete }: ClienteHeaderProps) => {
   return (
     <div className="mb-6">
       {/* Botões de Export/Import - ocupando toda a largura em mobile */}
       <div className="flex gap-3 mb-4 w-full">
-        <Button variant="outline" className="flex items-center gap-2 flex-1 justify-center">
-          <Download className="h-4 w-4" />
-          Exportar Excel
-        </Button>
-        <Button variant="outline" className="flex items-center gap-2 flex-1 justify-center">
-          <Upload className="h-4 w-4" />
-          Importar Excel
-        </Button>
+        <ExportarClientes clientes={clientes} />
+        <ImportarClientes onImportComplete={onImportComplete || (() => {})} />
       </div>
 
       <p className="text-sm text-muted-foreground mb-4">
-        Informações sobre exportação / Importação
+        Exportar: Baixa todos os clientes em Excel<br/>
+        Importar: Arquivo deve ter as colunas na ordem: Data cadastro, Nome, UF, Telefone, Servidor, Dia vencimento, Valor plano, Dispositivo 1, App 1, Usuário 1, Senha 1, Vencimento licença 1, Dispositivo 2, App 2, Usuário 2, Senha 2, Vencimento licença 2, Observações
       </p>
 
       {/* Botão Novo Cliente */}

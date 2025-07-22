@@ -107,7 +107,10 @@ const Clientes = () => {
 
   return (
     <div>
-        <ClienteHeader />
+        <ClienteHeader 
+          clientes={clientes} 
+          onImportComplete={fetchClientes}
+        />
 
         <div className="mt-6 w-full">
           <div className="mb-4">
