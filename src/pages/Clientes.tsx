@@ -1,8 +1,7 @@
-
 import { useState, useMemo } from "react";
 import { useClientes } from "@/hooks/useClientes";
 import { usePagamentos } from "@/hooks/usePagamentos";
-import { calcularDiasParaVencer, calcularStatusCliente } from "@/utils/clienteUtils";
+import { calcularDiasParaVencer, calcularStatusCliente, calcularOrdemVencimento } from "@/utils/clienteUtils";
 import { ClienteHeader } from "@/components/clientes/ClienteHeader";
 import { ClienteFilters } from "@/components/clientes/ClienteFilters";
 import { ClienteCard } from "@/components/clientes/ClienteCard";
@@ -44,7 +43,9 @@ const Clientes = () => {
           case "nome-za":
             return b.nome.localeCompare(a.nome);
           case "vencimento":
-            return calcularDiasParaVencer(a.dia_vencimento) - calcularDiasParaVencer(b.dia_vencimento);
+            const ordemA = calcularOrdemVencimento(a, getPagamentoDoMes);
+            const ordemB = calcularOrdemVencimento(b, getPagamentoDoMes);
+            return ordemA - ordemB;
           default:
             return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
         }

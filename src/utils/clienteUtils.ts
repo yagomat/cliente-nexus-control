@@ -1,4 +1,3 @@
-
 // Função auxiliar para calcular a data de vencimento real considerando meses com menos dias
 const calcularDataVencimentoReal = (ano: number, mes: number, diaVencimento: number): Date => {
   // Primeiro, criar uma data com o primeiro dia do mês
@@ -160,6 +159,25 @@ export const calcularStatusCliente = (cliente: any, getPagamentoDoMes: (clienteI
   }
   
   return false;
+};
+
+export const calcularOrdemVencimento = (cliente: any, getPagamentoDoMes: (clienteId: string, mes: number, ano: number) => any): number => {
+  const vencimentoInfo = calcularVencimentoInteligente(cliente, getPagamentoDoMes);
+  
+  if (!vencimentoInfo) {
+    // Se não tem informação, colocar no final
+    return 9999;
+  }
+  
+  if (vencimentoInfo.vencido) {
+    // Cliente vencido: usar valor negativo para ordenar do mais antigo para o mais recente
+    // Quanto maior o número de dias vencido, mais negativo será o valor
+    return -vencimentoInfo.dias;
+  } else {
+    // Cliente não vencido: usar valor positivo
+    // Vence hoje = 0, vence em 1 dia = 1, etc.
+    return vencimentoInfo.dias;
+  }
 };
 
 export const getButtonVariantAndColor = (clienteId: string, getPagamentoMesAtual: (clienteId: string) => any) => {
