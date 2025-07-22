@@ -5,10 +5,32 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 
+interface ImportError {
+  linha: number;
+  campo: string;
+  valor: string;
+  erro: string;
+}
+
+interface ImportResult {
+  success: boolean;
+  clientesImportados: number;
+  clientesRejeitados: number;
+  erros: ImportError[];
+  message?: string;
+}
+
 export const useClienteImportExport = () => {
   const { user } = useAuth();
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+
+  // Estados válidos do Brasil
+  const ESTADOS_VALIDOS = [
+    'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 
+    'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 
+    'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+  ];
 
   const exportarClientes = async (clientes: any[]) => {
     setIsExporting(true);
@@ -60,8 +82,162 @@ export const useClienteImportExport = () => {
     }
   };
 
-  const importarClientes = async (file: File) => {
-    if (!user) return { success: false, message: "Usuário não autenticado" };
+  // Função para validar nome
+  const validarNome = (nome: string, linha: number, erros: ImportError[]) => {
+    if (!nome || nome.trim() === '') {
+      erros.push({ linha, campo: 'Nome', valor: nome, erro: 'Nome é obrigatório' });
+      return false;
+    }
+    if (nome.length > 40) {
+      erros.push({ linha, campo: 'Nome', valor: nome, erro: 'Nome deve ter no máximo 40 caracteres' });
+      return false;
+    }
+    return true;
+  };
+
+  // Função para validar UF
+  const validarUF = (uf: string, linha: number, erros: ImportError[]) => {
+    if (!uf || uf.trim() === '') {
+      return true; // UF é opcional
+    }
+    
+    const ufUpper = uf.toUpperCase();
+    if (ufUpper.length !== 2) {
+      erros.push({ linha, campo: 'UF', valor: uf, erro: 'UF deve ter exatamente 2 caracteres' });
+      return false;
+    }
+    
+    if (!/^[A-Z]{2}$/.test(ufUpper)) {
+      erros.push({ linha, campo: 'UF', valor: uf, erro: 'UF deve conter apenas letras' });
+      return false;
+    }
+    
+    if (!ESTADOS_VALIDOS.includes(ufUpper)) {
+      erros.push({ linha, campo: 'UF', valor: uf, erro: 'UF deve ser um estado válido do Brasil' });
+      return false;
+    }
+    
+    return true;
+  };
+
+  // Função para validar telefone
+  const validarTelefone = (telefone: string, linha: number, erros: ImportError[]) => {
+    if (!telefone || telefone.trim() === '') {
+      erros.push({ linha, campo: 'Telefone', valor: telefone, erro: 'Telefone é obrigatório' });
+      return false;
+    }
+    
+    // Remove caracteres não numéricos
+    const telefoneNumerico = telefone.replace(/\D/g, '');
+    
+    if (telefoneNumerico.length > 11) {
+      erros.push({ linha, campo: 'Telefone', valor: telefone, erro: 'Telefone deve ter no máximo 11 dígitos' });
+      return false;
+    }
+    
+    if (telefoneNumerico.length < 10) {
+      erros.push({ linha, campo: 'Telefone', valor: telefone, erro: 'Telefone deve ter pelo menos 10 dígitos' });
+      return false;
+    }
+    
+    return true;
+  };
+
+  // Função para validar servidor
+  const validarServidor = (servidor: string, linha: number, erros: ImportError[]) => {
+    if (!servidor || servidor.trim() === '') {
+      erros.push({ linha, campo: 'Servidor', valor: servidor, erro: 'Servidor é obrigatório' });
+      return false;
+    }
+    if (servidor.length > 50) {
+      erros.push({ linha, campo: 'Servidor', valor: servidor, erro: 'Servidor deve ter no máximo 50 caracteres' });
+      return false;
+    }
+    return true;
+  };
+
+  // Função para validar dia de vencimento
+  const validarDiaVencimento = (dia: string, linha: number, erros: ImportError[]) => {
+    if (!dia || dia.toString().trim() === '') {
+      erros.push({ linha, campo: 'Dia de vencimento', valor: dia, erro: 'Dia de vencimento é obrigatório' });
+      return false;
+    }
+    
+    const diaNumerico = parseInt(dia.toString());
+    if (isNaN(diaNumerico) || diaNumerico < 1 || diaNumerico > 31) {
+      erros.push({ linha, campo: 'Dia de vencimento', valor: dia, erro: 'Dia de vencimento deve ser um número entre 1 e 31' });
+      return false;
+    }
+    
+    return true;
+  };
+
+  // Função para validar valor do plano
+  const validarValorPlano = (valor: string, linha: number, erros: ImportError[]) => {
+    if (!valor || valor.toString().trim() === '') {
+      return true; // Valor é opcional
+    }
+    
+    const valorNumerico = parseFloat(valor.toString());
+    if (isNaN(valorNumerico) || valorNumerico < 1 || valorNumerico > 1000) {
+      erros.push({ linha, campo: 'Valor do Plano', valor: valor, erro: 'Valor do plano deve ser um número entre 1 e 1000' });
+      return false;
+    }
+    
+    return true;
+  };
+
+  // Função para validar aplicativo
+  const validarAplicativo = (aplicativo: string, linha: number, erros: ImportError[]) => {
+    if (!aplicativo || aplicativo.trim() === '') {
+      erros.push({ linha, campo: 'Aplicativo', valor: aplicativo, erro: 'Aplicativo é obrigatório' });
+      return false;
+    }
+    if (aplicativo.length > 50) {
+      erros.push({ linha, campo: 'Aplicativo', valor: aplicativo, erro: 'Aplicativo deve ter no máximo 50 caracteres' });
+      return false;
+    }
+    return true;
+  };
+
+  // Função para validar usuário do aplicativo
+  const validarUsuarioAplicativo = (usuario: string, campo: string, linha: number, erros: ImportError[]) => {
+    if (!usuario || usuario.trim() === '') {
+      return true; // Usuário é opcional
+    }
+    if (usuario.length > 25) {
+      erros.push({ linha, campo, valor: usuario, erro: 'Usuário do aplicativo deve ter no máximo 25 caracteres' });
+      return false;
+    }
+    return true;
+  };
+
+  // Função para validar senha do aplicativo
+  const validarSenhaAplicativo = (senha: string, campo: string, linha: number, erros: ImportError[]) => {
+    if (!senha || senha.trim() === '') {
+      return true; // Senha é opcional
+    }
+    if (senha.length > 25) {
+      erros.push({ linha, campo, valor: senha, erro: 'Senha do aplicativo deve ter no máximo 25 caracteres' });
+      return false;
+    }
+    return true;
+  };
+
+  // Função para validar observações
+  const validarObservacoes = (observacoes: string, linha: number, erros: ImportError[]) => {
+    if (!observacoes || observacoes.trim() === '') {
+      return true; // Observações são opcionais
+    }
+    if (observacoes.length > 150) {
+      erros.push({ linha, campo: 'Observações', valor: observacoes, erro: 'Observações devem ter no máximo 150 caracteres' });
+      return false;
+    }
+    return true;
+  };
+
+  const importarClientes = async (file: File): Promise<ImportResult> => {
+    if (!user) return { success: false, clientesImportados: 0, clientesRejeitados: 0, erros: [], message: "Usuário não autenticado" };
 
     setIsImporting(true);
     try {
@@ -78,69 +254,126 @@ export const useClienteImportExport = () => {
       // Remover linha de cabeçalho
       const rows = jsonData.slice(1) as any[][];
       const clientesParaImportar = [];
+      const erros: ImportError[] = [];
+      let clientesRejeitados = 0;
 
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
+        const numeroLinha = i + 2; // +2 porque pulamos cabeçalho e arrays começam em 0
+        const errosLinha: ImportError[] = [];
         
         // Verificar se a linha tem dados suficientes (pelo menos nome)
         if (!row[1] || row[1].toString().trim() === '') {
           continue; // Pular linhas vazias
         }
 
-        // Mapear colunas conforme ordem especificada
-        const cliente = {
-          nome: row[1]?.toString().trim(),
-          uf: row[2]?.toString().trim() || null,
-          telefone: row[3]?.toString().trim(),
-          servidor: row[4]?.toString().trim(),
-          dia_vencimento: parseInt(row[5]?.toString()) || 1,
-          valor_plano: row[6] ? parseFloat(row[6].toString()) : null,
-          dispositivo_smart: row[7]?.toString().trim() || null,
-          aplicativo: row[8]?.toString().trim(),
-          usuario_aplicativo: row[9]?.toString().trim() || null,
-          senha_aplicativo: row[10]?.toString().trim() || null,
-          data_licenca_aplicativo: row[11] ? parseDateFromString(row[11].toString()) : null,
-          dispositivo_smart_2: row[12]?.toString().trim() || null,
-          aplicativo_2: row[13]?.toString().trim() || null,
-          usuario_aplicativo_2: row[14]?.toString().trim() || null,
-          senha_aplicativo_2: row[15]?.toString().trim() || null,
-          data_licenca_aplicativo_2: row[16] ? parseDateFromString(row[16].toString()) : null,
-          observacoes: row[17]?.toString().trim() || null,
-          user_id: user.id,
-          tela_adicional: !!(row[12] || row[13]) // Se tem dispositivo 2 ou app 2, habilita tela adicional
-        };
+        // Validar cada campo
+        const nome = row[1]?.toString().trim();
+        const uf = row[2]?.toString().trim() || null;
+        const telefone = row[3]?.toString().trim();
+        const servidor = row[4]?.toString().trim();
+        const diaVencimento = row[5]?.toString().trim();
+        const valorPlano = row[6]?.toString().trim();
+        const dispositivoSmart = row[7]?.toString().trim() || null;
+        const aplicativo = row[8]?.toString().trim();
+        const usuarioAplicativo = row[9]?.toString().trim() || null;
+        const senhaAplicativo = row[10]?.toString().trim() || null;
+        const dataLicencaAplicativo = row[11]?.toString().trim();
+        const dispositivoSmart2 = row[12]?.toString().trim() || null;
+        const aplicativo2 = row[13]?.toString().trim() || null;
+        const usuarioAplicativo2 = row[14]?.toString().trim() || null;
+        const senhaAplicativo2 = row[15]?.toString().trim() || null;
+        const dataLicencaAplicativo2 = row[16]?.toString().trim();
+        const observacoes = row[17]?.toString().trim() || null;
 
-        // Validações básicas
-        if (!cliente.nome || !cliente.telefone || !cliente.servidor || !cliente.aplicativo) {
-          console.warn(`Linha ${i + 2}: Campos obrigatórios faltando (Nome, Telefone, Servidor, Aplicativo)`);
+        // Executar todas as validações
+        validarNome(nome, numeroLinha, errosLinha);
+        validarUF(uf || '', numeroLinha, errosLinha);
+        validarTelefone(telefone, numeroLinha, errosLinha);
+        validarServidor(servidor, numeroLinha, errosLinha);
+        validarDiaVencimento(diaVencimento, numeroLinha, errosLinha);
+        validarValorPlano(valorPlano, numeroLinha, errosLinha);
+        validarAplicativo(aplicativo, numeroLinha, errosLinha);
+        validarUsuarioAplicativo(usuarioAplicativo || '', 'Usuário do aplicativo 1', numeroLinha, errosLinha);
+        validarSenhaAplicativo(senhaAplicativo || '', 'Senha do aplicativo 1', numeroLinha, errosLinha);
+        validarUsuarioAplicativo(usuarioAplicativo2 || '', 'Usuário do aplicativo 2', numeroLinha, errosLinha);
+        validarSenhaAplicativo(senhaAplicativo2 || '', 'Senha do aplicativo 2', numeroLinha, errosLinha);
+        validarObservacoes(observacoes || '', numeroLinha, errosLinha);
+
+        // Se há erros nesta linha, adicionar aos erros gerais e pular
+        if (errosLinha.length > 0) {
+          erros.push(...errosLinha);
+          clientesRejeitados++;
           continue;
         }
 
-        if (cliente.dia_vencimento < 1 || cliente.dia_vencimento > 31) {
-          console.warn(`Linha ${i + 2}: Dia de vencimento inválido`);
-          cliente.dia_vencimento = 1;
-        }
+        // Montar cliente válido
+        const cliente = {
+          nome,
+          uf: uf ? uf.toUpperCase() : null,
+          telefone: telefone.replace(/\D/g, ''), // Remove caracteres não numéricos
+          servidor,
+          dia_vencimento: parseInt(diaVencimento),
+          valor_plano: valorPlano ? parseFloat(valorPlano) : null,
+          dispositivo_smart: dispositivoSmart,
+          aplicativo,
+          usuario_aplicativo: usuarioAplicativo,
+          senha_aplicativo: senhaAplicativo,
+          data_licenca_aplicativo: dataLicencaAplicativo ? parseDateFromString(dataLicencaAplicativo) : null,
+          dispositivo_smart_2: dispositivoSmart2,
+          aplicativo_2: aplicativo2,
+          usuario_aplicativo_2: usuarioAplicativo2,
+          senha_aplicativo_2: senhaAplicativo2,
+          data_licenca_aplicativo_2: dataLicencaAplicativo2 ? parseDateFromString(dataLicencaAplicativo2) : null,
+          observacoes,
+          user_id: user.id,
+          tela_adicional: !!(dispositivoSmart2 || aplicativo2) // Se tem dispositivo 2 ou app 2, habilita tela adicional
+        };
 
         clientesParaImportar.push(cliente);
       }
 
-      if (clientesParaImportar.length === 0) {
-        throw new Error("Nenhum cliente válido encontrado no arquivo");
+      // Inserir clientes válidos no banco
+      let clientesImportados = 0;
+      if (clientesParaImportar.length > 0) {
+        const { error } = await supabase
+          .from('clientes')
+          .insert(clientesParaImportar);
+
+        if (error) throw error;
+        clientesImportados = clientesParaImportar.length;
       }
 
-      // Inserir clientes no banco
-      const { error } = await supabase
-        .from('clientes')
-        .insert(clientesParaImportar);
+      // Mostrar resultado
+      const mensagemSucesso = clientesImportados > 0 ? 
+        `${clientesImportados} cliente(s) importado(s) com sucesso.` : '';
+      
+      const mensagemErros = clientesRejeitados > 0 ? 
+        `${clientesRejeitados} cliente(s) rejeitado(s).` : '';
 
-      if (error) throw error;
+      const mensagemCompleta = [mensagemSucesso, mensagemErros].filter(Boolean).join(' ');
 
-      toast({
-        title: "Importação concluída",
-        description: `${clientesParaImportar.length} clientes importados com sucesso.`,
-      });
+      if (erros.length > 0) {
+        // Mostrar erros detalhados
+        console.log('Erros de importação:', erros);
+        toast({
+          title: "Importação concluída com avisos",
+          description: mensagemCompleta + " Verifique o console para detalhes dos erros.",
+          variant: clientesImportados > 0 ? "default" : "destructive",
+        });
+      } else {
+        toast({
+          title: "Importação concluída",
+          description: mensagemCompleta,
+        });
+      }
 
-      return { success: true, count: clientesParaImportar.length };
+      return { 
+        success: true, 
+        clientesImportados, 
+        clientesRejeitados, 
+        erros 
+      };
     } catch (error) {
       console.error('Erro ao importar clientes:', error);
       const message = error instanceof Error ? error.message : "Erro desconhecido na importação";
@@ -149,7 +382,13 @@ export const useClienteImportExport = () => {
         description: message,
         variant: "destructive",
       });
-      return { success: false, message };
+      return { 
+        success: false, 
+        clientesImportados: 0, 
+        clientesRejeitados: 0, 
+        erros: [], 
+        message 
+      };
     } finally {
       setIsImporting(false);
     }
