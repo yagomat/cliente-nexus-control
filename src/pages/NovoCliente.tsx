@@ -19,7 +19,9 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useDadosCadastro } from "@/hooks/useDadosCadastro";
+import { useClienteImportExport } from "@/hooks/useClienteImportExport";
 import { toast } from "@/hooks/use-toast";
+
 const formSchema = z.object({
   nome: z.string().min(1, "Nome é obrigatório").max(40, "Nome deve ter no máximo 40 caracteres"),
   telefone: z.string().min(11, "Telefone deve ter 11 dígitos").max(11, "Telefone deve ter 11 dígitos"),
@@ -41,23 +43,20 @@ const formSchema = z.object({
   data_licenca_aplicativo_2: z.date().optional(),
   observacoes: z.string().max(150, "Observações devem ter no máximo 150 caracteres").optional()
 });
+
 type FormData = z.infer<typeof formSchema>;
+
 const estados = ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"];
+
 export default function NovoCliente() {
   const navigate = useNavigate();
-  const {
-    user
-  } = useAuth();
-  const {
-    servidores,
-    aplicativos,
-    dispositivos,
-    valoresPlano,
-    loading: dadosLoading
-  } = useDadosCadastro();
+  const { user } = useAuth();
+  const { servidores, aplicativos, dispositivos, valoresPlano, loading: dadosLoading } = useDadosCadastro();
+  const { padronizarDadosCliente } = useClienteImportExport();
   const [isLoading, setIsLoading] = useState(false);
   const [dateOpen, setDateOpen] = useState(false);
   const [dateOpen2, setDateOpen2] = useState(false);
+
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -66,11 +65,13 @@ export default function NovoCliente() {
       codigo_pais: "55"
     }
   });
+
   const onSubmit = async (data: FormData) => {
     if (!user) return;
     setIsLoading(true);
+    
     try {
-      const insertData = {
+      const rawData = {
         nome: data.nome,
         telefone: data.telefone,
         uf: data.uf || null,
@@ -91,14 +92,21 @@ export default function NovoCliente() {
         observacoes: data.observacoes || null,
         user_id: user.id
       };
-      const {
-        error
-      } = await supabase.from('clientes').insert([insertData]);
+
+      // Aplicar padronização antes de inserir
+      const insertData = padronizarDadosCliente(rawData);
+
+      const { error } = await supabase
+        .from('clientes')
+        .insert([insertData]);
+
       if (error) throw error;
+
       toast({
         title: "Cliente cadastrado com sucesso!",
         description: "O cliente foi adicionado à sua lista."
       });
+
       navigate('/clientes');
     } catch (error) {
       console.error('Erro ao cadastrar cliente:', error);
@@ -111,7 +119,9 @@ export default function NovoCliente() {
       setIsLoading(false);
     }
   };
-  return <div className="container mx-auto p-6 max-w-2xl px-0 py-0">
+
+  return (
+    <div className="container mx-auto p-6 max-w-2xl px-0 py-0">
       <div className="flex items-center gap-4 mb-6">
         <Button variant="ghost" size="sm" onClick={() => navigate('/clientes')} className="flex items-center gap-2">
           <ArrowLeft className="h-4 w-4" />
@@ -383,5 +393,6 @@ export default function NovoCliente() {
           </Button>
         </div>
       </form>
-    </div>;
+    </div>
+  );
 }

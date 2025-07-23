@@ -19,7 +19,9 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useDadosCadastro } from "@/hooks/useDadosCadastro";
+import { useClienteImportExport } from "@/hooks/useClienteImportExport";
 import { toast } from "@/hooks/use-toast";
+
 const formSchema = z.object({
   nome: z.string().min(1, "Nome é obrigatório").max(40, "Nome deve ter no máximo 40 caracteres"),
   telefone: z.string().min(11, "Telefone deve ter 11 dígitos").max(11, "Telefone deve ter 11 dígitos"),
@@ -41,26 +43,22 @@ const formSchema = z.object({
   data_licenca_aplicativo_2: z.date().optional(),
   observacoes: z.string().max(150, "Observações devem ter no máximo 150 caracteres").optional()
 });
+
 type FormData = z.infer<typeof formSchema>;
+
 const estados = ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"];
+
 export default function EditarCliente() {
   const navigate = useNavigate();
-  const {
-    id
-  } = useParams();
-  const {
-    user
-  } = useAuth();
-  const {
-    servidores,
-    aplicativos,
-    dispositivos,
-    valoresPlano
-  } = useDadosCadastro();
+  const { id } = useParams();
+  const { user } = useAuth();
+  const { servidores, aplicativos, dispositivos, valoresPlano } = useDadosCadastro();
+  const { padronizarDadosCliente } = useClienteImportExport();
   const [isLoading, setIsLoading] = useState(false);
   const [loadingCliente, setLoadingCliente] = useState(true);
   const [dateOpen, setDateOpen] = useState(false);
   const [dateOpen2, setDateOpen2] = useState(false);
+
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -69,18 +67,24 @@ export default function EditarCliente() {
       codigo_pais: "55"
     }
   });
+
   useEffect(() => {
     if (id && user) {
       loadCliente();
     }
   }, [id, user]);
+
   const loadCliente = async () => {
     try {
-      const {
-        data,
-        error
-      } = await supabase.from('clientes').select('*').eq('id', id).eq('user_id', user?.id).single();
+      const { data, error } = await supabase
+        .from('clientes')
+        .select('*')
+        .eq('id', id)
+        .eq('user_id', user?.id)
+        .single();
+
       if (error) throw error;
+
       if (!data) {
         toast({
           title: "Cliente não encontrado",
@@ -125,11 +129,13 @@ export default function EditarCliente() {
       setLoadingCliente(false);
     }
   };
+
   const onSubmit = async (data: FormData) => {
     if (!user || !id) return;
     setIsLoading(true);
+
     try {
-      const updateData = {
+      const rawData = {
         nome: data.nome,
         telefone: data.telefone,
         uf: data.uf || null,
@@ -150,14 +156,23 @@ export default function EditarCliente() {
         observacoes: data.observacoes || null,
         updated_at: new Date().toISOString()
       };
-      const {
-        error
-      } = await supabase.from('clientes').update(updateData).eq('id', id).eq('user_id', user.id);
+
+      // Aplicar padronização antes de atualizar
+      const updateData = padronizarDadosCliente(rawData);
+
+      const { error } = await supabase
+        .from('clientes')
+        .update(updateData)
+        .eq('id', id)
+        .eq('user_id', user.id);
+
       if (error) throw error;
+
       toast({
         title: "Cliente atualizado com sucesso!",
         description: "As informações do cliente foram atualizadas."
       });
+
       navigate('/clientes');
     } catch (error) {
       console.error('Erro ao atualizar cliente:', error);
@@ -170,14 +185,19 @@ export default function EditarCliente() {
       setIsLoading(false);
     }
   };
+
   if (loadingCliente) {
-    return <div className="container mx-auto p-6 max-w-2xl">
+    return (
+      <div className="container mx-auto p-6 max-w-2xl">
         <div className="flex items-center justify-center h-32">
           <p>Carregando dados do cliente...</p>
         </div>
-      </div>;
+      </div>
+    );
   }
-  return <div className="container mx-auto p-6 max-w-2xl py-0 px-0">
+
+  return (
+    <div className="container mx-auto p-6 max-w-2xl py-0 px-0">
       <div className="flex items-center gap-4 mb-6">
         <Button variant="ghost" size="sm" onClick={() => navigate('/clientes')} className="flex items-center gap-2">
           <ArrowLeft className="h-4 w-4" />
@@ -449,5 +469,6 @@ export default function EditarCliente() {
           </Button>
         </div>
       </form>
-    </div>;
+    </div>
+  );
 }

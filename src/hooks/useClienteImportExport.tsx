@@ -33,6 +33,102 @@ export const useClienteImportExport = () => {
     'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
   ];
 
+  // Funções de padronização
+  const padronizarNome = (nome: string): string => {
+    if (!nome) return '';
+    return nome.trim().replace(/\s+/g, ' ');
+  };
+
+  const padronizarUF = (uf: string): string => {
+    if (!uf) return '';
+    return uf.trim().toUpperCase();
+  };
+
+  const padronizarTelefone = (telefone: string): string => {
+    if (!telefone) return '';
+    return telefone.replace(/\D/g, '');
+  };
+
+  const padronizarCodigoPais = (codigo: string): string => {
+    if (!codigo) return '';
+    return codigo.replace(/\D/g, '');
+  };
+
+  const padronizarValorPlano = (valor: string): number | null => {
+    if (!valor) return null;
+    
+    // Remove símbolos monetários e caracteres não numéricos, exceto vírgula e ponto
+    const valorLimpo = valor.toString()
+      .replace(/[R$\s]/g, '')
+      .replace(/[^\d,.]/g, '');
+    
+    // Trata vírgula como separador decimal brasileiro
+    const valorFormatado = valorLimpo.replace(',', '.');
+    
+    const numeroValor = parseFloat(valorFormatado);
+    return isNaN(numeroValor) ? null : numeroValor;
+  };
+
+  const padronizarTexto = (texto: string): string => {
+    if (!texto) return '';
+    return texto.trim().replace(/\s+/g, ' ');
+  };
+
+  const padronizarData = (data: string): string | null => {
+    if (!data) return null;
+    
+    try {
+      // Tentar diferentes formatos de data
+      const formats = [
+        /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/, // DD/MM/YYYY
+        /^(\d{4})-(\d{1,2})-(\d{1,2})$/, // YYYY-MM-DD
+      ];
+
+      for (const format of formats) {
+        const match = data.match(format);
+        if (match) {
+          let day, month, year;
+          if (format === formats[0]) { // DD/MM/YYYY
+            [, day, month, year] = match;
+          } else { // YYYY-MM-DD
+            [, year, month, day] = match;
+          }
+          
+          const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+          if (!isNaN(date.getTime())) {
+            return date.toISOString().split('T')[0];
+          }
+        }
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
+  // Função para padronizar dados de cliente
+  const padronizarDadosCliente = (cliente: any) => {
+    return {
+      ...cliente,
+      nome: padronizarNome(cliente.nome),
+      uf: cliente.uf ? padronizarUF(cliente.uf) : null,
+      telefone: cliente.telefone ? padronizarTelefone(cliente.telefone) : null,
+      servidor: padronizarTexto(cliente.servidor),
+      valor_plano: cliente.valor_plano ? padronizarValorPlano(cliente.valor_plano.toString()) : null,
+      dispositivo_smart: cliente.dispositivo_smart ? padronizarTexto(cliente.dispositivo_smart) : null,
+      aplicativo: padronizarTexto(cliente.aplicativo),
+      usuario_aplicativo: cliente.usuario_aplicativo ? padronizarTexto(cliente.usuario_aplicativo) : null,
+      senha_aplicativo: cliente.senha_aplicativo ? padronizarTexto(cliente.senha_aplicativo) : null,
+      data_licenca_aplicativo: cliente.data_licenca_aplicativo ? padronizarData(cliente.data_licenca_aplicativo) : null,
+      dispositivo_smart_2: cliente.dispositivo_smart_2 ? padronizarTexto(cliente.dispositivo_smart_2) : null,
+      aplicativo_2: cliente.aplicativo_2 ? padronizarTexto(cliente.aplicativo_2) : null,
+      usuario_aplicativo_2: cliente.usuario_aplicativo_2 ? padronizarTexto(cliente.usuario_aplicativo_2) : null,
+      senha_aplicativo_2: cliente.senha_aplicativo_2 ? padronizarTexto(cliente.senha_aplicativo_2) : null,
+      data_licenca_aplicativo_2: cliente.data_licenca_aplicativo_2 ? padronizarData(cliente.data_licenca_aplicativo_2) : null,
+      observacoes: cliente.observacoes ? padronizarTexto(cliente.observacoes) : null,
+    };
+  };
+
   const exportarClientes = async (clientes: any[]) => {
     setIsExporting(true);
     try {
@@ -267,32 +363,32 @@ export const useClienteImportExport = () => {
           continue; // Pular linhas vazias
         }
 
-        // Validar cada campo
-        const nome = row[1]?.toString().trim();
-        const uf = row[2]?.toString().trim() || null;
-        const telefone = row[3]?.toString().trim() || null; // Agora pode ser null
-        const servidor = row[4]?.toString().trim();
+        // Padronizar dados antes da validação
+        const nome = padronizarNome(row[1]?.toString() || '');
+        const uf = row[2] ? padronizarUF(row[2].toString()) : null;
+        const telefone = row[3] ? padronizarTelefone(row[3].toString()) : null;
+        const servidor = padronizarTexto(row[4]?.toString() || '');
         const diaVencimento = row[5]?.toString().trim();
-        const valorPlano = row[6]?.toString().trim();
-        const dispositivoSmart = row[7]?.toString().trim() || null;
-        const aplicativo = row[8]?.toString().trim();
-        const usuarioAplicativo = row[9]?.toString().trim() || null;
-        const senhaAplicativo = row[10]?.toString().trim() || null;
-        const dataLicencaAplicativo = row[11]?.toString().trim();
-        const dispositivoSmart2 = row[12]?.toString().trim() || null;
-        const aplicativo2 = row[13]?.toString().trim() || null;
-        const usuarioAplicativo2 = row[14]?.toString().trim() || null;
-        const senhaAplicativo2 = row[15]?.toString().trim() || null;
-        const dataLicencaAplicativo2 = row[16]?.toString().trim();
-        const observacoes = row[17]?.toString().trim() || null;
+        const valorPlano = row[6] ? padronizarValorPlano(row[6].toString()) : null;
+        const dispositivoSmart = row[7] ? padronizarTexto(row[7].toString()) : null;
+        const aplicativo = padronizarTexto(row[8]?.toString() || '');
+        const usuarioAplicativo = row[9] ? padronizarTexto(row[9].toString()) : null;
+        const senhaAplicativo = row[10] ? padronizarTexto(row[10].toString()) : null;
+        const dataLicencaAplicativo = row[11] ? padronizarData(row[11].toString()) : null;
+        const dispositivoSmart2 = row[12] ? padronizarTexto(row[12].toString()) : null;
+        const aplicativo2 = row[13] ? padronizarTexto(row[13].toString()) : null;
+        const usuarioAplicativo2 = row[14] ? padronizarTexto(row[14].toString()) : null;
+        const senhaAplicativo2 = row[15] ? padronizarTexto(row[15].toString()) : null;
+        const dataLicencaAplicativo2 = row[16] ? padronizarData(row[16].toString()) : null;
+        const observacoes = row[17] ? padronizarTexto(row[17].toString()) : null;
 
         // Executar todas as validações
         validarNome(nome, numeroLinha, errosLinha);
         validarUF(uf || '', numeroLinha, errosLinha);
-        validarTelefone(telefone || '', numeroLinha, errosLinha); // Agora opcional
+        validarTelefone(telefone || '', numeroLinha, errosLinha);
         validarServidor(servidor, numeroLinha, errosLinha);
         validarDiaVencimento(diaVencimento, numeroLinha, errosLinha);
-        validarValorPlano(valorPlano, numeroLinha, errosLinha);
+        validarValorPlano(valorPlano?.toString() || '', numeroLinha, errosLinha);
         validarAplicativo(aplicativo, numeroLinha, errosLinha);
         validarUsuarioAplicativo(usuarioAplicativo || '', 'Usuário do aplicativo 1', numeroLinha, errosLinha);
         validarSenhaAplicativo(senhaAplicativo || '', 'Senha do aplicativo 1', numeroLinha, errosLinha);
@@ -307,24 +403,24 @@ export const useClienteImportExport = () => {
           continue;
         }
 
-        // Montar cliente válido
+        // Montar cliente válido com dados padronizados
         const cliente = {
           nome,
-          uf: uf ? uf.toUpperCase() : null,
-          telefone: telefone ? telefone.replace(/\D/g, '') : null, // Pode ser null agora
+          uf,
+          telefone,
           servidor,
           dia_vencimento: parseInt(diaVencimento),
-          valor_plano: valorPlano ? parseFloat(valorPlano) : null,
+          valor_plano: valorPlano,
           dispositivo_smart: dispositivoSmart,
           aplicativo,
           usuario_aplicativo: usuarioAplicativo,
           senha_aplicativo: senhaAplicativo,
-          data_licenca_aplicativo: dataLicencaAplicativo ? parseDateFromString(dataLicencaAplicativo) : null,
+          data_licenca_aplicativo: dataLicencaAplicativo,
           dispositivo_smart_2: dispositivoSmart2,
           aplicativo_2: aplicativo2,
           usuario_aplicativo_2: usuarioAplicativo2,
           senha_aplicativo_2: senhaAplicativo2,
-          data_licenca_aplicativo_2: dataLicencaAplicativo2 ? parseDateFromString(dataLicencaAplicativo2) : null,
+          data_licenca_aplicativo_2: dataLicencaAplicativo2,
           observacoes,
           user_id: user.id,
           tela_adicional: !!(dispositivoSmart2 || aplicativo2)
@@ -393,38 +489,13 @@ export const useClienteImportExport = () => {
 
   // Função auxiliar para converter string de data para formato ISO
   const parseDateFromString = (dateString: string): string | null => {
-    try {
-      // Tentar diferentes formatos de data
-      const formats = [
-        /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/, // DD/MM/YYYY
-        /^(\d{4})-(\d{1,2})-(\d{1,2})$/, // YYYY-MM-DD
-      ];
-
-      for (const format of formats) {
-        const match = dateString.match(format);
-        if (match) {
-          let day, month, year;
-          if (format === formats[0]) { // DD/MM/YYYY
-            [, day, month, year] = match;
-          } else { // YYYY-MM-DD
-            [, year, month, day] = match;
-          }
-          
-          const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-          if (!isNaN(date.getTime())) {
-            return date.toISOString().split('T')[0];
-          }
-        }
-      }
-      return null;
-    } catch {
-      return null;
-    }
+    return padronizarData(dateString);
   };
 
   return {
     exportarClientes,
     importarClientes,
+    padronizarDadosCliente,
     isExporting,
     isImporting,
     importErrors,
