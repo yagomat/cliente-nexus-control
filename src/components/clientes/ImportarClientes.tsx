@@ -4,13 +4,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRef } from "react";
 import { useClienteImportExport } from "@/hooks/useClienteImportExport";
+import { ImportErrorDialog } from "./ImportErrorDialog";
 
 interface ImportarClientesProps {
   onImportComplete: () => void;
 }
 
 export const ImportarClientes = ({ onImportComplete }: ImportarClientesProps) => {
-  const { importarClientes, isImporting } = useClienteImportExport();
+  const { 
+    importarClientes, 
+    isImporting, 
+    importErrors, 
+    showErrorDialog, 
+    setShowErrorDialog 
+  } = useClienteImportExport();
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImport = () => {
@@ -59,6 +67,12 @@ export const ImportarClientes = ({ onImportComplete }: ImportarClientesProps) =>
         accept=".xlsx,.xls,.ods"
         onChange={handleFileChange}
         className="hidden"
+      />
+
+      <ImportErrorDialog
+        open={showErrorDialog}
+        onOpenChange={setShowErrorDialog}
+        errors={importErrors}
       />
     </>
   );

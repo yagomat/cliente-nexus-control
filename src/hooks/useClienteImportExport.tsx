@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import * as XLSX from 'xlsx';
 import { supabase } from "@/integrations/supabase/client";
@@ -24,6 +23,8 @@ export const useClienteImportExport = () => {
   const { user } = useAuth();
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [importErrors, setImportErrors] = useState<ImportError[]>([]);
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
 
   // Estados válidos do Brasil
   const ESTADOS_VALIDOS = [
@@ -120,11 +121,10 @@ export const useClienteImportExport = () => {
     return true;
   };
 
-  // Função para validar telefone
+  // Função para validar telefone (agora opcional)
   const validarTelefone = (telefone: string, linha: number, erros: ImportError[]) => {
     if (!telefone || telefone.trim() === '') {
-      erros.push({ linha, campo: 'Telefone', valor: telefone, erro: 'Telefone é obrigatório' });
-      return false;
+      return true; // Telefone agora é opcional
     }
     
     // Remove caracteres não numéricos
@@ -270,7 +270,7 @@ export const useClienteImportExport = () => {
         // Validar cada campo
         const nome = row[1]?.toString().trim();
         const uf = row[2]?.toString().trim() || null;
-        const telefone = row[3]?.toString().trim();
+        const telefone = row[3]?.toString().trim() || null; // Agora pode ser null
         const servidor = row[4]?.toString().trim();
         const diaVencimento = row[5]?.toString().trim();
         const valorPlano = row[6]?.toString().trim();
@@ -289,7 +289,7 @@ export const useClienteImportExport = () => {
         // Executar todas as validações
         validarNome(nome, numeroLinha, errosLinha);
         validarUF(uf || '', numeroLinha, errosLinha);
-        validarTelefone(telefone, numeroLinha, errosLinha);
+        validarTelefone(telefone || '', numeroLinha, errosLinha); // Agora opcional
         validarServidor(servidor, numeroLinha, errosLinha);
         validarDiaVencimento(diaVencimento, numeroLinha, errosLinha);
         validarValorPlano(valorPlano, numeroLinha, errosLinha);
@@ -311,7 +311,7 @@ export const useClienteImportExport = () => {
         const cliente = {
           nome,
           uf: uf ? uf.toUpperCase() : null,
-          telefone: telefone.replace(/\D/g, ''), // Remove caracteres não numéricos
+          telefone: telefone ? telefone.replace(/\D/g, '') : null, // Pode ser null agora
           servidor,
           dia_vencimento: parseInt(diaVencimento),
           valor_plano: valorPlano ? parseFloat(valorPlano) : null,
@@ -327,7 +327,7 @@ export const useClienteImportExport = () => {
           data_licenca_aplicativo_2: dataLicencaAplicativo2 ? parseDateFromString(dataLicencaAplicativo2) : null,
           observacoes,
           user_id: user.id,
-          tela_adicional: !!(dispositivoSmart2 || aplicativo2) // Se tem dispositivo 2 ou app 2, habilita tela adicional
+          tela_adicional: !!(dispositivoSmart2 || aplicativo2)
         };
 
         clientesParaImportar.push(cliente);
@@ -344,6 +344,12 @@ export const useClienteImportExport = () => {
         clientesImportados = clientesParaImportar.length;
       }
 
+      // Salvar erros para exibir no diálogo
+      if (erros.length > 0) {
+        setImportErrors(erros);
+        setShowErrorDialog(true);
+      }
+
       // Mostrar resultado
       const mensagemSucesso = clientesImportados > 0 ? 
         `${clientesImportados} cliente(s) importado(s) com sucesso.` : '';
@@ -353,20 +359,11 @@ export const useClienteImportExport = () => {
 
       const mensagemCompleta = [mensagemSucesso, mensagemErros].filter(Boolean).join(' ');
 
-      if (erros.length > 0) {
-        // Mostrar erros detalhados
-        console.log('Erros de importação:', erros);
-        toast({
-          title: "Importação concluída com avisos",
-          description: mensagemCompleta + " Verifique o console para detalhes dos erros.",
-          variant: clientesImportados > 0 ? "default" : "destructive",
-        });
-      } else {
-        toast({
-          title: "Importação concluída",
-          description: mensagemCompleta,
-        });
-      }
+      toast({
+        title: "Importação concluída",
+        description: mensagemCompleta,
+        variant: clientesImportados > 0 ? "default" : "destructive",
+      });
 
       return { 
         success: true, 
@@ -429,6 +426,9 @@ export const useClienteImportExport = () => {
     exportarClientes,
     importarClientes,
     isExporting,
-    isImporting
+    isImporting,
+    importErrors,
+    showErrorDialog,
+    setShowErrorDialog
   };
 };
