@@ -4,6 +4,7 @@ import { Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ExportarClientes } from "./ExportarClientes";
 import { ImportarClientes } from "./ImportarClientes";
+import { ImportExportInfoModal } from "./ImportExportInfoModal";
 
 interface ClienteHeaderProps {
   clientes?: any[];
@@ -19,10 +20,12 @@ export const ClienteHeader = ({ clientes = [], onImportComplete }: ClienteHeader
         <ImportarClientes onImportComplete={onImportComplete || (() => {})} />
       </div>
 
-      <p className="text-sm text-muted-foreground mb-4">
-        Exportar: Baixa todos os clientes em Excel<br/>
-        Importar: Arquivo deve ter as colunas na ordem: Data cadastro, Nome, UF, Telefone, Servidor, Dia vencimento, Valor plano, Dispositivo 1, App 1, Usuário 1, Senha 1, Vencimento licença 1, Dispositivo 2, App 2, Usuário 2, Senha 2, Vencimento licença 2, Observações
-      </p>
+      <div className="flex items-center gap-2 mb-4">
+        <p className="text-sm text-muted-foreground">
+          Informações sobre exportação / importação
+        </p>
+        <ImportExportInfoModal />
+      </div>
 
       {/* Botão Novo Cliente */}
       <Link to="/clientes/novo">
