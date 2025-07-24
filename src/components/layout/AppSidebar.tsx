@@ -1,4 +1,3 @@
-
 import { NavLink, useLocation } from "react-router-dom";
 import { 
   LayoutGrid, 
@@ -29,7 +28,7 @@ const items = [
 ];
 
 export function AppSidebar() {
-  const { state, isMobile } = useSidebar();
+  const { state } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
   const isCollapsed = state === "collapsed";
@@ -61,14 +60,11 @@ export function AppSidebar() {
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton 
-                    asChild 
-                    className="mb-1 h-12"
-                    tooltip={isCollapsed ? item.title : undefined}
-                  >
+                  <SidebarMenuButton asChild className="mb-1 h-12">
                     <NavLink 
                       to={item.url} 
                       className={getNavClass}
+                      title={isCollapsed ? item.title : undefined}
                     >
                       <item.icon className="h-5 w-5 shrink-0" />
                       {!isCollapsed && <span>{item.title}</span>}
