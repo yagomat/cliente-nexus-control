@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import * as XLSX from 'xlsx';
 import { supabase } from "@/integrations/supabase/client";
@@ -137,7 +138,7 @@ export const useClienteImportExport = () => {
         'Data de cadastro': new Date(cliente.created_at).toLocaleDateString('pt-BR'),
         'Nome': cliente.nome,
         'UF': cliente.uf || '',
-        'Telefone': cliente.telefone,
+        'Telefone': cliente.telefone || '',
         'Servidor': cliente.servidor,
         'Dia de vencimento': cliente.dia_vencimento,
         'Valor do Plano': cliente.valor_plano || '',
@@ -217,10 +218,10 @@ export const useClienteImportExport = () => {
     return true;
   };
 
-  // Função para validar telefone (agora opcional)
+  // Função para validar telefone (opcional)
   const validarTelefone = (telefone: string, linha: number, erros: ImportError[]) => {
     if (!telefone || telefone.trim() === '') {
-      return true; // Telefone agora é opcional
+      return true; // Telefone é opcional
     }
     
     // Remove caracteres não numéricos
@@ -332,6 +333,55 @@ export const useClienteImportExport = () => {
     return true;
   };
 
+  // Função para converter erros de banco em erros de validação
+  const converterErroBanco = (error: any, clientesComErro: any[]): ImportError[] => {
+    const errosConvertidos: ImportError[] = [];
+    
+    console.error('Erro do banco de dados:', error);
+    
+    if (error.message) {
+      // Tentar identificar o tipo de erro e mapear para erros mais legíveis
+      if (error.message.includes('violates not-null constraint')) {
+        errosConvertidos.push({
+          linha: 0,
+          campo: 'Banco de dados',
+          valor: '',
+          erro: 'Campo obrigatório não pode estar vazio'
+        });
+      } else if (error.message.includes('value too long')) {
+        errosConvertidos.push({
+          linha: 0,
+          campo: 'Banco de dados',
+          valor: '',
+          erro: 'Valor excede o tamanho máximo permitido'
+        });
+      } else if (error.message.includes('invalid input syntax')) {
+        errosConvertidos.push({
+          linha: 0,
+          campo: 'Banco de dados',
+          valor: '',
+          erro: 'Formato de dados inválido'
+        });
+      } else {
+        errosConvertidos.push({
+          linha: 0,
+          campo: 'Banco de dados',
+          valor: '',
+          erro: `Erro de banco: ${error.message}`
+        });
+      }
+    } else {
+      errosConvertidos.push({
+        linha: 0,
+        campo: 'Banco de dados',
+        valor: '',
+        erro: 'Erro desconhecido ao salvar no banco de dados'
+      });
+    }
+    
+    return errosConvertidos;
+  };
+
   const importarClientes = async (file: File): Promise<ImportResult> => {
     if (!user) return { success: false, clientesImportados: 0, clientesRejeitados: 0, erros: [], message: "Usuário não autenticado" };
 
@@ -353,6 +403,8 @@ export const useClienteImportExport = () => {
       const erros: ImportError[] = [];
       let clientesRejeitados = 0;
 
+      console.log(`Processando ${rows.length} linhas do arquivo`);
+
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
         const numeroLinha = i + 2; // +2 porque pulamos cabeçalho e arrays começam em 0
@@ -362,6 +414,8 @@ export const useClienteImportExport = () => {
         if (!row[1] || row[1].toString().trim() === '') {
           continue; // Pular linhas vazias
         }
+
+        console.log(`Processando linha ${numeroLinha}:`, row);
 
         // Padronizar dados antes da validação
         const nome = padronizarNome(row[1]?.toString() || '');
@@ -398,6 +452,7 @@ export const useClienteImportExport = () => {
 
         // Se há erros nesta linha, adicionar aos erros gerais e pular
         if (errosLinha.length > 0) {
+          console.log(`Erros encontrados na linha ${numeroLinha}:`, errosLinha);
           erros.push(...errosLinha);
           clientesRejeitados++;
           continue;
@@ -407,7 +462,7 @@ export const useClienteImportExport = () => {
         const cliente = {
           nome,
           uf,
-          telefone,
+          telefone, // Agora pode ser null pois o banco aceita
           servidor,
           dia_vencimento: parseInt(diaVencimento),
           valor_plano: valorPlano,
@@ -426,22 +481,36 @@ export const useClienteImportExport = () => {
           tela_adicional: !!(dispositivoSmart2 || aplicativo2)
         };
 
+        console.log(`Cliente válido para importar:`, cliente);
         clientesParaImportar.push(cliente);
       }
 
       // Inserir clientes válidos no banco
       let clientesImportados = 0;
       if (clientesParaImportar.length > 0) {
-        const { error } = await supabase
+        console.log(`Tentando inserir ${clientesParaImportar.length} clientes no banco`);
+        
+        const { data, error } = await supabase
           .from('clientes')
-          .insert(clientesParaImportar);
+          .insert(clientesParaImportar)
+          .select();
 
-        if (error) throw error;
-        clientesImportados = clientesParaImportar.length;
+        if (error) {
+          console.error('Erro ao inserir no banco:', error);
+          
+          // Converter erro de banco em erros de validação
+          const errosBanco = converterErroBanco(error, clientesParaImportar);
+          erros.push(...errosBanco);
+          clientesRejeitados += clientesParaImportar.length;
+        } else {
+          clientesImportados = clientesParaImportar.length;
+          console.log(`${clientesImportados} clientes inseridos com sucesso`);
+        }
       }
 
-      // Salvar erros para exibir no diálogo
+      // Sempre mostrar erros se houver, seja de validação ou banco
       if (erros.length > 0) {
+        console.log(`Total de erros encontrados: ${erros.length}`);
         setImportErrors(erros);
         setShowErrorDialog(true);
       }
@@ -457,29 +526,42 @@ export const useClienteImportExport = () => {
 
       toast({
         title: "Importação concluída",
-        description: mensagemCompleta,
+        description: mensagemCompleta || "Processamento concluído",
         variant: clientesImportados > 0 ? "default" : "destructive",
       });
 
       return { 
-        success: true, 
+        success: clientesImportados > 0 || clientesRejeitados === 0, 
         clientesImportados, 
         clientesRejeitados, 
         erros 
       };
     } catch (error) {
-      console.error('Erro ao importar clientes:', error);
+      console.error('Erro geral na importação:', error);
       const message = error instanceof Error ? error.message : "Erro desconhecido na importação";
+      
+      // Criar erro para mostrar na janela
+      const erroGeral: ImportError[] = [{
+        linha: 0,
+        campo: 'Sistema',
+        valor: '',
+        erro: message
+      }];
+      
+      setImportErrors(erroGeral);
+      setShowErrorDialog(true);
+      
       toast({
         title: "Erro na importação",
         description: message,
         variant: "destructive",
       });
+      
       return { 
         success: false, 
         clientesImportados: 0, 
         clientesRejeitados: 0, 
-        erros: [], 
+        erros: erroGeral, 
         message 
       };
     } finally {

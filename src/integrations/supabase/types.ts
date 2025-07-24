@@ -56,7 +56,7 @@ export type Database = {
           senha_aplicativo_2: string | null
           servidor: string
           tela_adicional: boolean | null
-          telefone: string
+          telefone: string | null
           uf: string | null
           updated_at: string
           user_id: string
@@ -81,7 +81,7 @@ export type Database = {
           senha_aplicativo_2?: string | null
           servidor: string
           tela_adicional?: boolean | null
-          telefone: string
+          telefone?: string | null
           uf?: string | null
           updated_at?: string
           user_id: string
@@ -106,7 +106,7 @@ export type Database = {
           senha_aplicativo_2?: string | null
           servidor?: string
           tela_adicional?: boolean | null
-          telefone?: string
+          telefone?: string | null
           uf?: string | null
           updated_at?: string
           user_id?: string
