@@ -17,7 +17,7 @@ export const ImportExportInfoModal = () => {
           <Info className="h-4 w-4 text-muted-foreground" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-4xl">
         <DialogHeader>
           <DialogTitle>Informações sobre Exportação/Importação</DialogTitle>
         </DialogHeader>
@@ -37,26 +37,9 @@ export const ImportExportInfoModal = () => {
             </p>
             
             <div className="bg-muted p-4 rounded-lg">
-              <ol className="text-sm space-y-1 list-decimal list-inside">
-                <li>Data de cadastro</li>
-                <li>Nome</li>
-                <li>UF</li>
-                <li>Telefone</li>
-                <li>Servidor</li>
-                <li>Dia de vencimento</li>
-                <li>Valor do plano</li>
-                <li>Dispositivo 1</li>
-                <li>App 1</li>
-                <li>Usuário 1</li>
-                <li>Senha 1</li>
-                <li>Vencimento licença 1</li>
-                <li>Dispositivo 2</li>
-                <li>App 2</li>
-                <li>Usuário 2</li>
-                <li>Senha 2</li>
-                <li>Vencimento licença 2</li>
-                <li>Observações</li>
-              </ol>
+              <p className="text-sm leading-relaxed">
+                <strong>Ordem das colunas:</strong> Data de cadastro, Nome, UF, Telefone, Servidor, Dia de vencimento, Valor do plano, Dispositivo 1, App 1, Usuário 1, Senha 1, Vencimento licença 1, Dispositivo 2, App 2, Usuário 2, Senha 2, Vencimento licença 2, Observações.
+              </p>
             </div>
           </div>
 
