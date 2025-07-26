@@ -1,9 +1,9 @@
-
 import { useState } from "react";
 import * as XLSX from 'xlsx';
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
+import { validateImportData, MissingDataItem, normalizeName } from "@/utils/dataValidation";
 
 interface ImportError {
   linha: number;
@@ -26,6 +26,9 @@ export const useClienteImportExport = () => {
   const [isImporting, setIsImporting] = useState(false);
   const [importErrors, setImportErrors] = useState<ImportError[]>([]);
   const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const [missingDataItems, setMissingDataItems] = useState<MissingDataItem[]>([]);
+  const [showApprovalModal, setShowApprovalModal] = useState(false);
+  const [pendingImportData, setPendingImportData] = useState<any[]>([]);
 
   // Estados válidos do Brasil
   const ESTADOS_VALIDOS = [
@@ -382,11 +385,111 @@ export const useClienteImportExport = () => {
     return errosConvertidos;
   };
 
+  // Nova função para cadastrar itens aprovados automaticamente
+  const createApprovedItems = async (approvedItems: MissingDataItem[]) => {
+    const itemsToCreate = approvedItems.filter(item => item.action === 'create');
+    
+    console.log('Criando itens aprovados:', itemsToCreate);
+
+    try {
+      // Agrupar por tipo
+      const servidores = itemsToCreate.filter(item => item.type === 'servidor');
+      const aplicativos = itemsToCreate.filter(item => item.type === 'aplicativo');
+      const dispositivos = itemsToCreate.filter(item => item.type === 'dispositivo');
+
+      // Criar servidores
+      if (servidores.length > 0) {
+        const { error: servidoresError } = await supabase
+          .from('servidores')
+          .insert(servidores.map(item => ({
+            nome: item.normalizedName,
+            user_id: user!.id
+          })));
+        
+        if (servidoresError) {
+          console.error('Erro ao criar servidores:', servidoresError);
+          throw servidoresError;
+        }
+      }
+
+      // Criar aplicativos
+      if (aplicativos.length > 0) {
+        const { error: aplicativosError } = await supabase
+          .from('aplicativos')
+          .insert(aplicativos.map(item => ({
+            nome: item.normalizedName,
+            user_id: user!.id
+          })));
+        
+        if (aplicativosError) {
+          console.error('Erro ao criar aplicativos:', aplicativosError);
+          throw aplicativosError;
+        }
+      }
+
+      // Criar dispositivos
+      if (dispositivos.length > 0) {
+        const { error: dispositivosError } = await supabase
+          .from('dispositivos')
+          .insert(dispositivos.map(item => ({
+            nome: item.normalizedName,
+            user_id: user!.id
+          })));
+        
+        if (dispositivosError) {
+          console.error('Erro ao criar dispositivos:', dispositivosError);
+          throw dispositivosError;
+        }
+      }
+
+      const totalCreated = itemsToCreate.length;
+      if (totalCreated > 0) {
+        toast({
+          title: "Itens cadastrados automaticamente",
+          description: `${totalCreated} novo${totalCreated > 1 ? 's' : ''} item${totalCreated > 1 ? 's' : ''} cadastrado${totalCreated > 1 ? 's' : ''} com sucesso.`,
+        });
+      }
+
+    } catch (error) {
+      console.error('Erro ao criar itens aprovados:', error);
+      throw error;
+    }
+  };
+
+  // Função para buscar dados de referência
+  const fetchReferenceData = async () => {
+    if (!user) return null;
+
+    try {
+      const [servidoresRes, aplicativosRes, dispositivosRes] = await Promise.all([
+        supabase.from('servidores').select('id, nome').eq('user_id', user.id),
+        supabase.from('aplicativos').select('id, nome').eq('user_id', user.id),
+        supabase.from('dispositivos').select('id, nome').eq('user_id', user.id)
+      ]);
+
+      return {
+        servidores: servidoresRes.data || [],
+        aplicativos: aplicativosRes.data || [],
+        dispositivos: dispositivosRes.data || []
+      };
+    } catch (error) {
+      console.error('Erro ao buscar dados de referência:', error);
+      return null;
+    }
+  };
+
+  // Função principal de importação atualizada
   const importarClientes = async (file: File): Promise<ImportResult> => {
     if (!user) return { success: false, clientesImportados: 0, clientesRejeitados: 0, erros: [], message: "Usuário não autenticado" };
 
     setIsImporting(true);
     try {
+      // Buscar dados de referência
+      const referenceData = await fetchReferenceData();
+      if (!referenceData) {
+        throw new Error("Erro ao carregar dados de referência");
+      }
+
       const data = await file.arrayBuffer();
       const workbook = XLSX.read(data, { type: 'array' });
       const sheetName = workbook.SheetNames[0];
@@ -399,25 +502,22 @@ export const useClienteImportExport = () => {
 
       // Remover linha de cabeçalho
       const rows = jsonData.slice(1) as any[][];
-      const clientesParaImportar = [];
+      const clientesParaValidar = [];
       const erros: ImportError[] = [];
-      let clientesRejeitados = 0;
 
       console.log(`Processando ${rows.length} linhas do arquivo`);
 
+      // Primeira passagem: validação básica e coleta de dados
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
-        const numeroLinha = i + 2; // +2 porque pulamos cabeçalho e arrays começam em 0
+        const numeroLinha = i + 2;
         const errosLinha: ImportError[] = [];
         
-        // Verificar se a linha tem dados suficientes (pelo menos nome)
+        // Verificar se a linha tem dados suficientes
         if (!row[1] || row[1].toString().trim() === '') {
           continue; // Pular linhas vazias
         }
 
-        console.log(`Processando linha ${numeroLinha}:`, row);
-
-        // Padronizar dados antes da validação
         const nome = padronizarNome(row[1]?.toString() || '');
         const uf = row[2] ? padronizarUF(row[2].toString()) : null;
         const telefone = row[3] ? padronizarTelefone(row[3].toString()) : null;
@@ -436,7 +536,6 @@ export const useClienteImportExport = () => {
         const dataLicencaAplicativo2 = row[16] ? padronizarData(row[16].toString()) : null;
         const observacoes = row[17] ? padronizarTexto(row[17].toString()) : null;
 
-        // Executar todas as validações
         validarNome(nome, numeroLinha, errosLinha);
         validarUF(uf || '', numeroLinha, errosLinha);
         validarTelefone(telefone || '', numeroLinha, errosLinha);
@@ -450,19 +549,16 @@ export const useClienteImportExport = () => {
         validarSenhaAplicativo(senhaAplicativo2 || '', 'Senha do aplicativo 2', numeroLinha, errosLinha);
         validarObservacoes(observacoes || '', numeroLinha, errosLinha);
 
-        // Se há erros nesta linha, adicionar aos erros gerais e pular
         if (errosLinha.length > 0) {
-          console.log(`Erros encontrados na linha ${numeroLinha}:`, errosLinha);
           erros.push(...errosLinha);
-          clientesRejeitados++;
           continue;
         }
 
-        // Montar cliente válido com dados padronizados
+        // Montar cliente válido
         const cliente = {
           nome,
           uf,
-          telefone, // Agora pode ser null pois o banco aceita
+          telefone,
           servidor,
           dia_vencimento: parseInt(diaVencimento),
           valor_plano: valorPlano,
@@ -481,66 +577,63 @@ export const useClienteImportExport = () => {
           tela_adicional: !!(dispositivoSmart2 || aplicativo2)
         };
 
-        console.log(`Cliente válido para importar:`, cliente);
-        clientesParaImportar.push(cliente);
+        clientesParaValidar.push(cliente);
       }
 
-      // Inserir clientes válidos no banco
-      let clientesImportados = 0;
-      if (clientesParaImportar.length > 0) {
-        console.log(`Tentando inserir ${clientesParaImportar.length} clientes no banco`);
-        
-        const { data, error } = await supabase
-          .from('clientes')
-          .insert(clientesParaImportar)
-          .select();
+      // Se há erros de validação básica, mostrar e parar
+      if (erros.length > 0) {
+        setImportErrors(erros);
+        setShowErrorDialog(true);
+        return { 
+          success: false, 
+          clientesImportados: 0, 
+          clientesRejeitados: erros.length, 
+          erros 
+        };
+      }
 
-        if (error) {
-          console.error('Erro ao inserir no banco:', error);
+      // Segunda passagem: validação de dados de referência
+      const allMissingItems: MissingDataItem[] = [];
+      
+      for (const cliente of clientesParaValidar) {
+        const missingItems = validateImportData(cliente, referenceData);
+        
+        // Adicionar apenas itens únicos
+        for (const missing of missingItems) {
+          const exists = allMissingItems.some(item => 
+            item.type === missing.type && 
+            item.originalName === missing.originalName
+          );
           
-          // Converter erro de banco em erros de validação
-          const errosBanco = converterErroBanco(error, clientesParaImportar);
-          erros.push(...errosBanco);
-          clientesRejeitados += clientesParaImportar.length;
-        } else {
-          clientesImportados = clientesParaImportar.length;
-          console.log(`${clientesImportados} clientes inseridos com sucesso`);
+          if (!exists) {
+            allMissingItems.push(missing);
+          }
         }
       }
 
-      // Sempre mostrar erros se houver, seja de validação ou banco
-      if (erros.length > 0) {
-        console.log(`Total de erros encontrados: ${erros.length}`);
-        setImportErrors(erros);
-        setShowErrorDialog(true);
+      // Se há itens não cadastrados, mostrar modal de aprovação
+      if (allMissingItems.length > 0) {
+        console.log('Itens não cadastrados encontrados:', allMissingItems);
+        setMissingDataItems(allMissingItems);
+        setPendingImportData(clientesParaValidar);
+        setShowApprovalModal(true);
+        
+        return { 
+          success: false, 
+          clientesImportados: 0, 
+          clientesRejeitados: 0, 
+          erros: [],
+          message: "Aguardando aprovação de novos itens"
+        };
       }
 
-      // Mostrar resultado
-      const mensagemSucesso = clientesImportados > 0 ? 
-        `${clientesImportados} cliente(s) importado(s) com sucesso.` : '';
-      
-      const mensagemErros = clientesRejeitados > 0 ? 
-        `${clientesRejeitados} cliente(s) rejeitado(s).` : '';
+      // Terceira passagem: importação dos clientes
+      return await executeImport(clientesParaValidar);
 
-      const mensagemCompleta = [mensagemSucesso, mensagemErros].filter(Boolean).join(' ');
-
-      toast({
-        title: "Importação concluída",
-        description: mensagemCompleta || "Processamento concluído",
-        variant: clientesImportados > 0 ? "default" : "destructive",
-      });
-
-      return { 
-        success: clientesImportados > 0 || clientesRejeitados === 0, 
-        clientesImportados, 
-        clientesRejeitados, 
-        erros 
-      };
     } catch (error) {
       console.error('Erro geral na importação:', error);
       const message = error instanceof Error ? error.message : "Erro desconhecido na importação";
       
-      // Criar erro para mostrar na janela
       const erroGeral: ImportError[] = [{
         linha: 0,
         campo: 'Sistema',
@@ -569,6 +662,108 @@ export const useClienteImportExport = () => {
     }
   };
 
+  // Função para executar a importação após aprovação
+  const executeImport = async (clientesParaImportar: any[]): Promise<ImportResult> => {
+    if (clientesParaImportar.length === 0) {
+      return { success: true, clientesImportados: 0, clientesRejeitados: 0, erros: [] };
+    }
+
+    try {
+      console.log(`Tentando inserir ${clientesParaImportar.length} clientes no banco`);
+      
+      const { data, error } = await supabase
+        .from('clientes')
+        .insert(clientesParaImportar)
+        .select();
+
+      if (error) {
+        console.error('Erro ao inserir no banco:', error);
+        
+        const errosBanco = converterErroBanco(error, clientesParaImportar);
+        setImportErrors(errosBanco);
+        setShowErrorDialog(true);
+        
+        return { 
+          success: false, 
+          clientesImportados: 0, 
+          clientesRejeitados: clientesParaImportar.length, 
+          erros: errosBanco 
+        };
+      }
+
+      const clientesImportados = clientesParaImportar.length;
+      console.log(`${clientesImportados} clientes inseridos com sucesso`);
+
+      toast({
+        title: "Importação concluída",
+        description: `${clientesImportados} cliente(s) importado(s) com sucesso.`,
+      });
+
+      return { 
+        success: true, 
+        clientesImportados, 
+        clientesRejeitados: 0, 
+        erros: [] 
+      };
+    } catch (error) {
+      console.error('Erro na execução da importação:', error);
+      throw error;
+    }
+  };
+
+  // Função para processar aprovação dos itens
+  const handleApprovalComplete = async (approvedItems: MissingDataItem[]): Promise<ImportResult> => {
+    try {
+      console.log('Processando aprovação:', approvedItems);
+      
+      // Criar itens aprovados automaticamente
+      await createApprovedItems(approvedItems);
+      
+      // Filtrar clientes que devem ser importados (não pular)
+      const itemsToSkip = approvedItems
+        .filter(item => item.action === 'skip')
+        .map(item => item.originalName.toLowerCase());
+      
+      console.log('Itens para pular:', itemsToSkip);
+      
+      const clientesToImport = pendingImportData.filter(cliente => {
+        // Verificar se algum campo do cliente deve ser pulado
+        const shouldSkip = [
+          cliente.servidor,
+          cliente.aplicativo,
+          cliente.aplicativo_2,
+          cliente.dispositivo_smart,
+          cliente.dispositivo_smart_2
+        ].some(field => field && itemsToSkip.includes(field.toLowerCase()));
+        
+        return !shouldSkip;
+      });
+      
+      console.log(`${clientesToImport.length} clientes serão importados após filtros`);
+      
+      // Executar importação
+      const result = await executeImport(clientesToImport);
+      
+      // Limpar estados
+      setShowApprovalModal(false);
+      setMissingDataItems([]);
+      setPendingImportData([]);
+      
+      return result;
+      
+    } catch (error) {
+      console.error('Erro ao processar aprovação:', error);
+      
+      toast({
+        title: "Erro ao processar aprovação",
+        description: "Ocorreu um erro ao cadastrar os novos itens.",
+        variant: "destructive",
+      });
+      
+      throw error;
+    }
+  };
+
   // Função auxiliar para converter string de data para formato ISO
   const parseDateFromString = (dateString: string): string | null => {
     return padronizarData(dateString);
@@ -582,6 +777,10 @@ export const useClienteImportExport = () => {
     isImporting,
     importErrors,
     showErrorDialog,
-    setShowErrorDialog
+    setShowErrorDialog,
+    missingDataItems,
+    showApprovalModal,
+    setShowApprovalModal,
+    handleApprovalComplete
   };
 };

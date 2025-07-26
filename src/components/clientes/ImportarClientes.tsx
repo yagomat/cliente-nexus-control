@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useRef } from "react";
 import { useClienteImportExport } from "@/hooks/useClienteImportExport";
 import { ImportErrorDialog } from "./ImportErrorDialog";
+import { ImportApprovalModal } from "./ImportApprovalModal";
 
 interface ImportarClientesProps {
   onImportComplete: () => void;
@@ -16,7 +17,11 @@ export const ImportarClientes = ({ onImportComplete }: ImportarClientesProps) =>
     isImporting, 
     importErrors, 
     showErrorDialog, 
-    setShowErrorDialog 
+    setShowErrorDialog,
+    missingDataItems,
+    showApprovalModal,
+    setShowApprovalModal,
+    handleApprovalComplete
   } = useClienteImportExport();
   
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -39,7 +44,9 @@ export const ImportarClientes = ({ onImportComplete }: ImportarClientesProps) =>
     }
 
     const result = await importarClientes(file);
-    if (result.success) {
+    
+    // Se a importação foi bem-sucedida ou não precisa de aprovação, completar
+    if (result.success && result.clientesImportados > 0) {
       onImportComplete();
     }
 
@@ -47,6 +54,21 @@ export const ImportarClientes = ({ onImportComplete }: ImportarClientesProps) =>
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+  };
+
+  const handleApproval = async (approvedItems: any[]) => {
+    try {
+      const result = await handleApprovalComplete(approvedItems);
+      if (result.success && result.clientesImportados > 0) {
+        onImportComplete();
+      }
+    } catch (error) {
+      console.error('Erro ao processar aprovação:', error);
+    }
+  };
+
+  const handleApprovalCancel = () => {
+    setShowApprovalModal(false);
   };
 
   return (
@@ -73,6 +95,14 @@ export const ImportarClientes = ({ onImportComplete }: ImportarClientesProps) =>
         open={showErrorDialog}
         onOpenChange={setShowErrorDialog}
         errors={importErrors}
+      />
+
+      <ImportApprovalModal
+        open={showApprovalModal}
+        onOpenChange={setShowApprovalModal}
+        missingItems={missingDataItems}
+        onApprove={handleApproval}
+        onCancel={handleApprovalCancel}
       />
     </>
   );
