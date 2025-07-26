@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import * as XLSX from 'xlsx';
 import { supabase } from "@/integrations/supabase/client";
@@ -528,7 +529,7 @@ export const useClienteImportExport = () => {
           aplicativo_2: aplicativo2,
           usuario_aplicativo_2: usuarioAplicativo2,
           senha_aplicativo_2: senhaAplicativo2,
-          data_licenca_aplicativo_2: dataLicencaAplicativa2,
+          data_licenca_aplicativo_2: dataLicencaAplicativo2,
           observacoes,
           user_id: user.id,
           tela_adicional: !!(dispositivoSmart2 || aplicativo2)
