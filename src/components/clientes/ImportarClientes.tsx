@@ -6,6 +6,7 @@ import { useRef } from "react";
 import { useClienteImportExport } from "@/hooks/useClienteImportExport";
 import { ImportErrorDialog } from "./ImportErrorDialog";
 import { ImportApprovalModal } from "./ImportApprovalModal";
+import { ImportResultModal } from "./ImportResultModal";
 
 interface ImportarClientesProps {
   onImportComplete: () => void;
@@ -21,7 +22,10 @@ export const ImportarClientes = ({ onImportComplete }: ImportarClientesProps) =>
     missingDataItems,
     showApprovalModal,
     setShowApprovalModal,
-    handleApprovalComplete
+    handleApprovalComplete,
+    showResultModal,
+    setShowResultModal,
+    importResult
   } = useClienteImportExport();
   
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -45,8 +49,8 @@ export const ImportarClientes = ({ onImportComplete }: ImportarClientesProps) =>
 
     const result = await importarClientes(file);
     
-    // Se a importação foi bem-sucedida ou não precisa de aprovação, completar
-    if (result.success && result.clientesImportados > 0) {
+    // Se a importação foi bem-sucedida sem modal de aprovação, completar
+    if (result.success && (result.clientesImportados > 0 || result.clientesDuplicados > 0)) {
       onImportComplete();
     }
 
@@ -59,7 +63,7 @@ export const ImportarClientes = ({ onImportComplete }: ImportarClientesProps) =>
   const handleApproval = async (approvedItems: any[]) => {
     try {
       const result = await handleApprovalComplete(approvedItems);
-      if (result.success && result.clientesImportados > 0) {
+      if (result.success && (result.clientesImportados > 0 || result.clientesDuplicados > 0)) {
         onImportComplete();
       }
     } catch (error) {
@@ -69,6 +73,13 @@ export const ImportarClientes = ({ onImportComplete }: ImportarClientesProps) =>
 
   const handleApprovalCancel = () => {
     setShowApprovalModal(false);
+  };
+
+  const handleResultModalClose = () => {
+    setShowResultModal(false);
+    if (importResult.success && (importResult.clientesImportados > 0 || importResult.clientesDuplicados > 0)) {
+      onImportComplete();
+    }
   };
 
   return (
@@ -103,6 +114,15 @@ export const ImportarClientes = ({ onImportComplete }: ImportarClientesProps) =>
         missingItems={missingDataItems}
         onApprove={handleApproval}
         onCancel={handleApprovalCancel}
+      />
+
+      <ImportResultModal
+        open={showResultModal}
+        onOpenChange={handleResultModalClose}
+        clientesImportados={importResult.clientesImportados}
+        clientesRejeitados={importResult.clientesRejeitados}
+        erros={importResult.erros}
+        duplicados={importResult.clientesDuplicados}
       />
     </>
   );

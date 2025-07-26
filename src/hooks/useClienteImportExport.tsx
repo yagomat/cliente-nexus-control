@@ -16,6 +16,7 @@ interface ImportResult {
   success: boolean;
   clientesImportados: number;
   clientesRejeitados: number;
+  clientesDuplicados: number;
   erros: ImportError[];
   message?: string;
 }
@@ -29,6 +30,14 @@ export const useClienteImportExport = () => {
   const [missingDataItems, setMissingDataItems] = useState<MissingDataItem[]>([]);
   const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [pendingImportData, setPendingImportData] = useState<any[]>([]);
+  const [showResultModal, setShowResultModal] = useState(false);
+  const [importResult, setImportResult] = useState<ImportResult>({
+    success: false,
+    clientesImportados: 0,
+    clientesRejeitados: 0,
+    clientesDuplicados: 0,
+    erros: []
+  });
 
   // Estados válidos do Brasil
   const ESTADOS_VALIDOS = [
@@ -37,7 +46,6 @@ export const useClienteImportExport = () => {
     'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
   ];
 
-  // Funções de padronização
   const padronizarNome = (nome: string): string => {
     if (!nome) return '';
     return nome.trim().replace(/\s+/g, ' ');
@@ -61,12 +69,10 @@ export const useClienteImportExport = () => {
   const padronizarValorPlano = (valor: string): number | null => {
     if (!valor) return null;
     
-    // Remove símbolos monetários e caracteres não numéricos, exceto vírgula e ponto
     const valorLimpo = valor.toString()
       .replace(/[R$\s]/g, '')
       .replace(/[^\d,.]/g, '');
     
-    // Trata vírgula como separador decimal brasileiro
     const valorFormatado = valorLimpo.replace(',', '.');
     
     const numeroValor = parseFloat(valorFormatado);
@@ -82,19 +88,18 @@ export const useClienteImportExport = () => {
     if (!data) return null;
     
     try {
-      // Tentar diferentes formatos de data
       const formats = [
-        /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/, // DD/MM/YYYY
-        /^(\d{4})-(\d{1,2})-(\d{1,2})$/, // YYYY-MM-DD
+        /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/,
+        /^(\d{4})-(\d{1,2})-(\d{1,2})$/,
       ];
 
       for (const format of formats) {
         const match = data.match(format);
         if (match) {
           let day, month, year;
-          if (format === formats[0]) { // DD/MM/YYYY
+          if (format === formats[0]) {
             [, day, month, year] = match;
-          } else { // YYYY-MM-DD
+          } else {
             [, year, month, day] = match;
           }
           
@@ -110,80 +115,6 @@ export const useClienteImportExport = () => {
     }
   };
 
-  // Função para padronizar dados de cliente
-  const padronizarDadosCliente = (cliente: any) => {
-    return {
-      ...cliente,
-      nome: padronizarNome(cliente.nome),
-      uf: cliente.uf ? padronizarUF(cliente.uf) : null,
-      telefone: cliente.telefone ? padronizarTelefone(cliente.telefone) : null,
-      servidor: padronizarTexto(cliente.servidor),
-      valor_plano: cliente.valor_plano ? padronizarValorPlano(cliente.valor_plano.toString()) : null,
-      dispositivo_smart: cliente.dispositivo_smart ? padronizarTexto(cliente.dispositivo_smart) : null,
-      aplicativo: padronizarTexto(cliente.aplicativo),
-      usuario_aplicativo: cliente.usuario_aplicativo ? padronizarTexto(cliente.usuario_aplicativo) : null,
-      senha_aplicativo: cliente.senha_aplicativo ? padronizarTexto(cliente.senha_aplicativo) : null,
-      data_licenca_aplicativo: cliente.data_licenca_aplicativo ? padronizarData(cliente.data_licenca_aplicativo) : null,
-      dispositivo_smart_2: cliente.dispositivo_smart_2 ? padronizarTexto(cliente.dispositivo_smart_2) : null,
-      aplicativo_2: cliente.aplicativo_2 ? padronizarTexto(cliente.aplicativo_2) : null,
-      usuario_aplicativo_2: cliente.usuario_aplicativo_2 ? padronizarTexto(cliente.usuario_aplicativo_2) : null,
-      senha_aplicativo_2: cliente.senha_aplicativo_2 ? padronizarTexto(cliente.senha_aplicativo_2) : null,
-      data_licenca_aplicativo_2: cliente.data_licenca_aplicativo_2 ? padronizarData(cliente.data_licenca_aplicativo_2) : null,
-      observacoes: cliente.observacoes ? padronizarTexto(cliente.observacoes) : null,
-    };
-  };
-
-  const exportarClientes = async (clientes: any[]) => {
-    setIsExporting(true);
-    try {
-      // Preparar dados para exportação na ordem especificada
-      const dadosExportacao = clientes.map(cliente => ({
-        'Data de cadastro': new Date(cliente.created_at).toLocaleDateString('pt-BR'),
-        'Nome': cliente.nome,
-        'UF': cliente.uf || '',
-        'Telefone': cliente.telefone || '',
-        'Servidor': cliente.servidor,
-        'Dia de vencimento': cliente.dia_vencimento,
-        'Valor do Plano': cliente.valor_plano || '',
-        'Dispositivo Smart 1': cliente.dispositivo_smart || '',
-        'Aplicativo 1': cliente.aplicativo,
-        'Usuário do aplicativo 1': cliente.usuario_aplicativo || '',
-        'Senha do aplicativo 1': cliente.senha_aplicativo || '',
-        'Vencimento da licença do app 1': cliente.data_licenca_aplicativo ? new Date(cliente.data_licenca_aplicativo).toLocaleDateString('pt-BR') : '',
-        'Dispositivo Smart 2': cliente.dispositivo_smart_2 || '',
-        'Aplicativo 2': cliente.aplicativo_2 || '',
-        'Usuário do aplicativo 2': cliente.usuario_aplicativo_2 || '',
-        'Senha do aplicativo 2': cliente.senha_aplicativo_2 || '',
-        'Vencimento da licença do app 2': cliente.data_licenca_aplicativo_2 ? new Date(cliente.data_licenca_aplicativo_2).toLocaleDateString('pt-BR') : '',
-        'Observações': cliente.observacoes || ''
-      }));
-
-      // Criar workbook e worksheet
-      const ws = XLSX.utils.json_to_sheet(dadosExportacao);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Clientes");
-
-      // Gerar arquivo e fazer download
-      const fileName = `clientes_${new Date().toISOString().split('T')[0]}.xlsx`;
-      XLSX.writeFile(wb, fileName);
-
-      toast({
-        title: "Exportação concluída",
-        description: `${clientes.length} clientes exportados com sucesso.`,
-      });
-    } catch (error) {
-      console.error('Erro ao exportar clientes:', error);
-      toast({
-        title: "Erro na exportação",
-        description: "Ocorreu um erro ao exportar os clientes.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
-  // Função para validar nome
   const validarNome = (nome: string, linha: number, erros: ImportError[]) => {
     if (!nome || nome.trim() === '') {
       erros.push({ linha, campo: 'Nome', valor: nome, erro: 'Nome é obrigatório' });
@@ -196,10 +127,9 @@ export const useClienteImportExport = () => {
     return true;
   };
 
-  // Função para validar UF
   const validarUF = (uf: string, linha: number, erros: ImportError[]) => {
     if (!uf || uf.trim() === '') {
-      return true; // UF é opcional
+      return true;
     }
     
     const ufUpper = uf.toUpperCase();
@@ -221,13 +151,11 @@ export const useClienteImportExport = () => {
     return true;
   };
 
-  // Função para validar telefone (opcional)
   const validarTelefone = (telefone: string, linha: number, erros: ImportError[]) => {
     if (!telefone || telefone.trim() === '') {
-      return true; // Telefone é opcional
+      return true;
     }
     
-    // Remove caracteres não numéricos
     const telefoneNumerico = telefone.replace(/\D/g, '');
     
     if (telefoneNumerico.length > 11) {
@@ -243,7 +171,6 @@ export const useClienteImportExport = () => {
     return true;
   };
 
-  // Função para validar servidor
   const validarServidor = (servidor: string, linha: number, erros: ImportError[]) => {
     if (!servidor || servidor.trim() === '') {
       erros.push({ linha, campo: 'Servidor', valor: servidor, erro: 'Servidor é obrigatório' });
@@ -256,7 +183,6 @@ export const useClienteImportExport = () => {
     return true;
   };
 
-  // Função para validar dia de vencimento
   const validarDiaVencimento = (dia: string, linha: number, erros: ImportError[]) => {
     if (!dia || dia.toString().trim() === '') {
       erros.push({ linha, campo: 'Dia de vencimento', valor: dia, erro: 'Dia de vencimento é obrigatório' });
@@ -272,10 +198,9 @@ export const useClienteImportExport = () => {
     return true;
   };
 
-  // Função para validar valor do plano
   const validarValorPlano = (valor: string, linha: number, erros: ImportError[]) => {
     if (!valor || valor.toString().trim() === '') {
-      return true; // Valor é opcional
+      return true;
     }
     
     const valorNumerico = parseFloat(valor.toString());
@@ -287,7 +212,6 @@ export const useClienteImportExport = () => {
     return true;
   };
 
-  // Função para validar aplicativo
   const validarAplicativo = (aplicativo: string, linha: number, erros: ImportError[]) => {
     if (!aplicativo || aplicativo.trim() === '') {
       erros.push({ linha, campo: 'Aplicativo', valor: aplicativo, erro: 'Aplicativo é obrigatório' });
@@ -300,10 +224,9 @@ export const useClienteImportExport = () => {
     return true;
   };
 
-  // Função para validar usuário do aplicativo
   const validarUsuarioAplicativo = (usuario: string, campo: string, linha: number, erros: ImportError[]) => {
     if (!usuario || usuario.trim() === '') {
-      return true; // Usuário é opcional
+      return true;
     }
     if (usuario.length > 25) {
       erros.push({ linha, campo, valor: usuario, erro: 'Usuário do aplicativo deve ter no máximo 25 caracteres' });
@@ -312,10 +235,9 @@ export const useClienteImportExport = () => {
     return true;
   };
 
-  // Função para validar senha do aplicativo
   const validarSenhaAplicativo = (senha: string, campo: string, linha: number, erros: ImportError[]) => {
     if (!senha || senha.trim() === '') {
-      return true; // Senha é opcional
+      return true;
     }
     if (senha.length > 25) {
       erros.push({ linha, campo, valor: senha, erro: 'Senha do aplicativo deve ter no máximo 25 caracteres' });
@@ -324,10 +246,9 @@ export const useClienteImportExport = () => {
     return true;
   };
 
-  // Função para validar observações
   const validarObservacoes = (observacoes: string, linha: number, erros: ImportError[]) => {
     if (!observacoes || observacoes.trim() === '') {
-      return true; // Observações são opcionais
+      return true;
     }
     if (observacoes.length > 150) {
       erros.push({ linha, campo: 'Observações', valor: observacoes, erro: 'Observações devem ter no máximo 150 caracteres' });
@@ -336,68 +257,106 @@ export const useClienteImportExport = () => {
     return true;
   };
 
-  // Função para converter erros de banco em erros de validação
-  const converterErroBanco = (error: any, clientesComErro: any[]): ImportError[] => {
-    const errosConvertidos: ImportError[] = [];
-    
-    console.error('Erro do banco de dados:', error);
-    
-    if (error.message) {
-      // Tentar identificar o tipo de erro e mapear para erros mais legíveis
-      if (error.message.includes('violates not-null constraint')) {
-        errosConvertidos.push({
-          linha: 0,
-          campo: 'Banco de dados',
-          valor: '',
-          erro: 'Campo obrigatório não pode estar vazio'
-        });
-      } else if (error.message.includes('value too long')) {
-        errosConvertidos.push({
-          linha: 0,
-          campo: 'Banco de dados',
-          valor: '',
-          erro: 'Valor excede o tamanho máximo permitido'
-        });
-      } else if (error.message.includes('invalid input syntax')) {
-        errosConvertidos.push({
-          linha: 0,
-          campo: 'Banco de dados',
-          valor: '',
-          erro: 'Formato de dados inválido'
-        });
-      } else {
-        errosConvertidos.push({
-          linha: 0,
-          campo: 'Banco de dados',
-          valor: '',
-          erro: `Erro de banco: ${error.message}`
-        });
+  const verificarClientesDuplicados = async (clientesParaValidar: any[]) => {
+    if (!user) return { clientesUnicos: [], clientesDuplicados: [] };
+
+    try {
+      const { data: clientesExistentes, error } = await supabase
+        .from('clientes')
+        .select('*')
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('Erro ao buscar clientes existentes:', error);
+        return { clientesUnicos: clientesParaValidar, clientesDuplicados: [] };
       }
-    } else {
-      errosConvertidos.push({
-        linha: 0,
-        campo: 'Banco de dados',
-        valor: '',
-        erro: 'Erro desconhecido ao salvar no banco de dados'
-      });
+
+      const clientesUnicos: any[] = [];
+      const clientesDuplicados: any[] = [];
+
+      for (const clienteNovo of clientesParaValidar) {
+        const isDuplicado = clientesExistentes?.some(clienteExistente => {
+          return (
+            clienteExistente.nome.toLowerCase() === clienteNovo.nome.toLowerCase() &&
+            clienteExistente.servidor.toLowerCase() === clienteNovo.servidor.toLowerCase() &&
+            clienteExistente.aplicativo.toLowerCase() === clienteNovo.aplicativo.toLowerCase() &&
+            clienteExistente.dia_vencimento === clienteNovo.dia_vencimento &&
+            (clienteExistente.telefone || '') === (clienteNovo.telefone || '') &&
+            (clienteExistente.uf || '') === (clienteNovo.uf || '')
+          );
+        });
+
+        if (isDuplicado) {
+          clientesDuplicados.push(clienteNovo);
+        } else {
+          clientesUnicos.push(clienteNovo);
+        }
+      }
+
+      return { clientesUnicos, clientesDuplicados };
+    } catch (error) {
+      console.error('Erro na verificação de duplicados:', error);
+      return { clientesUnicos: clientesParaValidar, clientesDuplicados: [] };
     }
-    
-    return errosConvertidos;
   };
 
-  // Nova função para cadastrar itens aprovados automaticamente
+  const exportarClientes = async (clientes: any[]) => {
+    setIsExporting(true);
+    try {
+      const dadosExportacao = clientes.map(cliente => ({
+        'Data de cadastro': new Date(cliente.created_at).toLocaleDateString('pt-BR'),
+        'Nome': cliente.nome,
+        'UF': cliente.uf || '',
+        'Telefone': cliente.telefone || '',
+        'Servidor': cliente.servidor,
+        'Dia de vencimento': cliente.dia_vencimento,
+        'Valor do Plano': cliente.valor_plano || '',
+        'Dispositivo Smart 1': cliente.dispositivo_smart || '',
+        'Aplicativo 1': cliente.aplicativo,
+        'Usuário do aplicativo 1': cliente.usuario_aplicativo || '',
+        'Senha do aplicativo 1': cliente.senha_aplicativo || '',
+        'Vencimento da licença do app 1': cliente.data_licenca_aplicativo ? new Date(cliente.data_licenca_aplicativo).toLocaleDateString('pt-BR') : '',
+        'Dispositivo Smart 2': cliente.dispositivo_smart_2 || '',
+        'Aplicativo 2': cliente.aplicativo_2 || '',
+        'Usuário do aplicativo 2': cliente.usuario_aplicativo_2 || '',
+        'Senha do aplicativo 2': cliente.senha_aplicativo_2 || '',
+        'Vencimento da licença do app 2': cliente.data_licenca_aplicativo_2 ? new Date(cliente.data_licenca_aplicativo_2).toLocaleDateString('pt-BR') : '',
+        'Observações': cliente.observacoes || ''
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(dadosExportacao);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Clientes");
+
+      const fileName = `clientes_${new Date().toISOString().split('T')[0]}.xlsx`;
+      XLSX.writeFile(wb, fileName);
+
+      toast({
+        title: "Exportação concluída",
+        description: `${clientes.length} clientes exportados com sucesso.`,
+      });
+    } catch (error) {
+      console.error('Erro ao exportar clientes:', error);
+      toast({
+        title: "Erro na exportação",
+        description: "Ocorreu um erro ao exportar os clientes.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const createApprovedItems = async (approvedItems: MissingDataItem[]) => {
     const itemsToCreate = approvedItems.filter(item => item.action === 'create');
     
     console.log('Criando itens aprovados:', itemsToCreate);
 
     try {
-      // Agrupar por tipo
       const servidores = itemsToCreate.filter(item => item.type === 'servidor');
       const aplicativos = itemsToCreate.filter(item => item.type === 'aplicativo');
       const dispositivos = itemsToCreate.filter(item => item.type === 'dispositivo');
 
-      // Criar servidores
       if (servidores.length > 0) {
         const { error: servidoresError } = await supabase
           .from('servidores')
@@ -412,7 +371,6 @@ export const useClienteImportExport = () => {
         }
       }
 
-      // Criar aplicativos
       if (aplicativos.length > 0) {
         const { error: aplicativosError } = await supabase
           .from('aplicativos')
@@ -427,7 +385,6 @@ export const useClienteImportExport = () => {
         }
       }
 
-      // Criar dispositivos
       if (dispositivos.length > 0) {
         const { error: dispositivosError } = await supabase
           .from('dispositivos')
@@ -446,7 +403,7 @@ export const useClienteImportExport = () => {
       if (totalCreated > 0) {
         toast({
           title: "Itens cadastrados automaticamente",
-          description: `${totalCreated} novo${totalCreated > 1 ? 's' : ''} item${totalCreated > 1 ? 's' : ''} cadastrado${totalCreated > 1 ? 's' : ''} com sucesso.`,
+          description: `${totalCreated} novo${totalCreated > 1 ? 's' : ''} item${totalCreated > 1 ? 's' : ''} cadastrado${totalCreated > 1 ? 's' : ''} com sucesso na página Dados de Cadastro.`,
         });
       }
 
@@ -456,7 +413,6 @@ export const useClienteImportExport = () => {
     }
   };
 
-  // Função para buscar dados de referência
   const fetchReferenceData = async () => {
     if (!user) return null;
 
@@ -478,13 +434,18 @@ export const useClienteImportExport = () => {
     }
   };
 
-  // Função principal de importação atualizada
   const importarClientes = async (file: File): Promise<ImportResult> => {
-    if (!user) return { success: false, clientesImportados: 0, clientesRejeitados: 0, erros: [], message: "Usuário não autenticado" };
+    if (!user) return { 
+      success: false, 
+      clientesImportados: 0, 
+      clientesRejeitados: 0, 
+      clientesDuplicados: 0,
+      erros: [], 
+      message: "Usuário não autenticado" 
+    };
 
     setIsImporting(true);
     try {
-      // Buscar dados de referência
       const referenceData = await fetchReferenceData();
       if (!referenceData) {
         throw new Error("Erro ao carregar dados de referência");
@@ -500,22 +461,19 @@ export const useClienteImportExport = () => {
         throw new Error("Arquivo deve conter pelo menos uma linha de cabeçalho e uma linha de dados");
       }
 
-      // Remover linha de cabeçalho
       const rows = jsonData.slice(1) as any[][];
       const clientesParaValidar = [];
       const erros: ImportError[] = [];
 
       console.log(`Processando ${rows.length} linhas do arquivo`);
 
-      // Primeira passagem: validação básica e coleta de dados
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
         const numeroLinha = i + 2;
         const errosLinha: ImportError[] = [];
         
-        // Verificar se a linha tem dados suficientes
         if (!row[1] || row[1].toString().trim() === '') {
-          continue; // Pular linhas vazias
+          continue;
         }
 
         const nome = padronizarNome(row[1]?.toString() || '');
@@ -554,7 +512,6 @@ export const useClienteImportExport = () => {
           continue;
         }
 
-        // Montar cliente válido
         const cliente = {
           nome,
           uf,
@@ -571,7 +528,7 @@ export const useClienteImportExport = () => {
           aplicativo_2: aplicativo2,
           usuario_aplicativo_2: usuarioAplicativo2,
           senha_aplicativo_2: senhaAplicativo2,
-          data_licenca_aplicativo_2: dataLicencaAplicativo2,
+          data_licenca_aplicativo_2: dataLicencaAplicativa2,
           observacoes,
           user_id: user.id,
           tela_adicional: !!(dispositivoSmart2 || aplicativo2)
@@ -580,7 +537,6 @@ export const useClienteImportExport = () => {
         clientesParaValidar.push(cliente);
       }
 
-      // Se há erros de validação básica, mostrar e parar
       if (erros.length > 0) {
         setImportErrors(erros);
         setShowErrorDialog(true);
@@ -588,17 +544,16 @@ export const useClienteImportExport = () => {
           success: false, 
           clientesImportados: 0, 
           clientesRejeitados: erros.length, 
+          clientesDuplicados: 0,
           erros 
         };
       }
 
-      // Segunda passagem: validação de dados de referência
       const allMissingItems: MissingDataItem[] = [];
       
       for (const cliente of clientesParaValidar) {
         const missingItems = validateImportData(cliente, referenceData);
         
-        // Adicionar apenas itens únicos
         for (const missing of missingItems) {
           const exists = allMissingItems.some(item => 
             item.type === missing.type && 
@@ -611,7 +566,6 @@ export const useClienteImportExport = () => {
         }
       }
 
-      // Se há itens não cadastrados, mostrar modal de aprovação
       if (allMissingItems.length > 0) {
         console.log('Itens não cadastrados encontrados:', allMissingItems);
         setMissingDataItems(allMissingItems);
@@ -622,13 +576,21 @@ export const useClienteImportExport = () => {
           success: false, 
           clientesImportados: 0, 
           clientesRejeitados: 0, 
+          clientesDuplicados: 0,
           erros: [],
           message: "Aguardando aprovação de novos itens"
         };
       }
 
-      // Terceira passagem: importação dos clientes
-      return await executeImport(clientesParaValidar);
+      const { clientesUnicos, clientesDuplicados } = await verificarClientesDuplicados(clientesParaValidar);
+      
+      const result = await executeImport(clientesUnicos);
+      result.clientesDuplicados = clientesDuplicados.length;
+      
+      setImportResult(result);
+      setShowResultModal(true);
+      
+      return result;
 
     } catch (error) {
       console.error('Erro geral na importação:', error);
@@ -654,6 +616,7 @@ export const useClienteImportExport = () => {
         success: false, 
         clientesImportados: 0, 
         clientesRejeitados: 0, 
+        clientesDuplicados: 0,
         erros: erroGeral, 
         message 
       };
@@ -662,10 +625,15 @@ export const useClienteImportExport = () => {
     }
   };
 
-  // Função para executar a importação após aprovação
   const executeImport = async (clientesParaImportar: any[]): Promise<ImportResult> => {
     if (clientesParaImportar.length === 0) {
-      return { success: true, clientesImportados: 0, clientesRejeitados: 0, erros: [] };
+      return { 
+        success: true, 
+        clientesImportados: 0, 
+        clientesRejeitados: 0, 
+        clientesDuplicados: 0,
+        erros: [] 
+      };
     }
 
     try {
@@ -679,14 +647,18 @@ export const useClienteImportExport = () => {
       if (error) {
         console.error('Erro ao inserir no banco:', error);
         
-        const errosBanco = converterErroBanco(error, clientesParaImportar);
-        setImportErrors(errosBanco);
-        setShowErrorDialog(true);
+        const errosBanco: ImportError[] = [{
+          linha: 0,
+          campo: 'Banco de dados',
+          valor: '',
+          erro: `Erro de banco: ${error.message}`
+        }];
         
         return { 
           success: false, 
           clientesImportados: 0, 
           clientesRejeitados: clientesParaImportar.length, 
+          clientesDuplicados: 0,
           erros: errosBanco 
         };
       }
@@ -703,6 +675,7 @@ export const useClienteImportExport = () => {
         success: true, 
         clientesImportados, 
         clientesRejeitados: 0, 
+        clientesDuplicados: 0,
         erros: [] 
       };
     } catch (error) {
@@ -711,43 +684,23 @@ export const useClienteImportExport = () => {
     }
   };
 
-  // Função para processar aprovação dos itens
   const handleApprovalComplete = async (approvedItems: MissingDataItem[]): Promise<ImportResult> => {
     try {
       console.log('Processando aprovação:', approvedItems);
       
-      // Criar itens aprovados automaticamente
       await createApprovedItems(approvedItems);
       
-      // Filtrar clientes que devem ser importados (não pular)
-      const itemsToSkip = approvedItems
-        .filter(item => item.action === 'skip')
-        .map(item => item.originalName.toLowerCase());
+      const { clientesUnicos, clientesDuplicados } = await verificarClientesDuplicados(pendingImportData);
       
-      console.log('Itens para pular:', itemsToSkip);
+      const result = await executeImport(clientesUnicos);
+      result.clientesDuplicados = clientesDuplicados.length;
       
-      const clientesToImport = pendingImportData.filter(cliente => {
-        // Verificar se algum campo do cliente deve ser pulado
-        const shouldSkip = [
-          cliente.servidor,
-          cliente.aplicativo,
-          cliente.aplicativo_2,
-          cliente.dispositivo_smart,
-          cliente.dispositivo_smart_2
-        ].some(field => field && itemsToSkip.includes(field.toLowerCase()));
-        
-        return !shouldSkip;
-      });
-      
-      console.log(`${clientesToImport.length} clientes serão importados após filtros`);
-      
-      // Executar importação
-      const result = await executeImport(clientesToImport);
-      
-      // Limpar estados
       setShowApprovalModal(false);
       setMissingDataItems([]);
       setPendingImportData([]);
+      
+      setImportResult(result);
+      setShowResultModal(true);
       
       return result;
       
@@ -764,9 +717,26 @@ export const useClienteImportExport = () => {
     }
   };
 
-  // Função auxiliar para converter string de data para formato ISO
-  const parseDateFromString = (dateString: string): string | null => {
-    return padronizarData(dateString);
+  const padronizarDadosCliente = (cliente: any) => {
+    return {
+      ...cliente,
+      nome: padronizarNome(cliente.nome),
+      uf: cliente.uf ? padronizarUF(cliente.uf) : null,
+      telefone: cliente.telefone ? padronizarTelefone(cliente.telefone) : null,
+      servidor: padronizarTexto(cliente.servidor),
+      valor_plano: cliente.valor_plano ? padronizarValorPlano(cliente.valor_plano.toString()) : null,
+      dispositivo_smart: cliente.dispositivo_smart ? padronizarTexto(cliente.dispositivo_smart) : null,
+      aplicativo: padronizarTexto(cliente.aplicativo),
+      usuario_aplicativo: cliente.usuario_aplicativo ? padronizarTexto(cliente.usuario_aplicativo) : null,
+      senha_aplicativo: cliente.senha_aplicativo ? padronizarTexto(cliente.senha_aplicativo) : null,
+      data_licenca_aplicativo: cliente.data_licenca_aplicativo ? padronizarData(cliente.data_licenca_aplicativo) : null,
+      dispositivo_smart_2: cliente.dispositivo_smart_2 ? padronizarTexto(cliente.dispositivo_smart_2) : null,
+      aplicativo_2: cliente.aplicativo_2 ? padronizarTexto(cliente.aplicativo_2) : null,
+      usuario_aplicativo_2: cliente.usuario_aplicativo_2 ? padronizarTexto(cliente.usuario_aplicativo_2) : null,
+      senha_aplicativo_2: cliente.senha_aplicativo_2 ? padronizarTexto(cliente.senha_aplicativo_2) : null,
+      data_licenca_aplicativo_2: cliente.data_licenca_aplicativo_2 ? padronizarData(cliente.data_licenca_aplicativo_2) : null,
+      observacoes: cliente.observacoes ? padronizarTexto(cliente.observacoes) : null,
+    };
   };
 
   return {
@@ -781,6 +751,9 @@ export const useClienteImportExport = () => {
     missingDataItems,
     showApprovalModal,
     setShowApprovalModal,
-    handleApprovalComplete
+    handleApprovalComplete,
+    showResultModal,
+    setShowResultModal,
+    importResult
   };
 };
