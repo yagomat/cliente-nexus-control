@@ -66,17 +66,17 @@ export const ImportApprovalModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
-        <DialogHeader className="flex-shrink-0">
+      <DialogContent className="max-w-2xl h-[85vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0 pb-4">
           <DialogTitle className="flex items-center gap-2 text-lg">
             <AlertTriangle className="h-5 w-5 text-yellow-600" />
             Importação de clientes e dados de cadastro
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 min-h-0 overflow-hidden">
-          <ScrollArea className="h-full">
-            <div className="space-y-4 pr-4">
+        <div className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full pr-4">
+            <div className="space-y-4">
               <Alert className="border-blue-200 bg-blue-50">
                 <Info className="h-4 w-4 text-blue-600" />
                 <AlertDescription className="text-sm text-blue-800">
@@ -94,10 +94,6 @@ export const ImportApprovalModal = ({
                       <li className="flex items-start gap-1">
                         <span className="text-blue-600 font-bold">•</span>
                         <span>Os clientes da planilha serão importados normalmente</span>
-                      </li>
-                      <li className="flex items-start gap-1">
-                        <span className="text-blue-600 font-bold">•</span>
-                        <span>Clientes duplicados serão rejeitados automaticamente</span>
                       </li>
                     </ul>
                   </div>
