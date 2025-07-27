@@ -10,7 +10,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import { AlertTriangle, Plus, Info, Server, Smartphone, Monitor } from "lucide-react";
 import { MissingDataItem } from "@/utils/dataValidation";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -67,23 +66,41 @@ export const ImportApprovalModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl h-[85vh] flex flex-col">
+      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2 text-lg">
             <AlertTriangle className="h-5 w-5 text-yellow-600" />
-            Dados Não Cadastrados Encontrados
+            Importação de clientes e dados de cadastro
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 overflow-hidden">
-          <ScrollArea className="h-full pr-4">
-            <div className="space-y-4">
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <ScrollArea className="h-full">
+            <div className="space-y-4 pr-4">
               <Alert className="border-blue-200 bg-blue-50">
                 <Info className="h-4 w-4 text-blue-600" />
                 <AlertDescription className="text-sm text-blue-800">
-                  Durante a importação, foram encontrados <strong>{missingItems.length} itens</strong> que não 
-                  existem em sua página de <strong>Dados de Cadastro</strong>. Estes itens serão automaticamente 
-                  cadastrados nas tabelas correspondentes antes de importar os clientes.
+                  Ao importar, foram encontrados <strong>{missingItems.length} dados</strong> que não 
+                  existem nos <strong>Dados de Cadastro</strong>. Estes itens serão automaticamente 
+                  cadastrados após confirmar a importação dos novos clientes.
+                  
+                  <div className="mt-3">
+                    <h4 className="font-medium text-blue-900 text-sm mb-1">O que acontecerá:</h4>
+                    <ul className="text-sm text-blue-800 space-y-1">
+                      <li className="flex items-start gap-1">
+                        <span className="text-blue-600 font-bold">•</span>
+                        <span>Os <strong>{editableItems.length} itens</strong> abaixo serão cadastrados na página "Dados de Cadastro" em suas respectivas categorias</span>
+                      </li>
+                      <li className="flex items-start gap-1">
+                        <span className="text-blue-600 font-bold">•</span>
+                        <span>Os clientes da planilha serão importados normalmente</span>
+                      </li>
+                      <li className="flex items-start gap-1">
+                        <span className="text-blue-600 font-bold">•</span>
+                        <span>Clientes duplicados serão rejeitados automaticamente</span>
+                      </li>
+                    </ul>
+                  </div>
                 </AlertDescription>
               </Alert>
 
@@ -110,41 +127,12 @@ export const ImportApprovalModal = ({
                             <div className="font-medium text-sm text-gray-900 truncate">
                               {item.originalName}
                             </div>
-                            <div className="text-xs text-gray-500">
-                              Será cadastrado na página "Dados de Cadastro"
-                            </div>
                           </div>
-                          <Badge variant="outline" className="text-xs text-green-700 border-green-200 bg-green-50 h-6">
-                            Cadastrar
-                          </Badge>
                         </div>
                       ))}
                     </div>
                   </div>
                 ))}
-              </div>
-
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <div className="flex items-start gap-2">
-                  <Info className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <h4 className="font-medium text-blue-900 text-sm mb-1">O que acontecerá:</h4>
-                    <ul className="text-sm text-blue-800 space-y-0.5">
-                      <li className="flex items-start gap-1">
-                        <span className="text-blue-600 font-bold">•</span>
-                        <span>Os <strong>{editableItems.length} itens</strong> acima serão cadastrados na página "Dados de Cadastro"</span>
-                      </li>
-                      <li className="flex items-start gap-1">
-                        <span className="text-blue-600 font-bold">•</span>
-                        <span>Os clientes da planilha serão importados normalmente</span>
-                      </li>
-                      <li className="flex items-start gap-1">
-                        <span className="text-blue-600 font-bold">•</span>
-                        <span>Clientes duplicados serão rejeitados automaticamente</span>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
               </div>
             </div>
           </ScrollArea>
@@ -153,7 +141,7 @@ export const ImportApprovalModal = ({
         <DialogFooter className="flex-shrink-0 border-t pt-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 w-full">
             <div className="text-sm text-gray-500 order-2 sm:order-1">
-              {editableItems.length} item{editableItems.length !== 1 ? 's' : ''} será{editableItems.length !== 1 ? 'ão' : ''} cadastrado{editableItems.length !== 1 ? 's' : ''}
+              {editableItems.length} item{editableItems.length !== 1 ? 's' : ''} serão cadastrados
             </div>
             
             <div className="flex gap-2 order-1 sm:order-2">
@@ -161,7 +149,7 @@ export const ImportApprovalModal = ({
                 Cancelar Importação
               </Button>
               <Button onClick={handleApprove} className="bg-green-600 hover:bg-green-700" size="sm">
-                Cadastrar e Continuar
+                Importar e Cadastrar
               </Button>
             </div>
           </div>

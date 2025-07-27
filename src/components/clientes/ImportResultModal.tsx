@@ -51,7 +51,7 @@ export const ImportResultModal = ({
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="bg-gray-50 p-4 rounded-lg text-center">
               <div className="text-2xl font-bold text-gray-700">{total}</div>
-              <div className="text-sm text-gray-600">Total Processados</div>
+              <div className="text-sm text-gray-600">Total de clientes Processados</div>
             </div>
             
             <div className="bg-green-50 p-4 rounded-lg text-center">
@@ -59,7 +59,7 @@ export const ImportResultModal = ({
                 <CheckCircle className="h-4 w-4 text-green-600" />
                 <div className="text-2xl font-bold text-green-700">{clientesImportados}</div>
               </div>
-              <div className="text-sm text-green-600">Importados</div>
+              <div className="text-sm text-green-600">Clientes Importados</div>
             </div>
 
             {duplicados > 0 && (
@@ -68,7 +68,7 @@ export const ImportResultModal = ({
                   <AlertCircle className="h-4 w-4 text-yellow-600" />
                   <div className="text-2xl font-bold text-yellow-700">{duplicados}</div>
                 </div>
-                <div className="text-sm text-yellow-600">Duplicados</div>
+                <div className="text-sm text-yellow-600">Clientes Duplicados</div>
               </div>
             )}
 
