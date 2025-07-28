@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { Plus, Edit, Trash2, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useTemplates } from "@/hooks/useTemplates";
 import { TemplateFormModal } from "@/components/templates/TemplateFormModal";
 import { toast } from "sonner";
+
 const Templates = () => {
   const {
     templates,
@@ -16,6 +18,7 @@ const Templates = () => {
   const [editTemplate, setEditTemplate] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
+
   const handleCreate = async (data: any) => {
     try {
       await createTemplate({
@@ -30,6 +33,7 @@ const Templates = () => {
       toast.error("Erro ao criar template: " + error.message);
     }
   };
+
   const handleUpdate = async (id: string, data: any) => {
     try {
       await updateTemplate(id, data);
@@ -40,6 +44,7 @@ const Templates = () => {
       toast.error("Erro ao atualizar template: " + error.message);
     }
   };
+
   const handleDelete = async (id: string) => {
     try {
       await deleteTemplate(id);
@@ -48,10 +53,12 @@ const Templates = () => {
       toast.error("Erro ao excluir template: " + error.message);
     }
   };
+
   const handleEdit = (template: any) => {
     setEditTemplate(template);
     setEditModalOpen(true);
   };
+
   if (loading) {
     return <div className="container mx-auto p-4">
         <div className="flex items-center justify-center h-64">
@@ -59,7 +66,16 @@ const Templates = () => {
         </div>
       </div>;
   }
+
   return <div className="container mx-auto p-4 space-y-6 px-0 py-0">
+      {/* Aviso discreto sobre limite de templates */}
+      <Alert className="bg-blue-50 border-blue-200">
+        <Info className="h-4 w-4" />
+        <AlertDescription>
+          Você pode criar até 10 templates personalizados. ({templates.length}/10)
+        </AlertDescription>
+      </Alert>
+
       <div className="flex justify-end">
         <Button onClick={() => setShowCreateModal(true)} disabled={templates.length >= 10}>
           <Plus className="mr-2 h-4 w-4" />
@@ -90,7 +106,6 @@ const Templates = () => {
           </Card>)}
       </div>
 
-
       {/* Edit Modal */}
       {editTemplate && <TemplateFormModal template={editTemplate} isOpen={editModalOpen} onClose={() => {
       setEditModalOpen(false);
@@ -101,4 +116,5 @@ const Templates = () => {
       <TemplateFormModal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} onSave={handleCreate} />
     </div>;
 };
+
 export default Templates;

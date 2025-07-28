@@ -69,7 +69,6 @@ export const TemplateFormModal = ({ isOpen, onClose, onSave, template }: Templat
     }
   };
 
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -89,6 +88,7 @@ export const TemplateFormModal = ({ isOpen, onClose, onSave, template }: Templat
               onChange={(e) => setFormData(prev => ({ ...prev, nome: e.target.value }))}
               placeholder="Ex: Cobrança Padrão"
               maxLength={25}
+              showCharacterCount={true}
               required
             />
           </div>
@@ -102,6 +102,7 @@ export const TemplateFormModal = ({ isOpen, onClose, onSave, template }: Templat
               placeholder="Digite sua mensagem usando as variáveis disponíveis..."
               className="min-h-[120px]"
               maxLength={300}
+              showCharacterCount={true}
               required
             />
           </div>
