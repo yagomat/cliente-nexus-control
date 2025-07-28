@@ -213,7 +213,13 @@ export default function EditarCliente() {
           <CardContent className="space-y-4">
             <div>
               <Label htmlFor="nome">Nome *</Label>
-              <Input id="nome" placeholder="Digite o nome do cliente" maxLength={40} {...form.register("nome")} />
+              <Input 
+                id="nome" 
+                placeholder="Digite o nome do cliente" 
+                maxLength={40} 
+                showCharacterCount
+                {...form.register("nome")} 
+              />
               <div className="flex justify-between items-center mt-1">
                 {form.formState.errors.nome && <p className="text-sm text-destructive">
                     {form.formState.errors.nome.message}
@@ -238,7 +244,13 @@ export default function EditarCliente() {
 
               <div>
                 <Label htmlFor="codigo_pais">Código do País *</Label>
-                <Input id="codigo_pais" placeholder="55" maxLength={3} {...form.register("codigo_pais")} />
+                <Input 
+                  id="codigo_pais" 
+                  placeholder="55" 
+                  maxLength={3} 
+                  showCharacterCount
+                  {...form.register("codigo_pais")} 
+                />
                 {form.formState.errors.codigo_pais && <p className="text-sm text-destructive mt-1">
                     {form.formState.errors.codigo_pais.message}
                   </p>}
@@ -246,7 +258,13 @@ export default function EditarCliente() {
 
               <div className="md:col-span-2">
                 <Label htmlFor="telefone">Telefone</Label>
-                <Input id="telefone" placeholder="(00) 00000-0000" maxLength={11} {...form.register("telefone")} />
+                <Input 
+                  id="telefone" 
+                  placeholder="(00) 00000-0000" 
+                  maxLength={11} 
+                  showCharacterCount
+                  {...form.register("telefone")} 
+                />
               </div>
             </div>
 
@@ -342,12 +360,25 @@ export default function EditarCliente() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="usuario_aplicativo">Usuário do Aplicativo</Label>
-                <Input id="usuario_aplicativo" placeholder="Digite o usuário" maxLength={25} {...form.register("usuario_aplicativo")} />
+                <Input 
+                  id="usuario_aplicativo" 
+                  placeholder="Digite o usuário" 
+                  maxLength={25} 
+                  showCharacterCount
+                  {...form.register("usuario_aplicativo")} 
+                />
               </div>
 
               <div>
                 <Label htmlFor="senha_aplicativo">Senha do Aplicativo</Label>
-                <Input id="senha_aplicativo" type="password" placeholder="Digite a senha" maxLength={25} {...form.register("senha_aplicativo")} />
+                <Input 
+                  id="senha_aplicativo" 
+                  type="text" 
+                  placeholder="Digite a senha" 
+                  maxLength={25} 
+                  showCharacterCount
+                  {...form.register("senha_aplicativo")} 
+                />
               </div>
             </div>
 
@@ -417,12 +448,25 @@ export default function EditarCliente() {
                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  <div>
                    <Label htmlFor="usuario_aplicativo_2">Usuário do Aplicativo 2</Label>
-                   <Input id="usuario_aplicativo_2" placeholder="Digite o usuário" maxLength={25} {...form.register("usuario_aplicativo_2")} />
+                   <Input 
+                     id="usuario_aplicativo_2" 
+                     placeholder="Digite o usuário" 
+                     maxLength={25} 
+                     showCharacterCount
+                     {...form.register("usuario_aplicativo_2")} 
+                   />
                  </div>
 
                  <div>
                    <Label htmlFor="senha_aplicativo_2">Senha do Aplicativo 2</Label>
-                   <Input id="senha_aplicativo_2" type="password" placeholder="Digite a senha" maxLength={25} {...form.register("senha_aplicativo_2")} />
+                   <Input 
+                     id="senha_aplicativo_2" 
+                     type="text" 
+                     placeholder="Digite a senha" 
+                     maxLength={25} 
+                     showCharacterCount
+                     {...form.register("senha_aplicativo_2")} 
+                   />
                  </div>
                </div>
 
@@ -455,7 +499,14 @@ export default function EditarCliente() {
           <CardContent>
             <div>
               <Label htmlFor="observacoes">Observações</Label>
-              <Textarea id="observacoes" placeholder="Digite observações sobre o cliente..." maxLength={150} rows={4} {...form.register("observacoes")} />
+              <Textarea 
+                id="observacoes" 
+                placeholder="Digite observações sobre o cliente..." 
+                maxLength={150} 
+                showCharacterCount
+                rows={4} 
+                {...form.register("observacoes")} 
+              />
             </div>
           </CardContent>
         </Card>
