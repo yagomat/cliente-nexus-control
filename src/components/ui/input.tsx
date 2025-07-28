@@ -10,20 +10,25 @@ export interface InputProps extends React.ComponentProps<"input"> {
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, maxLength, showCharacterCount, ...props }, ref) => {
-    const [value, setValue] = React.useState(props.value || "")
+    // Determinar se o componente é controlado ou descontrolado
+    const isControlled = props.value !== undefined
     
-    React.useEffect(() => {
-      setValue(props.value || "")
-    }, [props.value])
-
+    // Usar estado interno apenas se não for controlado
+    const [internalValue, setInternalValue] = React.useState(props.defaultValue || "")
+    
+    // Usar o valor apropriado baseado no tipo de controle
+    const currentValue = isControlled ? props.value : internalValue
+    
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      setValue(e.target.value)
+      if (!isControlled) {
+        setInternalValue(e.target.value)
+      }
       if (props.onChange) {
         props.onChange(e)
       }
     }
 
-    const currentLength = String(value).length
+    const currentLength = String(currentValue).length
     const isAtLimit = maxLength && currentLength >= maxLength
 
     return (
@@ -36,9 +41,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             className
           )}
           ref={ref}
-          value={value}
-          onChange={handleChange}
           {...props}
+          value={currentValue}
+          onChange={handleChange}
         />
         {showCharacterCount && maxLength && isAtLimit && (
           <p className="text-sm text-destructive mt-1">

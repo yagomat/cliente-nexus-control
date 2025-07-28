@@ -10,20 +10,25 @@ export interface TextareaProps
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ className, showCharacterCount, maxLength, ...props }, ref) => {
-    const [value, setValue] = React.useState(props.value || "")
+    // Determinar se o componente é controlado ou descontrolado
+    const isControlled = props.value !== undefined
     
-    React.useEffect(() => {
-      setValue(props.value || "")
-    }, [props.value])
-
+    // Usar estado interno apenas se não for controlado
+    const [internalValue, setInternalValue] = React.useState(props.defaultValue || "")
+    
+    // Usar o valor apropriado baseado no tipo de controle
+    const currentValue = isControlled ? props.value : internalValue
+    
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      setValue(e.target.value)
+      if (!isControlled) {
+        setInternalValue(e.target.value)
+      }
       if (props.onChange) {
         props.onChange(e)
       }
     }
 
-    const currentLength = String(value).length
+    const currentLength = String(currentValue).length
     const isAtLimit = maxLength && currentLength >= maxLength
 
     return (
@@ -34,10 +39,10 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
             className
           )}
           ref={ref}
-          value={value}
-          onChange={handleChange}
           maxLength={maxLength}
           {...props}
+          value={currentValue}
+          onChange={handleChange}
         />
         {showCharacterCount && maxLength && isAtLimit && (
           <p className="text-sm text-destructive mt-1">
