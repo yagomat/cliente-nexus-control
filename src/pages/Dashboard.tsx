@@ -23,7 +23,21 @@ const Dashboard = () => {
     }));
   };
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0];
+      
+      return (
+        <div className="bg-background border border-border rounded-lg px-3 py-2 shadow-lg text-foreground">
+          {label && <p className="text-sm font-medium mb-1">{`${label}`}</p>}
+          <p className="text-sm">{`${data.name || 'Valor'}: ${data.value}`}</p>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const CustomPieTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0];
       const total = dashboardData.distribuicaoDispositivo.reduce((sum, item) => sum + item.value, 0) || 
@@ -33,8 +47,21 @@ const Dashboard = () => {
       const percentage = ((data.value / total) * 100).toFixed(1);
       
       return (
-        <div className="bg-background border border-border rounded-lg px-3 py-2 shadow-lg">
+        <div className="bg-background border border-border rounded-lg px-3 py-2 shadow-lg text-foreground">
           <p className="text-sm font-medium">{`${data.name}: ${percentage}%`}</p>
+          <p className="text-sm">{`Total: ${data.value}`}</p>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const CustomLineTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-background border border-border rounded-lg px-3 py-2 shadow-lg text-foreground">
+          <p className="text-sm font-medium mb-1">{`${label}`}</p>
+          <p className="text-sm">{`Valor: ${payload[0].name === 'value' && payload[0].payload.value ? `R$ ${payload[0].value}` : payload[0].value}`}</p>
         </div>
       );
     }
@@ -232,7 +259,7 @@ const Dashboard = () => {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis />
-                <Tooltip />
+                <Tooltip content={<CustomLineTooltip />} />
                 <Line 
                   type="monotone" 
                   dataKey="value" 
@@ -256,7 +283,7 @@ const Dashboard = () => {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis />
-                <Tooltip formatter={(value) => [`R$ ${value}`, 'Valor']} />
+                <Tooltip content={<CustomLineTooltip />} />
                 <Line 
                   type="monotone" 
                   dataKey="value" 
@@ -294,7 +321,7 @@ const Dashboard = () => {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip content={<CustomPieTooltip />} />
               </PieChart>
             </ResponsiveContainer>
             <CustomLegend data={dashboardData.distribuicaoDispositivo} chartType="dispositivo" />
@@ -323,7 +350,7 @@ const Dashboard = () => {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip content={<CustomPieTooltip />} />
               </PieChart>
             </ResponsiveContainer>
             <CustomLegend data={dashboardData.distribuicaoAplicativo} chartType="aplicativo" />
@@ -354,7 +381,7 @@ const Dashboard = () => {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip content={<CustomPieTooltip />} />
               </PieChart>
             </ResponsiveContainer>
             <CustomLegend data={dashboardData.distribuicaoUF} chartType="uf" />
@@ -383,7 +410,7 @@ const Dashboard = () => {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip content={<CustomPieTooltip />} />
               </PieChart>
             </ResponsiveContainer>
             <CustomLegend data={dashboardData.distribuicaoServidor} chartType="servidor" />
