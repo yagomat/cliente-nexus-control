@@ -34,6 +34,8 @@ function App() {
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/clientes" element={<Clientes />} />
+              <Route path="/clientes/novo" element={<NovoCliente />} />
+              <Route path="/clientes/editar/:id" element={<EditarCliente />} />
               <Route path="/novo-cliente" element={<NovoCliente />} />
               <Route path="/editar-cliente/:id" element={<EditarCliente />} />
               <Route path="/templates" element={<Templates />} />
