@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Plus, Edit, Trash2, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -69,9 +70,9 @@ const Templates = () => {
 
   return <div className="container mx-auto p-4 space-y-6 px-0 py-0">
       {/* Aviso discreto sobre limite de templates */}
-      <Alert className="bg-blue-50 border-blue-200">
+      <Alert className="bg-background border-border">
         <Info className="h-4 w-4" />
-        <AlertDescription>
+        <AlertDescription className="text-foreground">
           Você pode criar até 10 templates personalizados. ({templates.length}/10)
         </AlertDescription>
       </Alert>
@@ -89,7 +90,7 @@ const Templates = () => {
               <CardTitle className="text-lg">{template.nome}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-gray-600 mb-4 line-clamp-3">
+              <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
                 {template.mensagem}
               </p>
               <div className="flex justify-end items-center">
