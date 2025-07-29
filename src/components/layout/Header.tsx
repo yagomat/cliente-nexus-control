@@ -1,4 +1,5 @@
 
+
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ThemeToggle } from "./ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
@@ -13,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { User, LogOut } from "lucide-react";
 
 export function Header() {
-  const { user, logout } = useAuth();
+  const { user, signOut } = useAuth();
   const location = useLocation();
 
   const getPageTitle = () => {
@@ -56,7 +57,7 @@ export function Header() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={logout}>
+                <DropdownMenuItem onClick={signOut}>
                   <LogOut className="h-4 w-4 mr-2" />
                   Sair
                 </DropdownMenuItem>
@@ -68,3 +69,4 @@ export function Header() {
     </header>
   );
 }
+
