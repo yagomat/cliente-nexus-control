@@ -1,11 +1,24 @@
-
 import { LayoutGrid, Users, TrendingUp, Calendar, DollarSign, AlertTriangle, Smartphone, Monitor, MapPin, Server, UserCheck, UserX } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from "recharts";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useState } from "react";
 
-const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted))', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4', '#84CC16', '#F97316', '#EC4899'];
+// Cores reorganizadas para melhor contraste entre cores adjacentes
+const COLORS = [
+  '#EF4444',      // Vermelho
+  '#10B981',      // Verde
+  '#3B82F6',      // Azul
+  '#F59E0B',      // Âmbar/Laranja
+  '#8B5CF6',      // Violeta/Roxo
+  '#06B6D4',      // Ciano
+  '#F97316',      // Laranja
+  '#84CC16',      // Lima/Verde claro
+  '#EC4899',      // Rosa/Pink
+  '#6B7280',      // Cinza
+  '#14B8A6',      // Teal
+  '#F43F5E'       // Rose
+];
 
 const Dashboard = () => {
   const { dashboardData, loading } = useDashboard();
