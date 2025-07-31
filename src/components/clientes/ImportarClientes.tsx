@@ -38,25 +38,29 @@ export const ImportarClientes = ({ onImportComplete }: ImportarClientesProps) =>
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Verificar extensão do arquivo
-    const allowedExtensions = ['.xlsx', '.xls', '.ods'];
-    const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
-    
-    if (!allowedExtensions.includes(fileExtension)) {
-      alert('Formato de arquivo não suportado. Use Excel (.xlsx, .xls) ou LibreOffice (.ods)');
-      return;
-    }
+    try {
+      // Verificar extensão do arquivo
+      const allowedExtensions = ['.xlsx', '.xls', '.ods'];
+      const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+      
+      if (!allowedExtensions.includes(fileExtension)) {
+        alert('Formato de arquivo não suportado. Use Excel (.xlsx, .xls) ou LibreOffice (.ods)');
+        return;
+      }
 
-    const result = await importarClientes(file);
-    
-    // Se a importação foi bem-sucedida sem modal de aprovação, completar
-    if (result.success && (result.clientesImportados > 0 || result.clientesDuplicados > 0)) {
-      onImportComplete();
-    }
-
-    // Limpar input para permitir reimportação do mesmo arquivo
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      const result = await importarClientes(file);
+      
+      // Se a importação foi bem-sucedida sem modal de aprovação, completar
+      if (result.success && (result.clientesImportados > 0 || result.clientesDuplicados > 0)) {
+        onImportComplete();
+      }
+    } catch (error) {
+      console.error('Erro no processo de importação:', error);
+    } finally {
+      // Limpar input para permitir reimportação do mesmo arquivo
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
