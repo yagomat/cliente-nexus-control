@@ -1,19 +1,11 @@
-
 import { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AlertTriangle, Plus, Info, Server, Smartphone, Monitor } from "lucide-react";
 import { MissingDataItem } from "@/utils/dataValidation";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-
 interface ImportApprovalModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -21,20 +13,20 @@ interface ImportApprovalModalProps {
   onApprove: (approvedItems: MissingDataItem[]) => void;
   onCancel: () => void;
 }
-
-export const ImportApprovalModal = ({ 
-  open, 
-  onOpenChange, 
-  missingItems, 
-  onApprove, 
-  onCancel 
+export const ImportApprovalModal = ({
+  open,
+  onOpenChange,
+  missingItems,
+  onApprove,
+  onCancel
 }: ImportApprovalModalProps) => {
   const [editableItems, setEditableItems] = useState<MissingDataItem[]>([]);
-
   useEffect(() => {
-    setEditableItems(missingItems.map(item => ({ ...item, action: 'create' })));
+    setEditableItems(missingItems.map(item => ({
+      ...item,
+      action: 'create'
+    })));
   }, [missingItems]);
-
   const getTypeLabel = (type: string) => {
     const labels = {
       'servidor': 'Servidores',
@@ -43,7 +35,6 @@ export const ImportApprovalModal = ({
     };
     return labels[type as keyof typeof labels] || type;
   };
-
   const getTypeIcon = (type: string) => {
     const icons = {
       'servidor': Server,
@@ -53,22 +44,23 @@ export const ImportApprovalModal = ({
     const Icon = icons[type as keyof typeof icons] || Monitor;
     return <Icon className="h-4 w-4" />;
   };
-
   const groupedItems = editableItems.reduce((acc, item, index) => {
     if (!acc[item.type]) acc[item.type] = [];
-    acc[item.type].push({ ...item, index });
+    acc[item.type].push({
+      ...item,
+      index
+    });
     return acc;
-  }, {} as Record<string, (MissingDataItem & { index: number })[]>);
-
+  }, {} as Record<string, (MissingDataItem & {
+    index: number;
+  })[]>);
   const handleApprove = () => {
     onApprove(editableItems);
   };
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+  return <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl h-[85vh] flex flex-col">
         <DialogHeader className="flex-shrink-0 pb-4">
-          <DialogTitle className="flex items-center gap-2 text-lg">
+          <DialogTitle className="flex items-center gap-2 text-base">
             <AlertTriangle className="h-5 w-5 text-yellow-600" />
             Importar clientes e dados de cadastro
           </DialogTitle>
@@ -101,8 +93,7 @@ export const ImportApprovalModal = ({
               </Alert>
 
               <div className="space-y-3">
-                {Object.entries(groupedItems).map(([type, items]) => (
-                  <div key={type} className="border rounded-lg p-3 bg-gray-50/50">
+                {Object.entries(groupedItems).map(([type, items]) => <div key={type} className="border rounded-lg p-3 bg-gray-50/50">
                     <div className="flex items-center gap-2 mb-2">
                       {getTypeIcon(type)}
                       <h3 className="font-medium text-gray-900 text-sm">
@@ -114,8 +105,7 @@ export const ImportApprovalModal = ({
                     </div>
 
                     <div className="space-y-2">
-                      {items.map((item) => (
-                        <div key={item.index} className="flex items-center gap-2 p-2 bg-white rounded border border-gray-200">
+                      {items.map(item => <div key={item.index} className="flex items-center gap-2 p-2 bg-white rounded border border-gray-200">
                           <div className="flex items-center justify-center w-5 h-5 bg-green-100 rounded-full flex-shrink-0">
                             <Plus className="h-3 w-3 text-green-600" />
                           </div>
@@ -124,11 +114,9 @@ export const ImportApprovalModal = ({
                               {item.originalName}
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        </div>)}
                     </div>
-                  </div>
-                ))}
+                  </div>)}
               </div>
             </div>
           </ScrollArea>
@@ -151,6 +139,5 @@ export const ImportApprovalModal = ({
           </div>
         </DialogFooter>
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>;
 };
