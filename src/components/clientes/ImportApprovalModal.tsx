@@ -70,7 +70,7 @@ export const ImportApprovalModal = ({
         <DialogHeader className="flex-shrink-0 pb-4">
           <DialogTitle className="flex items-center gap-2 text-lg">
             <AlertTriangle className="h-5 w-5 text-yellow-600" />
-            Importação de clientes e dados de cadastro
+            Importar clientes e dados de cadastro
           </DialogTitle>
         </DialogHeader>
 
