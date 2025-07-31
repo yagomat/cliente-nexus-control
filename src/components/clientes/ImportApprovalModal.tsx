@@ -77,9 +77,9 @@ export const ImportApprovalModal = ({
         <div className="flex-1 overflow-hidden">
           <ScrollArea className="h-full pr-4">
             <div className="space-y-4">
-              <Alert className="border-blue-200 bg-blue-50 p-3">
+              <Alert className="border-blue-200 bg-blue-50">
                 <Info className="h-4 w-4 text-blue-600" />
-                <AlertDescription className="text-sm text-blue-800 leading-relaxed">
+                <AlertDescription className="text-sm text-blue-800">
                   Ao importar, foram encontrados <strong>{missingItems.length} dados</strong> que não 
                   existem nos <strong>Dados de Cadastro</strong>. Estes itens serão automaticamente 
                   cadastrados após confirmar a importação dos novos clientes.
