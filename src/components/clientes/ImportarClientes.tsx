@@ -2,7 +2,7 @@
 import { Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { useClienteImportExport } from "@/hooks/useClienteImportExport";
 import { ImportErrorDialog } from "./ImportErrorDialog";
 import { ImportApprovalModal } from "./ImportApprovalModal";
@@ -29,6 +29,14 @@ export const ImportarClientes = ({ onImportComplete }: ImportarClientesProps) =>
   } = useClienteImportExport();
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const isMountedRef = useRef(true);
+
+  // Cleanup no desmount do componente
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   const handleImport = () => {
     fileInputRef.current?.click();
@@ -39,6 +47,8 @@ export const ImportarClientes = ({ onImportComplete }: ImportarClientesProps) =>
     if (!file) return;
 
     try {
+      console.log('Iniciando importação do arquivo:', file.name);
+      
       // Verificar extensão do arquivo
       const allowedExtensions = ['.xlsx', '.xls', '.ods'];
       const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
@@ -48,18 +58,36 @@ export const ImportarClientes = ({ onImportComplete }: ImportarClientesProps) =>
         return;
       }
 
+      console.log('Arquivo válido, chamando importarClientes...');
       const result = await importarClientes(file);
+      console.log('Resultado da importação:', result);
+      
+      // Verificar se o componente ainda está montado antes de atualizar estado
+      if (!isMountedRef.current) {
+        console.log('Componente foi desmontado, cancelando processamento');
+        return;
+      }
       
       // Se a importação foi bem-sucedida sem modal de aprovação, completar
       if (result.success && (result.clientesImportados > 0 || result.clientesDuplicados > 0)) {
+        console.log('Importação bem-sucedida, chamando onImportComplete');
         onImportComplete();
       }
     } catch (error) {
       console.error('Erro no processo de importação:', error);
+      
+      // Verificar se o componente ainda está montado antes de mostrar erro
+      if (isMountedRef.current) {
+        alert(`Erro na importação: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+      }
     } finally {
-      // Limpar input para permitir reimportação do mesmo arquivo
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+      // Limpar input para permitir reimportação do mesmo arquivo, mas apenas se ainda montado
+      if (isMountedRef.current && fileInputRef.current) {
+        try {
+          fileInputRef.current.value = '';
+        } catch (e) {
+          console.warn('Erro ao limpar input:', e);
+        }
       }
     }
   };
