@@ -51,7 +51,7 @@ export const ImportResultModal = ({
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="bg-gray-50 p-4 rounded-lg text-center">
               <div className="text-2xl font-bold text-gray-700">{total}</div>
-              <div className="text-sm text-gray-600">Total de clientes Processados</div>
+              <div className="text-sm text-gray-600">Clientes Processados</div>
             </div>
             
             <div className="bg-green-50 p-4 rounded-lg text-center">
