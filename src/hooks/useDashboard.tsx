@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { calcularStatusCliente } from "@/utils/clienteUtils";
 
 interface DashboardData {
   totalClientes: number;
@@ -71,10 +72,20 @@ export const useDashboard = () => {
       const trinta_dias_atras = new Date(hoje.getTime() - 30 * 24 * 60 * 60 * 1000);
       const tres_dias_futuro = new Date(hoje.getTime() + 3 * 24 * 60 * 60 * 1000);
 
-      // Clientes ativos são apenas aqueles com campo ativo = true
+      // Função auxiliar para buscar pagamento de um cliente em um mês específico
+      const getPagamentoDoMes = (clienteId: string, mes: number, ano: number) => {
+        return pagamentos?.find(p => 
+          p.cliente_id === clienteId && 
+          p.mes === mes && 
+          p.ano === ano
+        );
+      };
+
+      // Clientes ativos são aqueles que realmente têm status ativo baseado nos pagamentos
       const isClienteAtivo = (clienteId: string) => {
         const cliente = clientes?.find(c => c.id === clienteId);
-        return cliente?.ativo === true;
+        if (!cliente) return false;
+        return calcularStatusCliente(cliente, getPagamentoDoMes);
       };
 
       // Calcular métricas básicas corrigidas
