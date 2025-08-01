@@ -91,19 +91,10 @@ export const useDashboard = () => {
       // Calcular métricas básicas corrigidas
       const totalClientes = clientes?.length || 0;
       
-      // Clientes ativos no mês vigente: tem ativo=true E tem pagamento no mês atual
-      const clientesAtivos = clientes?.filter(cliente => {
-        if (!cliente.ativo) return false;
-        
-        const pagamentoMesAtual = pagamentos?.find(p => 
-          p.cliente_id === cliente.id && 
-          p.mes === mesAtual && 
-          p.ano === anoAtual &&
-          (p.status === 'pago' || p.status === 'promocao')
-        );
-        
-        return !!pagamentoMesAtual;
-      }).length || 0;
+      // Clientes ativos usando lógica consistente com o resto da aplicação
+      const clientesAtivos = clientes?.filter(cliente => 
+        calcularStatusCliente(cliente, getPagamentoDoMes)
+      ).length || 0;
       
       const clientesInativos = totalClientes - clientesAtivos;
       
@@ -111,26 +102,11 @@ export const useDashboard = () => {
         new Date(c.created_at) >= trinta_dias_atras
       ).length || 0;
 
-      // Clientes que estavam ativos mas não pagaram este mês
+      // Pagamentos pendentes usando lógica inteligente de vencimento
       const pagamentosPendentes = clientes?.filter(cliente => {
-        if (!cliente.ativo) return false;
-        
-        const pagamentoMesAtual = pagamentos?.find(p => 
-          p.cliente_id === cliente.id && 
-          p.mes === mesAtual && 
-          p.ano === anoAtual &&
-          (p.status === 'pago' || p.status === 'promocao')
-        );
-        
-        // Se não tem pagamento no mês atual, mas tinha no anterior, é pendente
-        const pagamentoMesAnterior = pagamentos?.find(p => 
-          p.cliente_id === cliente.id && 
-          p.mes === (mesAtual === 1 ? 12 : mesAtual - 1) && 
-          p.ano === (mesAtual === 1 ? anoAtual - 1 : anoAtual) &&
-          (p.status === 'pago' || p.status === 'promocao')
-        );
-        
-        return !pagamentoMesAtual && pagamentoMesAnterior;
+        const vencimentoInfo = calcularVencimentoInteligente(cliente, getPagamentoDoMes);
+        // Cliente que venceu (dias positivos e vencido = true) ou que deve pagar agora
+        return vencimentoInfo && (vencimentoInfo.vencido || vencimentoInfo.dias === 0);
       }).length || 0;
 
       // Valor recebido no mês atual
@@ -194,26 +170,31 @@ export const useDashboard = () => {
         }
       });
 
-      // Evolução de clientes ativos baseado em pagamentos históricos (12 meses)
+      // Evolução de clientes ativos baseado na lógica consistente (12 meses)
       const evolucaoClientes = [];
       for (let i = 11; i >= 0; i--) {
         const data = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
         const mes = data.getMonth() + 1;
         const ano = data.getFullYear();
         
-        // Contar clientes que tinham pagamento naquele mês (independente do status atual)
-        const clientesComPagamento = pagamentos?.filter(p => 
-          p.mes === mes && 
-          p.ano === ano &&
-          (p.status === 'pago' || p.status === 'promocao')
-        ).map(p => p.cliente_id) || [];
+        // Criar função auxiliar para o mês específico
+        const getPagamentoDoMesHistorico = (clienteId: string, mesHist: number, anoHist: number) => {
+          return pagamentos?.find(p => 
+            p.cliente_id === clienteId && 
+            p.mes === mesHist && 
+            p.ano === anoHist
+          );
+        };
         
-        // Remove duplicatas e conta clientes únicos
-        const clientesUnicos = [...new Set(clientesComPagamento)].length;
+        // Contar apenas clientes que eram realmente ativos naquele mês
+        const clientesAtivosNoMes = clientes?.filter(cliente => {
+          // Simular o status do cliente naquele período histórico
+          return calcularStatusCliente(cliente, getPagamentoDoMesHistorico);
+        }).length || 0;
         
         evolucaoClientes.push({
           month: data.toLocaleDateString('pt-BR', { month: 'short' }),
-          value: clientesUnicos
+          value: clientesAtivosNoMes
         });
       }
 
@@ -243,9 +224,11 @@ export const useDashboard = () => {
         });
       }
 
-      // Distribuição por dispositivos únicos
+      // Distribuição por dispositivos únicos (apenas clientes ativos)
       const dispositivosCount: Record<string, number> = {};
       clientes?.forEach(cliente => {
+        if (!isClienteAtivo(cliente.id)) return;
+        
         if (cliente.dispositivo_smart) {
           dispositivosCount[cliente.dispositivo_smart] = (dispositivosCount[cliente.dispositivo_smart] || 0) + 1;
         }
@@ -259,9 +242,11 @@ export const useDashboard = () => {
         value
       }));
 
-      // Distribuição por aplicativo
+      // Distribuição por aplicativo (apenas clientes ativos)
       const appsCount: Record<string, number> = {};
       clientes?.forEach(cliente => {
+        if (!isClienteAtivo(cliente.id)) return;
+        
         appsCount[cliente.aplicativo] = (appsCount[cliente.aplicativo] || 0) + 1;
         if (cliente.aplicativo_2) {
           appsCount[cliente.aplicativo_2] = (appsCount[cliente.aplicativo_2] || 0) + 1;
@@ -273,9 +258,11 @@ export const useDashboard = () => {
         value
       }));
 
-      // Distribuição por UF
+      // Distribuição por UF (apenas clientes ativos)
       const ufCount: Record<string, number> = {};
       clientes?.forEach(cliente => {
+        if (!isClienteAtivo(cliente.id)) return;
+        
         if (cliente.uf) {
           ufCount[cliente.uf] = (ufCount[cliente.uf] || 0) + 1;
         }
@@ -286,9 +273,11 @@ export const useDashboard = () => {
         value
       }));
 
-      // Distribuição por servidor
+      // Distribuição por servidor (apenas clientes ativos)
       const servidorCount: Record<string, number> = {};
       clientes?.forEach(cliente => {
+        if (!isClienteAtivo(cliente.id)) return;
+        
         servidorCount[cliente.servidor] = (servidorCount[cliente.servidor] || 0) + 1;
       });
       
