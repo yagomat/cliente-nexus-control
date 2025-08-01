@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { calcularStatusCliente } from "@/utils/clienteUtils";
+import { calcularStatusCliente, calcularVencimentoInteligente } from "@/utils/clienteUtils";
 
 interface DashboardData {
   totalClientes: number;
@@ -145,26 +145,17 @@ export const useDashboard = () => {
         return total + (cliente?.valor_plano || 0);
       }, 0);
 
-      // Clientes vencendo em 3 dias (com detalhes)
+      // Clientes vencendo em 3 dias (usando lógica inteligente)
       const clientesVencendo = clientes?.filter(cliente => {
-        if (!isClienteAtivo(cliente.id)) return false;
-        const diaVencimento = new Date(hoje.getFullYear(), hoje.getMonth(), cliente.dia_vencimento);
-        if (diaVencimento < hoje) {
-          diaVencimento.setMonth(diaVencimento.getMonth() + 1);
-        }
-        return diaVencimento <= tres_dias_futuro;
+        const vencimentoInfo = calcularVencimentoInteligente(cliente, getPagamentoDoMes);
+        // Incluir apenas clientes ativos que vencerão em 3 dias ou menos (não vencidos)
+        return vencimentoInfo && !vencimentoInfo.vencido && vencimentoInfo.dias <= 3;
       }).map(cliente => {
-        const diaVencimento = new Date(hoje.getFullYear(), hoje.getMonth(), cliente.dia_vencimento);
-        if (diaVencimento < hoje) {
-          diaVencimento.setMonth(diaVencimento.getMonth() + 1);
-        }
-        const diffTime = diaVencimento.getTime() - hoje.getTime();
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        
+        const vencimentoInfo = calcularVencimentoInteligente(cliente, getPagamentoDoMes);
         return {
           nome: cliente.nome,
           servidor: cliente.servidor,
-          dias: diffDays
+          dias: vencimentoInfo?.dias || 0
         };
       }) || [];
 
