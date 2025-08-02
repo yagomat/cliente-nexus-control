@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { useClientes } from "@/hooks/useClientes";
 import { usePagamentos } from "@/hooks/usePagamentos";
 import { calcularDiasParaVencer, calcularStatusCliente, calcularOrdemVencimento } from "@/utils/clienteUtils";
@@ -11,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Grid, List, Check, Gift, X } from "lucide-react";
 
 const Clientes = () => {
+  const location = useLocation();
   const [filtroStatus, setFiltroStatus] = useState("todos");
   const [ordenacao, setOrdenacao] = useState("cadastro");
   const [busca, setBusca] = useState("");
@@ -19,8 +21,17 @@ const Clientes = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   
-  const { clientes, loading, fetchClientes } = useClientes();
+  const { clientes, loading, fetchClientes, refreshClientes } = useClientes();
   const { pagamentos, getPagamentoMesAtual, getPagamentoDoMes, handlePagamento } = usePagamentos();
+
+  // Detectar retorno de edição de cliente e refresh cache
+  useEffect(() => {
+    if (location.state?.clienteEditado) {
+      refreshClientes();
+      // Limpar o state para evitar refreshes desnecessários
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state, refreshClientes]);
 
   const clientesFiltrados = useMemo(() => {
     return clientes
