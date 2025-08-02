@@ -1,8 +1,20 @@
+import { toZonedTime, formatInTimeZone } from 'date-fns-tz';
+
+// Função para obter a data atual no horário de São Paulo
+const getHojeSaoPaulo = (): Date => {
+  const agora = new Date();
+  return toZonedTime(agora, 'America/Sao_Paulo');
+};
+
+// Função para normalizar uma data para o início do dia no horário de São Paulo
+const normalizarDataSaoPaulo = (data: Date): Date => {
+  const dataZonedTime = toZonedTime(data, 'America/Sao_Paulo');
+  dataZonedTime.setHours(0, 0, 0, 0);
+  return dataZonedTime;
+};
+
 // Função auxiliar para calcular a data de vencimento real considerando meses com menos dias
 const calcularDataVencimentoReal = (ano: number, mes: number, diaVencimento: number): Date => {
-  // Primeiro, criar uma data com o primeiro dia do mês
-  const primeiroDiaDoMes = new Date(ano, mes - 1, 1);
-  
   // Calcular o último dia do mês
   const ultimoDiaDoMes = new Date(ano, mes, 0).getDate();
   
@@ -10,11 +22,13 @@ const calcularDataVencimentoReal = (ano: number, mes: number, diaVencimento: num
   // Caso contrário, usar o último dia do mês
   const diaEfetivo = Math.min(diaVencimento, ultimoDiaDoMes);
   
-  return new Date(ano, mes - 1, diaEfetivo);
+  // Criar a data e normalizar para o início do dia no horário de São Paulo
+  const dataVencimento = new Date(ano, mes - 1, diaEfetivo);
+  return normalizarDataSaoPaulo(dataVencimento);
 };
 
 export const calcularVencimentoInteligente = (cliente: any, getPagamentoDoMes: (clienteId: string, mes: number, ano: number) => any) => {
-  const hoje = new Date();
+  const hoje = normalizarDataSaoPaulo(getHojeSaoPaulo());
   const mesAtual = hoje.getMonth() + 1;
   const anoAtual = hoje.getFullYear();
   
@@ -35,12 +49,12 @@ export const calcularVencimentoInteligente = (cliente: any, getPagamentoDoMes: (
         // Calcular dias até o vencimento deste mês (quando cliente se tornará inativo)
         const dataVencimento = calcularDataVencimentoReal(ano, mes, cliente.dia_vencimento);
         const diffTime = dataVencimento.getTime() - hoje.getTime();
-        const dias = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        const dias = Math.floor(diffTime / (1000 * 60 * 60 * 24));
         
         return {
           dias,
-          texto: dias <= 0 ? `Vence hoje` : `Vence em ${dias} dias`,
-          vencido: false
+          texto: dias === 0 ? `Vence hoje` : dias < 0 ? `Venceu há ${Math.abs(dias)} dias` : `Vence em ${dias} dias`,
+          vencido: dias < 0
         };
       }
       
@@ -55,7 +69,7 @@ export const calcularVencimentoInteligente = (cliente: any, getPagamentoDoMes: (
     // Se não encontrou gap em 12 meses, usar último mês verificado
     const dataVencimento = calcularDataVencimentoReal(ano, mes, cliente.dia_vencimento);
     const diffTime = dataVencimento.getTime() - hoje.getTime();
-    const dias = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const dias = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     
     return {
       dias,
@@ -87,7 +101,7 @@ export const calcularVencimentoInteligente = (cliente: any, getPagamentoDoMes: (
         
         const dataVencimento = calcularDataVencimentoReal(anoInativo, mesInativo, cliente.dia_vencimento);
         const diffTime = hoje.getTime() - dataVencimento.getTime();
-        const dias = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        const dias = Math.floor(diffTime / (1000 * 60 * 60 * 24));
         
         return {
           dias,
@@ -103,7 +117,7 @@ export const calcularVencimentoInteligente = (cliente: any, getPagamentoDoMes: (
 };
 
 export const calcularDiasParaVencer = (diaVencimento: number) => {
-  const hoje = new Date();
+  const hoje = normalizarDataSaoPaulo(getHojeSaoPaulo());
   const mesAtual = hoje.getMonth() + 1;
   const anoAtual = hoje.getFullYear();
   
@@ -124,11 +138,11 @@ export const calcularDiasParaVencer = (diaVencimento: number) => {
   }
   
   const diffTime = proximoVencimento.getTime() - hoje.getTime();
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return Math.floor(diffTime / (1000 * 60 * 60 * 24));
 };
 
 export const calcularStatusCliente = (cliente: any, getPagamentoDoMes: (clienteId: string, mes: number, ano: number) => any) => {
-  const hoje = new Date();
+  const hoje = normalizarDataSaoPaulo(getHojeSaoPaulo());
   const mesAtual = hoje.getMonth() + 1;
   const anoAtual = hoje.getFullYear();
   
