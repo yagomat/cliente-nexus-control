@@ -173,7 +173,7 @@ export default function EditarCliente() {
         description: "As informações do cliente foram atualizadas."
       });
 
-      navigate('/clientes', { state: { clienteEditado: true } });
+      navigate('/clientes');
     } catch (error) {
       console.error('Erro ao atualizar cliente:', error);
       toast({

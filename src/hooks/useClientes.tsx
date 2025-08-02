@@ -37,15 +37,9 @@ export const useClientes = () => {
     }
   };
 
-  const refreshClientes = async () => {
-    setLoading(true);
-    await fetchClientes();
-  };
-
   return {
     clientes,
     loading,
-    fetchClientes,
-    refreshClientes
+    fetchClientes
   };
 };
