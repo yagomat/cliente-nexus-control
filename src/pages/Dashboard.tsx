@@ -69,12 +69,24 @@ const Dashboard = () => {
     return null;
   };
 
-  const CustomLineTooltip = ({ active, payload, label }: any) => {
+  const CustomClientesTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-background border border-border rounded-lg px-3 py-2 shadow-lg text-foreground">
           <p className="text-sm font-medium mb-1">{`${label}`}</p>
-          <p className="text-sm">{`Valor: ${payload[0].name === 'value' && payload[0].payload.value ? `R$ ${payload[0].value}` : payload[0].value}`}</p>
+          <p className="text-sm">{`Clientes Ativos: ${payload[0].value}`}</p>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const CustomPagamentosTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-background border border-border rounded-lg px-3 py-2 shadow-lg text-foreground">
+          <p className="text-sm font-medium mb-1">{`${label}`}</p>
+          <p className="text-sm">{`Valor: R$ ${payload[0].value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}</p>
         </div>
       );
     }
@@ -272,7 +284,7 @@ const Dashboard = () => {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis />
-                <Tooltip content={<CustomLineTooltip />} />
+                <Tooltip content={<CustomClientesTooltip />} />
                 <Line 
                   type="monotone" 
                   dataKey="value" 
@@ -296,7 +308,7 @@ const Dashboard = () => {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis />
-                <Tooltip content={<CustomLineTooltip />} />
+                <Tooltip content={<CustomPagamentosTooltip />} />
                 <Line 
                   type="monotone" 
                   dataKey="value" 
