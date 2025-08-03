@@ -177,20 +177,17 @@ export const useDashboard = () => {
         const mes = data.getMonth() + 1;
         const ano = data.getFullYear();
         
-        // Criar função auxiliar para o mês específico
-        const getPagamentoDoMesHistorico = (clienteId: string, mesHist: number, anoHist: number) => {
-          return pagamentos?.find(p => 
-            p.cliente_id === clienteId && 
-            p.mes === mesHist && 
-            p.ano === anoHist
-          );
-        };
-        
-        // Contar apenas clientes que eram realmente ativos naquele mês
-        const clientesAtivosNoMes = clientes?.filter(cliente => {
-          // Simular o status do cliente naquele período histórico
-          return calcularStatusCliente(cliente, getPagamentoDoMesHistorico);
-        }).length || 0;
+        // Contar clientes com pagamento "pago" ou "promocao" naquele mês específico
+        const clientesAtivosNoMes = pagamentos?.filter(p => 
+          p.mes === mes && 
+          p.ano === ano && 
+          (p.status === 'pago' || p.status === 'promocao')
+        ).reduce((unique: string[], p: any) => {
+          if (!unique.includes(p.cliente_id)) {
+            unique.push(p.cliente_id);
+          }
+          return unique;
+        }, []).length || 0;
         
         evolucaoClientes.push({
           month: data.toLocaleDateString('pt-BR', { month: 'short' }),
