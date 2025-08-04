@@ -178,10 +178,12 @@ export const useDashboard = () => {
         const ano = data.getFullYear();
         
         // Contar clientes com pagamento "pago" ou "promocao" naquele mês específico
+        // Apenas considerar pagamentos de clientes que ainda existem
         const clientesAtivosNoMes = pagamentos?.filter(p => 
           p.mes === mes && 
           p.ano === ano && 
-          (p.status === 'pago' || p.status === 'promocao')
+          (p.status === 'pago' || p.status === 'promocao') &&
+          clientes?.some(cliente => cliente.id === p.cliente_id) // Garantir que o cliente existe
         ).reduce((unique: string[], p: any) => {
           if (!unique.includes(p.cliente_id)) {
             unique.push(p.cliente_id);
