@@ -6,6 +6,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 import { validateImportData, MissingDataItem, normalizeName } from "@/utils/dataValidation";
 
+// Função para parsing seguro de datas evitando problemas de timezone
+const parseLocalDate = (dateString: string): Date => {
+  const [year, month, day] = dateString.split('-').map(Number);
+  return new Date(year, month - 1, day);
+};
+
 interface ImportError {
   linha: number;
   campo: string;
@@ -316,12 +322,12 @@ export const useClienteImportExport = () => {
         'Aplicativo 1': cliente.aplicativo,
         'Usuário do aplicativo 1': cliente.usuario_aplicativo || '',
         'Senha do aplicativo 1': cliente.senha_aplicativo || '',
-        'Vencimento da licença do app 1': cliente.data_licenca_aplicativo ? new Date(cliente.data_licenca_aplicativo).toLocaleDateString('pt-BR') : '',
+        'Vencimento da licença do app 1': cliente.data_licenca_aplicativo ? parseLocalDate(cliente.data_licenca_aplicativo).toLocaleDateString('pt-BR') : '',
         'Dispositivo Smart 2': cliente.dispositivo_smart_2 || '',
         'Aplicativo 2': cliente.aplicativo_2 || '',
         'Usuário do aplicativo 2': cliente.usuario_aplicativo_2 || '',
         'Senha do aplicativo 2': cliente.senha_aplicativo_2 || '',
-        'Vencimento da licença do app 2': cliente.data_licenca_aplicativo_2 ? new Date(cliente.data_licenca_aplicativo_2).toLocaleDateString('pt-BR') : '',
+        'Vencimento da licença do app 2': cliente.data_licenca_aplicativo_2 ? parseLocalDate(cliente.data_licenca_aplicativo_2).toLocaleDateString('pt-BR') : '',
         'Observações': cliente.observacoes || ''
       }));
 

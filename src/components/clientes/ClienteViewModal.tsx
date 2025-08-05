@@ -2,6 +2,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Phone, Server, MapPin, User, DollarSign, Monitor, Smartphone, Key } from "lucide-react";
 import { calcularDiasParaVencer, calcularStatusCliente, getVencimentoColor, getVencimentoTexto } from "@/utils/clienteUtils";
+
+// Função para parsing seguro de datas evitando problemas de timezone
+const parseLocalDate = (dateString: string): Date => {
+  const [year, month, day] = dateString.split('-').map(Number);
+  return new Date(year, month - 1, day);
+};
 interface ClienteViewModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -109,7 +115,7 @@ export const ClienteViewModal = ({
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">Data da Licença:</span>
                   <span className="text-sm font-medium">
-                    {cliente.data_licenca_aplicativo ? new Date(cliente.data_licenca_aplicativo).toLocaleDateString('pt-BR') : "-"}
+                    {cliente.data_licenca_aplicativo ? parseLocalDate(cliente.data_licenca_aplicativo).toLocaleDateString('pt-BR') : "-"}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -147,7 +153,7 @@ export const ClienteViewModal = ({
                     <Calendar className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm text-muted-foreground">Data da Licença:</span>
                     <span className="text-sm font-medium">
-                      {cliente.data_licenca_aplicativo_2 ? new Date(cliente.data_licenca_aplicativo_2).toLocaleDateString('pt-BR') : "-"}
+                      {cliente.data_licenca_aplicativo_2 ? parseLocalDate(cliente.data_licenca_aplicativo_2).toLocaleDateString('pt-BR') : "-"}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">

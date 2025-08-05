@@ -22,6 +22,12 @@ import { useDadosCadastro } from "@/hooks/useDadosCadastro";
 import { useClienteImportExport } from "@/hooks/useClienteImportExport";
 import { toast } from "@/hooks/use-toast";
 
+// Função para parsing seguro de datas evitando problemas de timezone
+const parseLocalDate = (dateString: string): Date => {
+  const [year, month, day] = dateString.split('-').map(Number);
+  return new Date(year, month - 1, day);
+};
+
 const formSchema = z.object({
   nome: z.string().min(1, "Nome é obrigatório").max(40, "Nome deve ter no máximo 40 caracteres"),
   telefone: z.string().min(11, "Telefone deve ter 11 dígitos").max(11, "Telefone deve ter 11 dígitos"),
@@ -108,13 +114,13 @@ export default function EditarCliente() {
         aplicativo: data.aplicativo,
         usuario_aplicativo: data.usuario_aplicativo || undefined,
         senha_aplicativo: data.senha_aplicativo || undefined,
-        data_licenca_aplicativo: data.data_licenca_aplicativo ? new Date(data.data_licenca_aplicativo) : undefined,
+        data_licenca_aplicativo: data.data_licenca_aplicativo ? parseLocalDate(data.data_licenca_aplicativo) : undefined,
         tela_adicional: data.tela_adicional || false,
         dispositivo_smart_2: data.dispositivo_smart_2 || undefined,
         aplicativo_2: data.aplicativo_2 || undefined,
         usuario_aplicativo_2: data.usuario_aplicativo_2 || undefined,
         senha_aplicativo_2: data.senha_aplicativo_2 || undefined,
-        data_licenca_aplicativo_2: data.data_licenca_aplicativo_2 ? new Date(data.data_licenca_aplicativo_2) : undefined,
+        data_licenca_aplicativo_2: data.data_licenca_aplicativo_2 ? parseLocalDate(data.data_licenca_aplicativo_2) : undefined,
         observacoes: data.observacoes || undefined
       });
     } catch (error) {

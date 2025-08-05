@@ -3,6 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { calcularStatusCliente, calcularVencimentoInteligente } from "@/utils/clienteUtils";
 
+// Função para parsing seguro de datas evitando problemas de timezone
+const parseLocalDate = (dateString: string): Date => {
+  const [year, month, day] = dateString.split('-').map(Number);
+  return new Date(year, month - 1, day);
+};
+
 interface DashboardData {
   totalClientes: number;
   clientesAtivos: number;
@@ -143,7 +149,7 @@ export const useDashboard = () => {
         if (!isClienteAtivo(cliente.id)) return;
         
         if (cliente.data_licenca_aplicativo) {
-          const dataLicenca = new Date(cliente.data_licenca_aplicativo);
+          const dataLicenca = parseLocalDate(cliente.data_licenca_aplicativo);
           // Apenas apps que vão vencer no futuro (não já vencidos)
           if (dataLicenca > hoje && dataLicenca <= trinta_dias_futuro) {
             const diffTime = dataLicenca.getTime() - hoje.getTime();
@@ -156,7 +162,7 @@ export const useDashboard = () => {
           }
         }
         if (cliente.data_licenca_aplicativo_2) {
-          const dataLicenca2 = new Date(cliente.data_licenca_aplicativo_2);
+          const dataLicenca2 = parseLocalDate(cliente.data_licenca_aplicativo_2);
           // Apenas apps que vão vencer no futuro (não já vencidos)
           if (dataLicenca2 > hoje && dataLicenca2 <= trinta_dias_futuro) {
             const diffTime = dataLicenca2.getTime() - hoje.getTime();
