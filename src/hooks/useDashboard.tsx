@@ -150,10 +150,10 @@ export const useDashboard = () => {
         
         if (cliente.data_licenca_aplicativo) {
           const dataLicenca = parseLocalDate(cliente.data_licenca_aplicativo);
-          // Apenas apps que vão vencer no futuro (não já vencidos)
-          if (dataLicenca > hoje && dataLicenca <= trinta_dias_futuro) {
+          // Incluir apps que vencem hoje ou nos próximos 30 dias
+          if (dataLicenca >= hoje && dataLicenca <= trinta_dias_futuro) {
             const diffTime = dataLicenca.getTime() - hoje.getTime();
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            const diffDays = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
             appsVencendo.push({
               nome: cliente.nome,
               aplicativo: cliente.aplicativo,
@@ -163,10 +163,10 @@ export const useDashboard = () => {
         }
         if (cliente.data_licenca_aplicativo_2) {
           const dataLicenca2 = parseLocalDate(cliente.data_licenca_aplicativo_2);
-          // Apenas apps que vão vencer no futuro (não já vencidos)
-          if (dataLicenca2 > hoje && dataLicenca2 <= trinta_dias_futuro) {
+          // Incluir apps que vencem hoje ou nos próximos 30 dias
+          if (dataLicenca2 >= hoje && dataLicenca2 <= trinta_dias_futuro) {
             const diffTime = dataLicenca2.getTime() - hoje.getTime();
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            const diffDays = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
             appsVencendo.push({
               nome: cliente.nome,
               aplicativo: cliente.aplicativo_2 || 'App 2',
