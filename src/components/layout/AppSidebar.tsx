@@ -1,4 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import { 
   LayoutGrid, 
   Users, 
@@ -18,6 +19,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const items = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutGrid },
@@ -28,10 +30,18 @@ const items = [
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { state, setOpen } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
   const isCollapsed = state === "collapsed";
+  const isMobile = useIsMobile();
+
+  // Fecha o sidebar em dispositivos móveis quando a rota muda
+  useEffect(() => {
+    if (isMobile) {
+      setOpen(false);
+    }
+  }, [currentPath, isMobile, setOpen]);
 
   const isActive = (path: string) => {
     if (path === "/clientes") {
