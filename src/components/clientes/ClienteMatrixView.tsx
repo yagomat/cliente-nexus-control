@@ -15,10 +15,9 @@ interface ClienteMatrixViewProps {
   anoFiltro: number;
   currentPage: number;
   itemsPerPage: number;
-  onPageChange: (page: number) => void;
 }
 
-export const ClienteMatrixView = ({ clientes, clientesFiltrados, anoFiltro, currentPage, itemsPerPage, onPageChange }: ClienteMatrixViewProps) => {
+export const ClienteMatrixView = ({ clientes, clientesFiltrados, anoFiltro, currentPage, itemsPerPage }: ClienteMatrixViewProps) => {
   const { getPagamentoDoMes, handlePagamentoMes } = usePagamentos();
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
@@ -153,15 +152,6 @@ export const ClienteMatrixView = ({ clientes, clientesFiltrados, anoFiltro, curr
         </div>
       )}
       
-      {/* Paginação */}
-      <ClientePagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        itemsPerPage={itemsPerPage}
-        totalItems={clientesFiltrados.length}
-        onPageChange={onPageChange}
-        onItemsPerPageChange={() => {}} // Não usado no modo matriz
-      />
 
       <div className="mt-4 text-sm text-muted-foreground">
         <div className="flex items-center gap-4 flex-wrap">
