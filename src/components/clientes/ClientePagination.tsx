@@ -52,8 +52,6 @@ export const ClientePagination = ({
     return pages;
   };
 
-  if (totalPages <= 1) return null;
-
   return (
     <>
       {/* Controle de itens por página */}
@@ -79,8 +77,9 @@ export const ClientePagination = ({
         Exibindo {startItem} até {endItem} de {totalItems} resultados
       </div>
 
-      {/* Controles de paginação */}
-      <div className="flex justify-center items-center gap-2 mt-4">
+      {/* Controles de paginação - só mostra se houver mais de uma página */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-2 mt-4">
         <Button 
           variant="outline" 
           size="sm" 
@@ -109,7 +108,8 @@ export const ClientePagination = ({
         >
           Próximo
         </Button>
-      </div>
+        </div>
+      )}
     </>
   );
 };
