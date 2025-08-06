@@ -31,8 +31,8 @@ const Clientes = () => {
           (filtroStatus === "inativo" && !clienteAtivo);
         
         const matchBusca = busca === "" || 
-          cliente.nome.toLowerCase().includes(busca.toLowerCase()) ||
-          cliente.telefone.includes(busca);
+          cliente.nome?.toLowerCase().includes(busca.toLowerCase()) ||
+          cliente.telefone?.includes(busca);
         
         return matchStatus && matchBusca;
       })
