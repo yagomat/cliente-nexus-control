@@ -218,7 +218,7 @@ const Clientes = () => {
             </div>
           )}
 
-          {!loading && clientesFiltrados.length > 0 && (
+          {!loading && clientesFiltrados.length > 0 && viewMode === "lista" && (
             <ClientePagination
               currentPage={currentPage}
               totalPages={totalPages}
