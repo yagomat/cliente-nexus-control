@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { 
   LayoutGrid, 
@@ -6,6 +7,7 @@ import {
   MessageSquare, 
   Settings 
 } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 import {
   Sidebar,
@@ -28,10 +30,18 @@ const items = [
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { state, setOpenMobile } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
   const isCollapsed = state === "collapsed";
+  const isMobile = useIsMobile();
+
+  // Auto-close sidebar on mobile when route changes
+  useEffect(() => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  }, [currentPath, isMobile, setOpenMobile]);
 
   const isActive = (path: string) => {
     if (path === "/clientes") {
