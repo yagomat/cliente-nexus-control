@@ -14,7 +14,7 @@ interface DashboardData {
   clientesAtivos: number;
   clientesInativos: number;
   clientesNovos: number;
-  pagamentosPendentes: number;
+  pagamentosEsperados: number;
   valorRecebido: number;
   clientesVencendo: Array<{ nome: string; servidor: string; dias: number }>;
   appsVencendo: Array<{ nome: string; aplicativo: string; dias: number }>;
@@ -34,7 +34,7 @@ export const useDashboard = () => {
     clientesAtivos: 0,
     clientesInativos: 0,
     clientesNovos: 0,
-    pagamentosPendentes: 0,
+    pagamentosEsperados: 0,
     valorRecebido: 0,
     clientesVencendo: [],
     appsVencendo: [],
@@ -110,11 +110,15 @@ export const useDashboard = () => {
         new Date(c.created_at) >= trinta_dias_atras
       ).length || 0;
 
-      // Pagamentos pendentes usando lógica inteligente de vencimento
-      const pagamentosPendentes = clientes?.filter(cliente => {
-        const vencimentoInfo = calcularVencimentoInteligente(cliente, getPagamentoDoMes);
-        // Cliente que venceu (dias positivos e vencido = true) ou que deve pagar agora
-        return vencimentoInfo && (vencimentoInfo.vencido || vencimentoInfo.dias === 0);
+      // Pagamentos esperados: clientes que pagaram mês passado mas ainda não pagaram este mês
+      const mesAnterior = agora.getMonth() === 0 ? 12 : agora.getMonth();
+      const anoAnterior = agora.getMonth() === 0 ? agora.getFullYear() - 1 : agora.getFullYear();
+      
+      const pagamentosEsperados = clientes?.filter(cliente => {
+        const pagouMesAnterior = getPagamentoDoMes(cliente.id, mesAnterior, anoAnterior);
+        const pagouMesAtual = getPagamentoDoMes(cliente.id, mesAtual, anoAtual);
+        
+        return pagouMesAnterior && (pagouMesAnterior.status === 'pago' || pagouMesAnterior.status === 'promocao') && !pagouMesAtual;
       }).length || 0;
 
       // Valor recebido no mês atual
@@ -298,7 +302,7 @@ export const useDashboard = () => {
         clientesAtivos,
         clientesInativos,
         clientesNovos,
-        pagamentosPendentes,
+        pagamentosEsperados,
         valorRecebido,
         clientesVencendo,
         appsVencendo,

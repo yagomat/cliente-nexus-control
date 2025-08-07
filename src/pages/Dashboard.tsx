@@ -20,6 +20,13 @@ const COLORS = [
   '#F43F5E'       // Rose
 ];
 
+// Função para formatar exibição de dias
+const formatarDias = (dias: number): string => {
+  if (dias === 0) return "(Hoje)";
+  if (dias === 1) return "(Amanhã)";
+  return `(${dias} dias)`;
+};
+
 const Dashboard = () => {
   const { dashboardData, loading } = useDashboard();
   const [selectedSegments, setSelectedSegments] = useState<Record<string, string | null>>({
@@ -154,7 +161,7 @@ const Dashboard = () => {
                 dashboardData.clientesVencendo.slice(0, 3).map((cliente, index) => (
                   <div key={index} className="text-xs">
                     <span className="font-medium">{cliente.nome}</span> - {cliente.servidor} 
-                    <span className="text-yellow-600 dark:text-yellow-400"> ({cliente.dias} dias)</span>
+                    <span className="text-yellow-600 dark:text-yellow-400"> {formatarDias(cliente.dias)}</span>
                   </div>
                 ))
               ) : (
@@ -181,7 +188,7 @@ const Dashboard = () => {
                 dashboardData.appsVencendo.slice(0, 3).map((app, index) => (
                   <div key={index} className="text-xs">
                     <span className="font-medium">{app.nome}</span> - {app.aplicativo} 
-                    <span className="text-orange-600 dark:text-orange-400"> ({app.dias} dias)</span>
+                    <span className="text-orange-600 dark:text-orange-400"> {formatarDias(app.dias)}</span>
                   </div>
                 ))
               ) : (
@@ -248,11 +255,11 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pagamentos Pendentes</CardTitle>
+            <CardTitle className="text-sm font-medium">Pagamentos Esperados</CardTitle>
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{dashboardData.pagamentosPendentes}</div>
+            <div className="text-2xl font-bold text-red-600">{dashboardData.pagamentosEsperados}</div>
             <p className="text-xs text-muted-foreground">Mês atual</p>
           </CardContent>
         </Card>
