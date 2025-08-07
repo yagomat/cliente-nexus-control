@@ -72,9 +72,11 @@ export const useDashboard = () => {
 
       if (pagamentosError) throw pagamentosError;
 
-      const hoje = new Date();
-      const mesAtual = hoje.getMonth() + 1;
-      const anoAtual = hoje.getFullYear();
+      const agora = new Date();
+      // Normalizar hoje para meia-noite para comparação correta com parseLocalDate
+      const hoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
+      const mesAtual = agora.getMonth() + 1;
+      const anoAtual = agora.getFullYear();
       const trinta_dias_atras = new Date(hoje.getTime() - 30 * 24 * 60 * 60 * 1000);
       const tres_dias_futuro = new Date(hoje.getTime() + 3 * 24 * 60 * 60 * 1000);
 
