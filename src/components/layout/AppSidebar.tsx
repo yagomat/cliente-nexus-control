@@ -55,6 +55,12 @@ export function AppSidebar() {
       ? "bg-primary text-primary-foreground font-medium" 
       : "hover:bg-accent hover:text-accent-foreground";
 
+  const handleMenuClick = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
+
   return (
     <Sidebar 
       className={isCollapsed ? "w-16" : "w-60"} 
@@ -75,6 +81,7 @@ export function AppSidebar() {
                       to={item.url} 
                       className={getNavClass}
                       title={isCollapsed ? item.title : undefined}
+                      onClick={handleMenuClick}
                     >
                       <item.icon className="h-5 w-5 shrink-0" />
                       {!isCollapsed && <span>{item.title}</span>}
