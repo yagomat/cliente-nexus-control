@@ -24,6 +24,7 @@ interface ImportResult {
   clientesImportados: number;
   clientesRejeitados: number;
   clientesDuplicados: number;
+  clientesRestaurados: number;
   erros: ImportError[];
   message?: string;
 }
@@ -43,6 +44,7 @@ export const useClienteImportExport = () => {
     clientesImportados: 0,
     clientesRejeitados: 0,
     clientesDuplicados: 0,
+    clientesRestaurados: 0,
     erros: []
   });
 
@@ -265,24 +267,35 @@ export const useClienteImportExport = () => {
   };
 
   const verificarClientesDuplicados = async (clientesParaValidar: any[]) => {
-    if (!user) return { clientesUnicos: [], clientesDuplicados: [] };
+    if (!user) return { clientesUnicos: [], clientesDuplicados: [], clientesParaRestaurar: [] };
 
     try {
-      const { data: clientesExistentes, error } = await supabase
+      // Buscar clientes ativos (não excluídos)
+      const { data: clientesAtivos, error: errorAtivos } = await supabase
         .from('clientes')
         .select('*')
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .is('deleted_at', null);
 
-      if (error) {
-        console.error('Erro ao buscar clientes existentes:', error);
-        return { clientesUnicos: clientesParaValidar, clientesDuplicados: [] };
+      // Buscar clientes excluídos
+      const { data: clientesExcluidos, error: errorExcluidos } = await supabase
+        .from('clientes')
+        .select('*')
+        .eq('user_id', user.id)
+        .not('deleted_at', 'is', null);
+
+      if (errorAtivos || errorExcluidos) {
+        console.error('Erro ao buscar clientes:', errorAtivos || errorExcluidos);
+        return { clientesUnicos: clientesParaValidar, clientesDuplicados: [], clientesParaRestaurar: [] };
       }
 
       const clientesUnicos: any[] = [];
       const clientesDuplicados: any[] = [];
+      const clientesParaRestaurar: any[] = [];
 
       for (const clienteNovo of clientesParaValidar) {
-        const isDuplicado = clientesExistentes?.some(clienteExistente => {
+        // Verificar se é duplicado de cliente ativo
+        const isDuplicadoAtivo = clientesAtivos?.some(clienteExistente => {
           return (
             clienteExistente.nome.toLowerCase() === clienteNovo.nome.toLowerCase() &&
             clienteExistente.servidor.toLowerCase() === clienteNovo.servidor.toLowerCase() &&
@@ -293,17 +306,34 @@ export const useClienteImportExport = () => {
           );
         });
 
-        if (isDuplicado) {
+        // Verificar se é cliente excluído para restaurar
+        const clienteExcluidoCorrespondente = clientesExcluidos?.find(clienteExistente => {
+          return (
+            clienteExistente.nome.toLowerCase() === clienteNovo.nome.toLowerCase() &&
+            clienteExistente.servidor.toLowerCase() === clienteNovo.servidor.toLowerCase() &&
+            clienteExistente.aplicativo.toLowerCase() === clienteNovo.aplicativo.toLowerCase() &&
+            clienteExistente.dia_vencimento === clienteNovo.dia_vencimento &&
+            (clienteExistente.telefone || '') === (clienteNovo.telefone || '') &&
+            (clienteExistente.uf || '') === (clienteNovo.uf || '')
+          );
+        });
+
+        if (isDuplicadoAtivo) {
           clientesDuplicados.push(clienteNovo);
+        } else if (clienteExcluidoCorrespondente) {
+          clientesParaRestaurar.push({ 
+            ...clienteNovo, 
+            clienteExcluidoId: clienteExcluidoCorrespondente.id 
+          });
         } else {
           clientesUnicos.push(clienteNovo);
         }
       }
 
-      return { clientesUnicos, clientesDuplicados };
+      return { clientesUnicos, clientesDuplicados, clientesParaRestaurar };
     } catch (error) {
       console.error('Erro na verificação de duplicados:', error);
-      return { clientesUnicos: clientesParaValidar, clientesDuplicados: [] };
+      return { clientesUnicos: clientesParaValidar, clientesDuplicados: [], clientesParaRestaurar: [] };
     }
   };
 
@@ -447,6 +477,7 @@ export const useClienteImportExport = () => {
       clientesImportados: 0, 
       clientesRejeitados: 0, 
       clientesDuplicados: 0,
+      clientesRestaurados: 0,
       erros: [], 
       message: "Usuário não autenticado" 
     };
@@ -552,6 +583,7 @@ export const useClienteImportExport = () => {
           clientesImportados: 0, 
           clientesRejeitados: erros.length, 
           clientesDuplicados: 0,
+          clientesRestaurados: 0,
           erros 
         };
       }
@@ -584,15 +616,20 @@ export const useClienteImportExport = () => {
           clientesImportados: 0, 
           clientesRejeitados: 0, 
           clientesDuplicados: 0,
+          clientesRestaurados: 0,
           erros: [],
           message: "Aguardando aprovação de novos itens"
         };
       }
 
-      const { clientesUnicos, clientesDuplicados } = await verificarClientesDuplicados(clientesParaValidar);
+      const { clientesUnicos, clientesDuplicados, clientesParaRestaurar } = await verificarClientesDuplicados(clientesParaValidar);
+      
+      // Restaurar clientes excluídos
+      const clientesRestaurados = await restoreDeletedClientes(clientesParaRestaurar);
       
       const result = await executeImport(clientesUnicos);
       result.clientesDuplicados = clientesDuplicados.length;
+      result.clientesRestaurados = clientesRestaurados;
       
       setImportResult(result);
       setShowResultModal(true);
@@ -624,11 +661,50 @@ export const useClienteImportExport = () => {
         clientesImportados: 0, 
         clientesRejeitados: 0, 
         clientesDuplicados: 0,
+        clientesRestaurados: 0,
         erros: erroGeral, 
         message 
       };
     } finally {
       setIsImporting(false);
+    }
+  };
+
+  const restoreDeletedClientes = async (clientesParaRestaurar: any[]): Promise<number> => {
+    if (!user || clientesParaRestaurar.length === 0) return 0;
+
+    let clientesRestaurados = 0;
+
+    try {
+      for (const cliente of clientesParaRestaurar) {
+        const { error } = await supabase
+          .from('clientes')
+          .update({ 
+            deleted_at: null,
+            // Atualizar dados se necessário
+            ...padronizarDadosCliente(cliente)
+          })
+          .eq('id', cliente.clienteExcluidoId)
+          .eq('user_id', user.id);
+
+        if (!error) {
+          clientesRestaurados++;
+        } else {
+          console.error('Erro ao restaurar cliente:', error);
+        }
+      }
+
+      if (clientesRestaurados > 0) {
+        toast({
+          title: "Clientes restaurados",
+          description: `${clientesRestaurados} cliente${clientesRestaurados > 1 ? 's' : ''} excluído${clientesRestaurados > 1 ? 's foram restaurados' : ' foi restaurado'}.`,
+        });
+      }
+
+      return clientesRestaurados;
+    } catch (error) {
+      console.error('Erro ao restaurar clientes:', error);
+      return 0;
     }
   };
 
@@ -639,6 +715,7 @@ export const useClienteImportExport = () => {
         clientesImportados: 0, 
         clientesRejeitados: 0, 
         clientesDuplicados: 0,
+        clientesRestaurados: 0,
         erros: [] 
       };
     }
@@ -666,6 +743,7 @@ export const useClienteImportExport = () => {
           clientesImportados: 0, 
           clientesRejeitados: clientesParaImportar.length, 
           clientesDuplicados: 0,
+          clientesRestaurados: 0,
           erros: errosBanco 
         };
       }
@@ -683,6 +761,7 @@ export const useClienteImportExport = () => {
         clientesImportados, 
         clientesRejeitados: 0, 
         clientesDuplicados: 0,
+        clientesRestaurados: 0,
         erros: [] 
       };
     } catch (error) {
@@ -697,10 +776,14 @@ export const useClienteImportExport = () => {
       
       await createApprovedItems(approvedItems);
       
-      const { clientesUnicos, clientesDuplicados } = await verificarClientesDuplicados(pendingImportData);
+      const { clientesUnicos, clientesDuplicados, clientesParaRestaurar } = await verificarClientesDuplicados(pendingImportData);
+      
+      // Restaurar clientes excluídos
+      const clientesRestaurados = await restoreDeletedClientes(clientesParaRestaurar);
       
       const result = await executeImport(clientesUnicos);
       result.clientesDuplicados = clientesDuplicados.length;
+      result.clientesRestaurados = clientesRestaurados;
       
       setShowApprovalModal(false);
       setMissingDataItems([]);
