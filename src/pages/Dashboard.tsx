@@ -147,8 +147,7 @@ const Dashboard = () => {
   }
 
   return (
-    <TooltipProvider>
-      <div className="space-y-8">
+    <div className="space-y-8">
       {/* Cards de alerta - clientes e apps vencendo */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20 dark:border-yellow-800">
@@ -259,14 +258,16 @@ const Dashboard = () => {
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <div className="flex items-center gap-2">
               <CardTitle className="text-sm font-medium">Pagamentos Esperados</CardTitle>
-              <UITooltip>
-                <TooltipTrigger>
-                  <HelpCircle className="h-3 w-3 text-muted-foreground" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Considera clientes que pagaram mês passado mas ainda não pagaram esse mês</p>
-                </TooltipContent>
-              </UITooltip>
+              <TooltipProvider>
+                <UITooltip>
+                  <TooltipTrigger>
+                    <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Considera clientes que pagaram mês passado mas ainda não pagaram esse mês</p>
+                  </TooltipContent>
+                </UITooltip>
+              </TooltipProvider>
             </div>
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -296,14 +297,16 @@ const Dashboard = () => {
           <CardHeader>
             <div className="flex items-center gap-2">
               <CardTitle>Evolução de Clientes Ativos</CardTitle>
-              <UITooltip>
-                <TooltipTrigger>
-                  <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Considera o total de clientes que realizaram pagamentos em cada mês nos últimos 12 meses</p>
-                </TooltipContent>
-              </UITooltip>
+              <TooltipProvider>
+                <UITooltip>
+                  <TooltipTrigger>
+                    <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Considera o total de clientes que realizaram pagamentos em cada mês nos últimos 12 meses</p>
+                  </TooltipContent>
+                </UITooltip>
+              </TooltipProvider>
             </div>
             <CardDescription>Últimos 12 meses</CardDescription>
           </CardHeader>
@@ -330,14 +333,16 @@ const Dashboard = () => {
           <CardHeader>
             <div className="flex items-center gap-2">
               <CardTitle>Evolução de Pagamentos</CardTitle>
-              <UITooltip>
-                <TooltipTrigger>
-                  <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Considera o total de pagamentos recebidos em cada mês nos últimos 12 meses</p>
-                </TooltipContent>
-              </UITooltip>
+              <TooltipProvider>
+                <UITooltip>
+                  <TooltipTrigger>
+                    <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Considera o total de pagamentos recebidos em cada mês nos últimos 12 meses</p>
+                  </TooltipContent>
+                </UITooltip>
+              </TooltipProvider>
             </div>
             <CardDescription>Últimos 12 meses (R$)</CardDescription>
           </CardHeader>
@@ -367,14 +372,16 @@ const Dashboard = () => {
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
               <CardTitle>Distribuição por Dispositivo</CardTitle>
-              <UITooltip>
-                <TooltipTrigger>
-                  <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Considera os dispositivos nas 2 telas apenas dos clientes ativos</p>
-                </TooltipContent>
-              </UITooltip>
+              <TooltipProvider>
+                <UITooltip>
+                  <TooltipTrigger>
+                    <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Considera os dispositivos nas 2 telas apenas dos clientes ativos</p>
+                  </TooltipContent>
+                </UITooltip>
+              </TooltipProvider>
             </div>
             <CardDescription>Dispositivos Smart (Telas 1 e 2)</CardDescription>
           </CardHeader>
@@ -406,14 +413,16 @@ const Dashboard = () => {
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
               <CardTitle>Distribuição por Aplicativo</CardTitle>
-              <UITooltip>
-                <TooltipTrigger>
-                  <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Considera os aplicativos nas 2 telas apenas dos clientes ativos</p>
-                </TooltipContent>
-              </UITooltip>
+              <TooltipProvider>
+                <UITooltip>
+                  <TooltipTrigger>
+                    <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Considera os aplicativos nas 2 telas apenas dos clientes ativos</p>
+                  </TooltipContent>
+                </UITooltip>
+              </TooltipProvider>
             </div>
             <CardDescription>Apps mais utilizados (Telas 1 e 2)</CardDescription>
           </CardHeader>
@@ -502,7 +511,6 @@ const Dashboard = () => {
         </Card>
       </div>
     </div>
-    </TooltipProvider>
   );
 };
 
