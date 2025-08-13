@@ -43,6 +43,7 @@ export type Database = {
           aplicativo: string
           aplicativo_2: string | null
           ativo: boolean | null
+          codigo_pais: string | null
           created_at: string
           data_licenca_aplicativo: string | null
           data_licenca_aplicativo_2: string | null
@@ -69,6 +70,7 @@ export type Database = {
           aplicativo: string
           aplicativo_2?: string | null
           ativo?: boolean | null
+          codigo_pais?: string | null
           created_at?: string
           data_licenca_aplicativo?: string | null
           data_licenca_aplicativo_2?: string | null
@@ -95,6 +97,7 @@ export type Database = {
           aplicativo?: string
           aplicativo_2?: string | null
           ativo?: boolean | null
+          codigo_pais?: string | null
           created_at?: string
           data_licenca_aplicativo?: string | null
           data_licenca_aplicativo_2?: string | null

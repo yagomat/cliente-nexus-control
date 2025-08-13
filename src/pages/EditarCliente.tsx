@@ -106,7 +106,7 @@ export default function EditarCliente() {
       form.reset({
         nome: data.nome,
         telefone: data.telefone,
-        codigo_pais: "55",
+        codigo_pais: data.codigo_pais || "",
         uf: data.uf || undefined,
         servidor: data.servidor,
         dia_vencimento: data.dia_vencimento,
@@ -145,6 +145,7 @@ export default function EditarCliente() {
       const rawData = {
         nome: data.nome,
         telefone: data.telefone,
+        codigo_pais: data.codigo_pais || null,
         uf: data.uf || null,
         servidor: data.servidor,
         dia_vencimento: data.dia_vencimento,
