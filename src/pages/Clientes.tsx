@@ -8,7 +8,8 @@ import { ClienteCard } from "@/components/clientes/ClienteCard";
 import { ClientePagination } from "@/components/clientes/ClientePagination";
 import { ClienteMatrixView } from "@/components/clientes/ClienteMatrixView";
 import { Button } from "@/components/ui/button";
-import { Grid, List, Check, Gift, X } from "lucide-react";
+import { Grid, List, Check, Gift, X, UserX } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Clientes = () => {
   const [filtroStatus, setFiltroStatus] = useState("todos");
@@ -132,8 +133,16 @@ const Clientes = () => {
 
           {/* Linha com contagem e botões de visualização */}
           <div className="flex items-center justify-between mb-4">
-            <div className="text-sm text-muted-foreground">
-              {clientesFiltrados.length} de {clientes.length} clientes
+            <div className="flex items-center gap-4">
+              <div className="text-sm text-muted-foreground">
+                {clientesFiltrados.length} de {clientes.length} clientes
+              </div>
+              <Link to="/clientes/excluidos">
+                <Button variant="outline" size="sm" className="flex items-center gap-2">
+                  <UserX className="h-4 w-4" />
+                  Ver Excluídos
+                </Button>
+              </Link>
             </div>
             
             <div className="flex gap-2">

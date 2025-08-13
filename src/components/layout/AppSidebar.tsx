@@ -3,6 +3,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import { 
   LayoutGrid, 
   Users, 
+  UserX,
   Database, 
   MessageSquare, 
   Settings 
@@ -24,6 +25,7 @@ import {
 const items = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutGrid },
   { title: "Clientes", url: "/clientes", icon: Users },
+  { title: "Clientes Excluídos", url: "/clientes/excluidos", icon: UserX },
   { title: "Dados de Cadastro", url: "/dados-cadastro", icon: Database },
   { title: "Templates", url: "/templates", icon: MessageSquare },
   { title: "Configurações", url: "/configuracoes", icon: Settings },
@@ -45,7 +47,10 @@ export function AppSidebar() {
 
   const isActive = (path: string) => {
     if (path === "/clientes") {
-      return currentPath.startsWith("/clientes");
+      return currentPath === "/clientes";
+    }
+    if (path === "/clientes/excluidos") {
+      return currentPath === "/clientes/excluidos";
     }
     return currentPath === path;
   };

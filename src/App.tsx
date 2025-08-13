@@ -8,6 +8,7 @@ import { Toaster } from "./components/ui/sonner";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Clientes from "./pages/Clientes";
+import ClientesExcluidos from "./pages/ClientesExcluidos";
 import NovoCliente from "./pages/NovoCliente";
 import EditarCliente from "./pages/EditarCliente";
 import Templates from "./pages/Templates";
@@ -34,6 +35,7 @@ function App() {
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/clientes" element={<Clientes />} />
+              <Route path="/clientes/excluidos" element={<ClientesExcluidos />} />
               <Route path="/clientes/novo" element={<NovoCliente />} />
               <Route path="/clientes/editar/:id" element={<EditarCliente />} />
               <Route path="/novo-cliente" element={<NovoCliente />} />
