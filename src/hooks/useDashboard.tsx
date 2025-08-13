@@ -60,7 +60,8 @@ export const useDashboard = () => {
       const { data: clientes, error: clientesError } = await supabase
         .from('clientes')
         .select('*')
-        .eq('user_id', user?.id);
+        .eq('user_id', user?.id)
+        .is('deleted_at', null);
 
       if (clientesError) throw clientesError;
 

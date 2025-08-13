@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useClienteActions } from "@/hooks/useClienteActions";
 import { calcularVencimentoInteligente, calcularStatusCliente, getButtonVariantAndColor, getVencimentoColor } from "@/utils/clienteUtils";
 import { ClienteViewModal } from "./ClienteViewModal";
 import { TemplateModal } from "@/components/templates/TemplateModal";
@@ -22,6 +23,7 @@ interface ClienteCardProps {
 
 export const ClienteCard = ({ cliente, getPagamentoMesAtual, getPagamentoDoMes, onPagamento, onClienteDeleted }: ClienteCardProps) => {
   const navigate = useNavigate();
+  const { softDeleteCliente } = useClienteActions();
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   
@@ -52,27 +54,9 @@ export const ClienteCard = ({ cliente, getPagamentoMesAtual, getPagamentoDoMes, 
   };
 
   const handleDelete = async () => {
-    try {
-      const { error } = await supabase
-        .from('clientes')
-        .delete()
-        .eq('id', cliente.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Cliente excluído",
-        description: "O cliente foi excluído com sucesso.",
-      });
-
+    const success = await softDeleteCliente(cliente.id);
+    if (success) {
       onClienteDeleted();
-    } catch (error) {
-      console.error('Erro ao excluir cliente:', error);
-      toast({
-        title: "Erro ao excluir cliente",
-        description: "Tente novamente mais tarde.",
-        variant: "destructive",
-      });
     }
   };
   
@@ -148,14 +132,14 @@ export const ClienteCard = ({ cliente, getPagamentoMesAtual, getPagamentoDoMes, 
               <AlertDialogHeader>
                 <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Tem certeza que deseja excluir o cliente <strong>{cliente.nome}</strong>? 
-                  Esta ação não pode ser desfeita.
+                  Tem certeza que deseja remover o cliente <strong>{cliente.nome}</strong>? 
+                  O cliente será arquivado mas seus dados e histórico de pagamentos serão preservados.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancelar</AlertDialogCancel>
                 <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
-                  Excluir
+                  Remover
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
