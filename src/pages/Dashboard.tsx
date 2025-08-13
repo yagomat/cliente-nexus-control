@@ -5,29 +5,19 @@ import { useDashboard } from "@/hooks/useDashboard";
 import { useState } from "react";
 
 // Cores reorganizadas para melhor contraste entre cores adjacentes
-const COLORS = ['#EF4444',
-// Vermelho
-'#10B981',
-// Verde
-'#3B82F6',
-// Azul
-'#F59E0B',
-// Âmbar/Laranja
-'#8B5CF6',
-// Violeta/Roxo
-'#06B6D4',
-// Ciano
-'#F97316',
-// Laranja
-'#84CC16',
-// Lima/Verde claro
-'#EC4899',
-// Rosa/Pink
-'#6B7280',
-// Cinza
-'#14B8A6',
-// Teal
-'#F43F5E' // Rose
+const COLORS = [
+  '#EF4444',      // Vermelho
+  '#10B981',      // Verde
+  '#3B82F6',      // Azul
+  '#F59E0B',      // Âmbar/Laranja
+  '#8B5CF6',      // Violeta/Roxo
+  '#06B6D4',      // Ciano
+  '#F97316',      // Laranja
+  '#84CC16',      // Lima/Verde claro
+  '#EC4899',      // Rosa/Pink
+  '#6B7280',      // Cinza
+  '#14B8A6',      // Teal
+  '#F43F5E'       // Rose
 ];
 
 // Função para formatar exibição de dias
@@ -36,118 +26,127 @@ const formatarDias = (dias: number): string => {
   if (dias === 1) return "(Amanhã)";
   return `(${dias} dias)`;
 };
+
 const Dashboard = () => {
-  const {
-    dashboardData,
-    loading
-  } = useDashboard();
+  const { dashboardData, loading } = useDashboard();
   const [selectedSegments, setSelectedSegments] = useState<Record<string, string | null>>({
     dispositivo: null,
     aplicativo: null,
     uf: null,
     servidor: null
   });
+
   const handleSegmentClick = (chartType: string, name: string) => {
     setSelectedSegments(prev => ({
       ...prev,
       [chartType]: prev[chartType] === name ? null : name
     }));
   };
-  const CustomTooltip = ({
-    active,
-    payload,
-    label
-  }: any) => {
+
+  const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0];
-      return <div className="bg-background border border-border rounded-lg px-3 py-2 shadow-lg text-foreground">
+      
+      return (
+        <div className="bg-background border border-border rounded-lg px-3 py-2 shadow-lg text-foreground">
           {label && <p className="text-sm font-medium mb-1">{`${label}`}</p>}
           <p className="text-sm">{`${data.name || 'Valor'}: ${data.value}`}</p>
-        </div>;
+        </div>
+      );
     }
     return null;
   };
-  const CustomPieTooltip = ({
-    active,
-    payload
-  }: any) => {
+
+  const CustomPieTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0];
-      const total = dashboardData.distribuicaoDispositivo.reduce((sum, item) => sum + item.value, 0) || dashboardData.distribuicaoAplicativo.reduce((sum, item) => sum + item.value, 0) || dashboardData.distribuicaoUF.reduce((sum, item) => sum + item.value, 0) || dashboardData.distribuicaoServidor.reduce((sum, item) => sum + item.value, 0);
-      const percentage = (data.value / total * 100).toFixed(1);
-      return <div className="bg-background border border-border rounded-lg px-3 py-2 shadow-lg text-foreground">
+      const total = dashboardData.distribuicaoDispositivo.reduce((sum, item) => sum + item.value, 0) || 
+                   dashboardData.distribuicaoAplicativo.reduce((sum, item) => sum + item.value, 0) ||
+                   dashboardData.distribuicaoUF.reduce((sum, item) => sum + item.value, 0) ||
+                   dashboardData.distribuicaoServidor.reduce((sum, item) => sum + item.value, 0);
+      const percentage = ((data.value / total) * 100).toFixed(1);
+      
+      return (
+        <div className="bg-background border border-border rounded-lg px-3 py-2 shadow-lg text-foreground">
           <p className="text-sm font-medium">{`${data.name}: ${percentage}%`}</p>
           <p className="text-sm">{`Total: ${data.value}`}</p>
-        </div>;
+        </div>
+      );
     }
     return null;
   };
-  const CustomClientesTooltip = ({
-    active,
-    payload,
-    label
-  }: any) => {
+
+  const CustomClientesTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
-      return <div className="bg-background border border-border rounded-lg px-3 py-2 shadow-lg text-foreground">
+      return (
+        <div className="bg-background border border-border rounded-lg px-3 py-2 shadow-lg text-foreground">
           <p className="text-sm font-medium mb-1">{`${label}`}</p>
           <p className="text-sm">{`Clientes Ativos: ${payload[0].value}`}</p>
-        </div>;
+        </div>
+      );
     }
     return null;
   };
-  const CustomPagamentosTooltip = ({
-    active,
-    payload,
-    label
-  }: any) => {
+
+  const CustomPagamentosTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
-      return <div className="bg-background border border-border rounded-lg px-3 py-2 shadow-lg text-foreground">
+      return (
+        <div className="bg-background border border-border rounded-lg px-3 py-2 shadow-lg text-foreground">
           <p className="text-sm font-medium mb-1">{`${label}`}</p>
-          <p className="text-sm">{`Valor: R$ ${payload[0].value.toLocaleString('pt-BR', {
-            minimumFractionDigits: 2
-          })}`}</p>
-        </div>;
+          <p className="text-sm">{`Valor: R$ ${payload[0].value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}</p>
+        </div>
+      );
     }
     return null;
   };
-  const CustomLegend = ({
-    data,
-    chartType
-  }: {
-    data: Array<{
-      name: string;
-      value: number;
-    }>;
-    chartType: string;
-  }) => {
+
+  const CustomLegend = ({ data, chartType }: { data: Array<{ name: string; value: number }>, chartType: string }) => {
     const total = data.reduce((sum, item) => sum + item.value, 0);
-    return <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-3">
+    
+    return (
+      <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-3">
         {data.map((item, index) => {
-        const percentage = (item.value / total * 100).toFixed(1);
-        const isSelected = selectedSegments[chartType] === item.name;
-        return <div key={item.name} className="flex items-center justify-between cursor-pointer hover:bg-muted/50 transition-colors p-1 rounded" onClick={() => handleSegmentClick(chartType, item.name)}>
+          const percentage = ((item.value / total) * 100).toFixed(1);
+          const isSelected = selectedSegments[chartType] === item.name;
+          
+          return (
+            <div 
+              key={item.name}
+              className="flex items-center justify-between cursor-pointer hover:bg-muted/50 transition-colors p-1 rounded"
+              onClick={() => handleSegmentClick(chartType, item.name)}
+            >
               <div className="flex items-center gap-2 min-w-0 flex-1">
-                <div className="w-3 h-3 rounded-sm shrink-0" style={{
-              backgroundColor: COLORS[index % COLORS.length]
-            }} />
+                <div
+                  className="w-3 h-3 rounded-sm shrink-0"
+                  style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                />
                 <span className="text-sm font-medium truncate">{item.name}</span>
               </div>
               <div className="flex items-center gap-1 ml-2">
                 <span className="text-sm font-bold">{item.value}</span>
-                {isSelected && <span className="text-xs text-muted-foreground">({percentage}%)</span>}
+                {isSelected && (
+                  <span className="text-xs text-muted-foreground">({percentage}%)</span>
+                )}
               </div>
-            </div>;
-      })}
-      </div>;
+            </div>
+          );
+        })}
+      </div>
+    );
   };
+
   if (loading) {
-    return <div className="p-6">
+    return (
+      <div className="p-6">
         <div className="text-center">
           <p className="text-muted-foreground">Carregando dados...</p>
         </div>
-      </div>;
+      </div>
+    );
   }
-  return <div className="space-y-8">
+
+  return (
+    <div className="space-y-8">
       {/* Cards de alerta - clientes e apps vencendo */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20 dark:border-yellow-800">
@@ -158,13 +157,21 @@ const Dashboard = () => {
           <CardContent>
             <div className="text-2xl font-bold text-yellow-900 dark:text-yellow-100">{dashboardData.clientesVencendo.length}</div>
             <div className="text-xs text-yellow-700 dark:text-yellow-300 mt-2 space-y-1">
-              {dashboardData.clientesVencendo.length > 0 ? dashboardData.clientesVencendo.slice(0, 3).map((cliente, index) => <div key={index} className="text-xs">
+              {dashboardData.clientesVencendo.length > 0 ? (
+                dashboardData.clientesVencendo.slice(0, 3).map((cliente, index) => (
+                  <div key={index} className="text-xs">
                     <span className="font-medium">{cliente.nome}</span> - {cliente.servidor} 
                     <span className="text-yellow-600 dark:text-yellow-400"> {formatarDias(cliente.dias)}</span>
-                  </div>) : <span>Nenhum cliente vencendo</span>}
-              {dashboardData.clientesVencendo.length > 3 && <div className="text-xs text-yellow-600 dark:text-yellow-400">
+                  </div>
+                ))
+              ) : (
+                <span>Nenhum cliente vencendo</span>
+              )}
+              {dashboardData.clientesVencendo.length > 3 && (
+                <div className="text-xs text-yellow-600 dark:text-yellow-400">
                   +{dashboardData.clientesVencendo.length - 3} outros...
-                </div>}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -177,13 +184,21 @@ const Dashboard = () => {
           <CardContent>
             <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">{dashboardData.appsVencendo.length}</div>
             <div className="text-xs text-orange-700 dark:text-orange-300 mt-2 space-y-1">
-              {dashboardData.appsVencendo.length > 0 ? dashboardData.appsVencendo.slice(0, 3).map((app, index) => <div key={index} className="text-xs">
+              {dashboardData.appsVencendo.length > 0 ? (
+                dashboardData.appsVencendo.slice(0, 3).map((app, index) => (
+                  <div key={index} className="text-xs">
                     <span className="font-medium">{app.nome}</span> - {app.aplicativo} 
                     <span className="text-orange-600 dark:text-orange-400"> {formatarDias(app.dias)}</span>
-                  </div>) : <span>Nenhum app vencendo</span>}
-              {dashboardData.appsVencendo.length > 3 && <div className="text-xs text-orange-600 dark:text-orange-400">
+                  </div>
+                ))
+              ) : (
+                <span>Nenhum app vencendo</span>
+              )}
+              {dashboardData.appsVencendo.length > 3 && (
+                <div className="text-xs text-orange-600 dark:text-orange-400">
                   +{dashboardData.appsVencendo.length - 3} outros...
-                </div>}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -240,7 +255,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pagamentos Esperados (Mês atual)</CardTitle>
+            <CardTitle className="text-sm font-medium">Pagamentos Esperados</CardTitle>
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -256,9 +271,7 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              R$ {dashboardData.valorRecebido.toLocaleString('pt-BR', {
-              minimumFractionDigits: 2
-            })}
+              R$ {dashboardData.valorRecebido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </div>
             <p className="text-xs text-muted-foreground">Mês atual</p>
           </CardContent>
@@ -279,9 +292,13 @@ const Dashboard = () => {
                 <XAxis dataKey="month" />
                 <YAxis />
                 <Tooltip content={<CustomClientesTooltip />} />
-                <Line type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} dot={{
-                fill: "hsl(var(--primary))"
-              }} />
+                <Line 
+                  type="monotone" 
+                  dataKey="value" 
+                  stroke="hsl(var(--primary))" 
+                  strokeWidth={2}
+                  dot={{ fill: "hsl(var(--primary))" }}
+                />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
@@ -299,9 +316,13 @@ const Dashboard = () => {
                 <XAxis dataKey="month" />
                 <YAxis />
                 <Tooltip content={<CustomPagamentosTooltip />} />
-                <Line type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} dot={{
-                fill: "hsl(var(--primary))"
-              }} />
+                <Line 
+                  type="monotone" 
+                  dataKey="value" 
+                  stroke="hsl(var(--primary))" 
+                  strokeWidth={2}
+                  dot={{ fill: "hsl(var(--primary))" }}
+                />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
@@ -318,10 +339,19 @@ const Dashboard = () => {
           <CardContent className="py-2">
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
-                <Pie data={dashboardData.distribuicaoDispositivo} cx="50%" cy="50%" labelLine={false} label={({
-                value
-              }) => value} outerRadius={80} fill="#8884d8" dataKey="value">
-                  {dashboardData.distribuicaoDispositivo.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
+                <Pie
+                  data={dashboardData.distribuicaoDispositivo}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ value }) => value}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {dashboardData.distribuicaoDispositivo.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
                 </Pie>
                 <Tooltip content={<CustomPieTooltip />} />
               </PieChart>
@@ -338,10 +368,19 @@ const Dashboard = () => {
           <CardContent className="py-2">
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
-                <Pie data={dashboardData.distribuicaoAplicativo} cx="50%" cy="50%" labelLine={false} label={({
-                value
-              }) => value} outerRadius={80} fill="#8884d8" dataKey="value">
-                  {dashboardData.distribuicaoAplicativo.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
+                <Pie
+                  data={dashboardData.distribuicaoAplicativo}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ value }) => value}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {dashboardData.distribuicaoAplicativo.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
                 </Pie>
                 <Tooltip content={<CustomPieTooltip />} />
               </PieChart>
@@ -360,10 +399,19 @@ const Dashboard = () => {
           <CardContent className="py-2">
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
-                <Pie data={dashboardData.distribuicaoUF} cx="50%" cy="50%" labelLine={false} label={({
-                value
-              }) => value} outerRadius={80} fill="#8884d8" dataKey="value">
-                  {dashboardData.distribuicaoUF.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
+                <Pie
+                  data={dashboardData.distribuicaoUF}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ value }) => value}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {dashboardData.distribuicaoUF.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
                 </Pie>
                 <Tooltip content={<CustomPieTooltip />} />
               </PieChart>
@@ -380,10 +428,19 @@ const Dashboard = () => {
           <CardContent className="py-2">
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
-                <Pie data={dashboardData.distribuicaoServidor} cx="50%" cy="50%" labelLine={false} label={({
-                value
-              }) => value} outerRadius={80} fill="#8884d8" dataKey="value">
-                  {dashboardData.distribuicaoServidor.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
+                <Pie
+                  data={dashboardData.distribuicaoServidor}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ value }) => value}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {dashboardData.distribuicaoServidor.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
                 </Pie>
                 <Tooltip content={<CustomPieTooltip />} />
               </PieChart>
@@ -392,6 +449,8 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default Dashboard;
