@@ -1,7 +1,7 @@
-import { LayoutGrid, Users, TrendingUp, Calendar, DollarSign, AlertTriangle, Smartphone, Monitor, MapPin, Server, UserCheck, UserX } from "lucide-react";
+import { LayoutGrid, Users, TrendingUp, Calendar, DollarSign, AlertTriangle, Smartphone, Monitor, MapPin, Server, UserCheck, UserX, HelpCircle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from "recharts";
-import { ClickTooltip } from "@/components/ui/click-tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useState } from "react";
 
@@ -258,7 +258,16 @@ const Dashboard = () => {
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <div className="flex items-center gap-2">
               <CardTitle className="text-sm font-medium">Pagamentos Esperados</CardTitle>
-              <ClickTooltip content="Considera clientes que pagaram mês passado mas ainda não pagaram esse mês" />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button type="button" className="inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground transition-colors">
+                    <HelpCircle className="h-4 w-4" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80">
+                  <p className="text-sm">Considera clientes que pagaram mês passado mas ainda não pagaram esse mês</p>
+                </PopoverContent>
+              </Popover>
             </div>
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -288,7 +297,16 @@ const Dashboard = () => {
           <CardHeader>
             <div className="flex items-center gap-2">
               <CardTitle>Evolução de Clientes Ativos</CardTitle>
-              <ClickTooltip content="Considera o total de clientes que realizaram pagamentos em cada mês nos últimos 12 meses" />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button type="button" className="inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground transition-colors">
+                    <HelpCircle className="h-4 w-4" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80">
+                  <p className="text-sm">Considera o total de clientes que realizaram pagamentos em cada mês nos últimos 12 meses</p>
+                </PopoverContent>
+              </Popover>
             </div>
             <CardDescription>Últimos 12 meses</CardDescription>
           </CardHeader>
@@ -315,7 +333,16 @@ const Dashboard = () => {
           <CardHeader>
             <div className="flex items-center gap-2">
               <CardTitle>Evolução de Pagamentos</CardTitle>
-              <ClickTooltip content="Considera o total de pagamentos recebidos em cada mês nos últimos 12 meses" />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button type="button" className="inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground transition-colors">
+                    <HelpCircle className="h-4 w-4" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80">
+                  <p className="text-sm">Considera o total de pagamentos recebidos em cada mês nos últimos 12 meses</p>
+                </PopoverContent>
+              </Popover>
             </div>
             <CardDescription>Últimos 12 meses (R$)</CardDescription>
           </CardHeader>
@@ -345,7 +372,16 @@ const Dashboard = () => {
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
               <CardTitle>Distribuição por Dispositivo</CardTitle>
-              <ClickTooltip content="Considera os dispositivos nas 2 telas apenas dos clientes ativos" />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button type="button" className="inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground transition-colors">
+                    <HelpCircle className="h-4 w-4" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80">
+                  <p className="text-sm">Considera os dispositivos nas 2 telas apenas dos clientes ativos</p>
+                </PopoverContent>
+              </Popover>
             </div>
             <CardDescription>Dispositivos Smart (Telas 1 e 2)</CardDescription>
           </CardHeader>
@@ -377,7 +413,16 @@ const Dashboard = () => {
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
               <CardTitle>Distribuição por Aplicativo</CardTitle>
-              <ClickTooltip content="Considera os aplicativos nas 2 telas apenas dos clientes ativos" />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button type="button" className="inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground transition-colors">
+                    <HelpCircle className="h-4 w-4" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80">
+                  <p className="text-sm">Considera os aplicativos nas 2 telas apenas dos clientes ativos</p>
+                </PopoverContent>
+              </Popover>
             </div>
             <CardDescription>Apps mais utilizados (Telas 1 e 2)</CardDescription>
           </CardHeader>
