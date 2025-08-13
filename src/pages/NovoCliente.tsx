@@ -24,7 +24,7 @@ import { toast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
   nome: z.string().min(1, "Nome é obrigatório").max(40, "Nome deve ter no máximo 40 caracteres"),
-  telefone: z.string().min(11, "Telefone deve ter 11 dígitos").max(11, "Telefone deve ter 11 dígitos"),
+  telefone: z.string().optional(),
   codigo_pais: z.string().min(1, "Código do país é obrigatório").max(3, "Código deve ter no máximo 3 dígitos").regex(/^\d+$/, "Apenas números são permitidos"),
   uf: z.string().optional(),
   servidor: z.string().min(1, "Servidor é obrigatório"),
