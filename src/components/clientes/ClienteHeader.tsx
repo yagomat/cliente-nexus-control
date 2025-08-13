@@ -15,7 +15,7 @@ export const ClienteHeader = ({ clientes = [], onImportComplete }: ClienteHeader
   return (
     <div className="mb-6">
       {/* Botões de Export/Import - ocupando toda a largura em mobile */}
-      <div className="flex gap-3 mb-4 -mx-6 px-6">
+      <div className="flex gap-3 mb-4 w-full">
         <ExportarClientes clientes={clientes} />
         <ImportarClientes onImportComplete={onImportComplete || (() => {})} />
       </div>
