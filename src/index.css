@@ -226,6 +226,21 @@ Todas as cores DEVEM ser HSL para consistência.
   }
 }
 
+/* Remove focus outline from chart elements on mobile/touch */
+.recharts-wrapper svg,
+.recharts-wrapper svg *,
+.recharts-pie-sector,
+.recharts-surface {
+  outline: none !important;
+}
+
+/* Maintain focus visibility for keyboard navigation */
+.recharts-wrapper:focus-visible,
+.recharts-wrapper *:focus-visible {
+  outline: 2px solid hsl(var(--ring)) !important;
+  outline-offset: 2px !important;
+}
+
 @layer utilities {
   /* Keyframes */
   @keyframes fade-in {
