@@ -16,6 +16,7 @@ interface ImportResultModalProps {
   clientesRejeitados: number;
   erros: ImportError[];
   duplicados?: number;
+  restaurados?: number;
 }
 export const ImportResultModal = ({
   open,
@@ -23,9 +24,10 @@ export const ImportResultModal = ({
   clientesImportados,
   clientesRejeitados,
   erros,
-  duplicados = 0
+  duplicados = 0,
+  restaurados = 0
 }: ImportResultModalProps) => {
-  const total = clientesImportados + clientesRejeitados + duplicados;
+  const total = clientesImportados + clientesRejeitados + duplicados + restaurados;
   return <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[80vh]">
         <DialogHeader>
@@ -37,7 +39,7 @@ export const ImportResultModal = ({
 
         <div className="space-y-6">
           {/* Resumo */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div className="bg-gray-50 p-4 rounded-lg text-center px-[8px] py-[8px]">
               <div className="text-2xl font-bold text-gray-700">{total}</div>
               <div className="text-sm text-gray-600">Clientes Processados</div>
@@ -48,8 +50,16 @@ export const ImportResultModal = ({
                 <CheckCircle className="h-4 w-4 text-green-600" />
                 <div className="text-2xl font-bold text-green-700">{clientesImportados}</div>
               </div>
-              <div className="text-sm text-green-600">Clientes Importados</div>
+              <div className="text-sm text-green-600">Novos Clientes</div>
             </div>
+
+            {restaurados > 0 && <div className="bg-blue-50 p-4 rounded-lg text-center px-[8px] py-[8px]">
+                <div className="flex items-center justify-center gap-1 mb-1">
+                  <CheckCircle className="h-4 w-4 text-blue-600" />
+                  <div className="text-2xl font-bold text-blue-700">{restaurados}</div>
+                </div>
+                <div className="text-sm text-blue-600">Clientes Restaurados</div>
+              </div>}
 
             {duplicados > 0 && <div className="bg-yellow-50 p-4 rounded-lg text-center px-[8px] py-[8px]">
                 <div className="flex items-center justify-center gap-1 mb-1">
@@ -101,11 +111,14 @@ export const ImportResultModal = ({
             </div>}
 
           {/* Mensagem de sucesso */}
-          {clientesImportados > 0 && erros.length === 0 && <div className="bg-green-50 p-4 rounded-lg">
+          {(clientesImportados > 0 || restaurados > 0) && erros.length === 0 && <div className="bg-green-50 p-4 rounded-lg">
               <div className="flex items-center gap-2 text-green-800">
                 <CheckCircle className="h-5 w-5" />
                 <span className="font-medium">
-                  Importação concluída com sucesso! {clientesImportados} cliente{clientesImportados > 1 ? 's' : ''} importado{clientesImportados > 1 ? 's' : ''}.
+                  Importação concluída com sucesso! 
+                  {clientesImportados > 0 && ` ${clientesImportados} cliente${clientesImportados > 1 ? 's' : ''} importado${clientesImportados > 1 ? 's' : ''}`}
+                  {clientesImportados > 0 && restaurados > 0 && ' e'}
+                  {restaurados > 0 && ` ${restaurados} cliente${restaurados > 1 ? 's' : ''} restaurado${restaurados > 1 ? 's' : ''}`}.
                 </span>
               </div>
             </div>}

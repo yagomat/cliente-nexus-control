@@ -69,7 +69,7 @@ export const ImportarClientes = ({ onImportComplete }: ImportarClientesProps) =>
       }
       
       // Se a importação foi bem-sucedida sem modal de aprovação, completar
-      if (result.success && (result.clientesImportados > 0 || result.clientesDuplicados > 0)) {
+      if (result.success && (result.clientesImportados > 0 || result.clientesDuplicados > 0 || result.clientesRestaurados > 0)) {
         console.log('Importação bem-sucedida, chamando onImportComplete');
         onImportComplete();
       }
@@ -95,7 +95,7 @@ export const ImportarClientes = ({ onImportComplete }: ImportarClientesProps) =>
   const handleApproval = async (approvedItems: any[]) => {
     try {
       const result = await handleApprovalComplete(approvedItems);
-      if (result.success && (result.clientesImportados > 0 || result.clientesDuplicados > 0)) {
+      if (result.success && (result.clientesImportados > 0 || result.clientesDuplicados > 0 || result.clientesRestaurados > 0)) {
         onImportComplete();
       }
     } catch (error) {
@@ -109,7 +109,7 @@ export const ImportarClientes = ({ onImportComplete }: ImportarClientesProps) =>
 
   const handleResultModalClose = () => {
     setShowResultModal(false);
-    if (importResult.success && (importResult.clientesImportados > 0 || importResult.clientesDuplicados > 0)) {
+    if (importResult.success && (importResult.clientesImportados > 0 || importResult.clientesDuplicados > 0 || importResult.clientesRestaurados > 0)) {
       onImportComplete();
     }
   };
@@ -155,6 +155,7 @@ export const ImportarClientes = ({ onImportComplete }: ImportarClientesProps) =>
         clientesRejeitados={importResult.clientesRejeitados}
         erros={importResult.erros}
         duplicados={importResult.clientesDuplicados}
+        restaurados={importResult.clientesRestaurados}
       />
     </>
   );
