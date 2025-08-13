@@ -118,7 +118,7 @@ export const useDashboard = () => {
         const pagouMesAnterior = getPagamentoDoMes(cliente.id, mesAnterior, anoAnterior);
         const pagouMesAtual = getPagamentoDoMes(cliente.id, mesAtual, anoAtual);
         
-        return pagouMesAnterior && (pagouMesAnterior.status === 'pago' || pagouMesAnterior.status === 'promocao') && !pagouMesAtual;
+        return pagouMesAnterior && (pagouMesAnterior.status === 'pago' || pagouMesAnterior.status === 'promocao') && (!pagouMesAtual || pagouMesAtual.status === 'removido');
       }).length || 0;
 
       // Valor recebido no mês atual
