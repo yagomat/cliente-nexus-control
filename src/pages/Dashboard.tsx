@@ -1,7 +1,7 @@
-import { LayoutGrid, Users, TrendingUp, Calendar, DollarSign, AlertTriangle, Smartphone, Monitor, MapPin, Server, UserCheck, UserX, HelpCircle } from "lucide-react";
+import { LayoutGrid, Users, TrendingUp, Calendar, DollarSign, AlertTriangle, Smartphone, Monitor, MapPin, Server, UserCheck, UserX } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from "recharts";
-import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { ClickTooltip } from "@/components/ui/click-tooltip";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useState } from "react";
 
@@ -258,16 +258,7 @@ const Dashboard = () => {
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <div className="flex items-center gap-2">
               <CardTitle className="text-sm font-medium">Pagamentos Esperados</CardTitle>
-              <TooltipProvider>
-                <UITooltip>
-                  <TooltipTrigger>
-                    <HelpCircle className="h-3 w-3 text-muted-foreground" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Considera clientes que pagaram mês passado mas ainda não pagaram esse mês</p>
-                  </TooltipContent>
-                </UITooltip>
-              </TooltipProvider>
+              <ClickTooltip content="Considera clientes que pagaram mês passado mas ainda não pagaram esse mês" />
             </div>
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -297,16 +288,7 @@ const Dashboard = () => {
           <CardHeader>
             <div className="flex items-center gap-2">
               <CardTitle>Evolução de Clientes Ativos</CardTitle>
-              <TooltipProvider>
-                <UITooltip>
-                  <TooltipTrigger>
-                    <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Considera o total de clientes que realizaram pagamentos em cada mês nos últimos 12 meses</p>
-                  </TooltipContent>
-                </UITooltip>
-              </TooltipProvider>
+              <ClickTooltip content="Considera o total de clientes que realizaram pagamentos em cada mês nos últimos 12 meses" />
             </div>
             <CardDescription>Últimos 12 meses</CardDescription>
           </CardHeader>
@@ -333,16 +315,7 @@ const Dashboard = () => {
           <CardHeader>
             <div className="flex items-center gap-2">
               <CardTitle>Evolução de Pagamentos</CardTitle>
-              <TooltipProvider>
-                <UITooltip>
-                  <TooltipTrigger>
-                    <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Considera o total de pagamentos recebidos em cada mês nos últimos 12 meses</p>
-                  </TooltipContent>
-                </UITooltip>
-              </TooltipProvider>
+              <ClickTooltip content="Considera o total de pagamentos recebidos em cada mês nos últimos 12 meses" />
             </div>
             <CardDescription>Últimos 12 meses (R$)</CardDescription>
           </CardHeader>
@@ -372,16 +345,7 @@ const Dashboard = () => {
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
               <CardTitle>Distribuição por Dispositivo</CardTitle>
-              <TooltipProvider>
-                <UITooltip>
-                  <TooltipTrigger>
-                    <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Considera os dispositivos nas 2 telas apenas dos clientes ativos</p>
-                  </TooltipContent>
-                </UITooltip>
-              </TooltipProvider>
+              <ClickTooltip content="Considera os dispositivos nas 2 telas apenas dos clientes ativos" />
             </div>
             <CardDescription>Dispositivos Smart (Telas 1 e 2)</CardDescription>
           </CardHeader>
@@ -413,16 +377,7 @@ const Dashboard = () => {
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
               <CardTitle>Distribuição por Aplicativo</CardTitle>
-              <TooltipProvider>
-                <UITooltip>
-                  <TooltipTrigger>
-                    <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Considera os aplicativos nas 2 telas apenas dos clientes ativos</p>
-                  </TooltipContent>
-                </UITooltip>
-              </TooltipProvider>
+              <ClickTooltip content="Considera os aplicativos nas 2 telas apenas dos clientes ativos" />
             </div>
             <CardDescription>Apps mais utilizados (Telas 1 e 2)</CardDescription>
           </CardHeader>
