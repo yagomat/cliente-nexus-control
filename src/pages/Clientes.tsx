@@ -133,16 +133,8 @@ const Clientes = () => {
 
           {/* Linha com contagem e botões de visualização */}
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-4">
-              <div className="text-sm text-muted-foreground">
-                {clientesFiltrados.length} de {clientes.length} clientes
-              </div>
-              <Link to="/clientes/excluidos">
-                <Button variant="outline" size="sm" className="flex items-center gap-2">
-                  <UserX className="h-4 w-4" />
-                  Ver Excluídos
-                </Button>
-              </Link>
+            <div className="text-sm text-muted-foreground">
+              {clientesFiltrados.length} de {clientes.length} clientes
             </div>
             
             <div className="flex gap-2">
