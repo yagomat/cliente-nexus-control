@@ -84,13 +84,16 @@ serve(async (req) => {
       });
     }
 
-    // Buscar pagamentos do ano para todos os clientes
+    // Buscar pagamentos de múltiplos anos para cálculos corretos
     const clienteIds = clientes.map(c => c.id);
+    const anoAtual = new Date().getFullYear();
+    const anosParaBuscar = [anoAtual - 1, anoAtual, anoAtual + 1]; // Buscar 3 anos para cálculos
+    
     const { data: pagamentos, error: pagamentosError } = await supabase
       .from('pagamentos')
       .select('*')
       .eq('user_id', user.id)
-      .eq('ano', ano)
+      .in('ano', anosParaBuscar)
       .in('cliente_id', clienteIds);
 
     if (pagamentosError) {

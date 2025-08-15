@@ -52,6 +52,14 @@ interface UseClientesCalculosResult {
     page?: number;
     itemsPerPage?: number;
     ano?: number;
+  }, forceRefresh?: boolean) => Promise<void>;
+  refreshClientes: (filters: {
+    search?: string;
+    status?: string;
+    ordenacao?: string;
+    page?: number;
+    itemsPerPage?: number;
+    ano?: number;
   }) => Promise<void>;
 }
 
@@ -89,6 +97,12 @@ const setCachedData = (key: string, data: any) => {
   });
 };
 
+// Cache invalidation function
+const invalidateCache = () => {
+  cache.clear();
+  console.log('Cache invalidated for clientes calculations');
+};
+
 export const useClientesCalculos = (): UseClientesCalculosResult => {
   const { user } = useAuth();
   const [clientes, setClientes] = useState<ClienteComCalculos[]>([]);
@@ -102,11 +116,11 @@ export const useClientesCalculos = (): UseClientesCalculosResult => {
     page?: number;
     itemsPerPage?: number;
     ano?: number;
-  } = {}) => {
+  } = {}, forceRefresh = false) => {
     if (!user) return;
 
     const cacheKey = getCacheKey({ ...filters, userId: user.id });
-    const cachedData = getCachedData(cacheKey);
+    const cachedData = !forceRefresh ? getCachedData(cacheKey) : null;
     
     if (cachedData) {
       console.log('Using cached data for clientes with calculations');
@@ -151,10 +165,23 @@ export const useClientesCalculos = (): UseClientesCalculosResult => {
     }
   }, [user]);
 
+  const refreshClientes = useCallback((filters: {
+    search?: string;
+    status?: string;
+    ordenacao?: string;
+    page?: number;
+    itemsPerPage?: number;
+    ano?: number;
+  } = {}) => {
+    invalidateCache();
+    return fetchClientes(filters, true);
+  }, [fetchClientes]);
+
   return {
     clientes,
     loading,
     pagination,
-    fetchClientes
+    fetchClientes,
+    refreshClientes
   };
 };

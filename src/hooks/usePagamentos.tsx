@@ -6,6 +6,22 @@ import { toast } from "@/hooks/use-toast";
 // Estado global para sincronização
 let globalPagamentos: any[] = [];
 let listeners: (() => void)[] = [];
+let pagamentoUpdateListeners: (() => void)[] = [];
+
+// Função para notificar sobre atualizações de pagamentos
+const notifyPagamentoUpdate = () => {
+  pagamentoUpdateListeners.forEach(listener => listener());
+};
+
+// Função para registrar listener de atualizações de pagamentos
+export const addPagamentoUpdateListener = (listener: () => void) => {
+  pagamentoUpdateListeners.push(listener);
+  
+  // Retorna função para remover o listener
+  return () => {
+    pagamentoUpdateListeners = pagamentoUpdateListeners.filter(l => l !== listener);
+  };
+};
 
 export const usePagamentos = () => {
   const { user } = useAuth();
@@ -118,6 +134,9 @@ export const usePagamentos = () => {
       // Atualizar os dados
       await fetchPagamentos();
       
+      // Notificar outros hooks que os pagamentos foram atualizados
+      notifyPagamentoUpdate();
+      
     } catch (error) {
       console.error('Erro ao atualizar pagamento:', error);
       toast({
@@ -142,6 +161,7 @@ export const usePagamentos = () => {
     getPagamentoDoMes,
     handlePagamento,
     handlePagamentoMes,
-    fetchPagamentos
+    fetchPagamentos,
+    notifyPagamentoUpdate
   };
 };

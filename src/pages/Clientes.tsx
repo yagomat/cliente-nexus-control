@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useClientesCalculos } from "@/hooks/useClientesCalculos";
-import { usePagamentos } from "@/hooks/usePagamentos";
+import { usePagamentos, addPagamentoUpdateListener } from "@/hooks/usePagamentos";
 import { ClienteHeader } from "@/components/clientes/ClienteHeader";
 import { ClienteFilters } from "@/components/clientes/ClienteFilters";
 import { ClienteCard } from "@/components/clientes/ClienteCard";
@@ -18,7 +18,7 @@ const Clientes = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   
-  const { clientes, loading, pagination, fetchClientes } = useClientesCalculos();
+  const { clientes, loading, pagination, fetchClientes, refreshClientes } = useClientesCalculos();
   const { getPagamentoMesAtual, handlePagamento } = usePagamentos();
 
   // Atualizar dados quando filtros mudarem
@@ -32,6 +32,23 @@ const Clientes = () => {
       ano: anoFiltro
     });
   }, [fetchClientes, busca, filtroStatus, ordenacao, currentPage, itemsPerPage, anoFiltro]);
+
+  // Escutar atualizações de pagamentos para atualizar clientes
+  useEffect(() => {
+    const removeListener = addPagamentoUpdateListener(() => {
+      // Atualizar clientes quando pagamentos são modificados
+      refreshClientes({
+        search: busca,
+        status: filtroStatus,
+        ordenacao: `${ordenacao}_asc`,
+        page: currentPage,
+        itemsPerPage,
+        ano: anoFiltro
+      });
+    });
+
+    return removeListener;
+  }, [refreshClientes, busca, filtroStatus, ordenacao, currentPage, itemsPerPage, anoFiltro]);
 
   // Usar dados de paginação do backend
   const totalPages = pagination?.totalPages || 0;
