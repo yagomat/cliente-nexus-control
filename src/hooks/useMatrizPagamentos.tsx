@@ -1,6 +1,23 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { addPagamentoUpdateListener } from "@/hooks/usePagamentos";
+import { invalidateClientesCache } from "@/hooks/useClientesCalculos";
+
+// Estado global para notificar sobre atualizações da matriz
+let matrizUpdateListeners: (() => void)[] = [];
+
+export const addMatrizUpdateListener = (listener: () => void) => {
+  matrizUpdateListeners.push(listener);
+  
+  return () => {
+    matrizUpdateListeners = matrizUpdateListeners.filter(l => l !== listener);
+  };
+};
+
+const notifyMatrizUpdate = () => {
+  matrizUpdateListeners.forEach(listener => listener());
+};
 
 interface MatrizItem {
   clienteId: string;
@@ -29,6 +46,7 @@ export const useMatrizPagamentos = (): UseMatrizPagamentosResult => {
   const [matriz, setMatriz] = useState<MatrizItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState<MatrizPagination | null>(null);
+  const [lastFetchParams, setLastFetchParams] = useState<{ano: number, search: string, page: number, itemsPerPage: number} | null>(null);
 
   const fetchMatriz = useCallback(async (
     ano: number,
@@ -39,6 +57,8 @@ export const useMatrizPagamentos = (): UseMatrizPagamentosResult => {
     if (!user) return;
 
     setLoading(true);
+    setLastFetchParams({ ano, search, page, itemsPerPage });
+    
     try {
       const { data, error } = await supabase.functions.invoke('get-matriz-pagamentos', {
         body: {
@@ -61,6 +81,23 @@ export const useMatrizPagamentos = (): UseMatrizPagamentosResult => {
       setLoading(false);
     }
   }, [user]);
+
+  // Listener para atualizações de pagamentos de outros hooks
+  useEffect(() => {
+    const removeListener = addPagamentoUpdateListener(() => {
+      // Re-fetch com os últimos parâmetros se existirem
+      if (lastFetchParams) {
+        fetchMatriz(
+          lastFetchParams.ano,
+          lastFetchParams.search,
+          lastFetchParams.page,
+          lastFetchParams.itemsPerPage
+        );
+      }
+    });
+
+    return removeListener;
+  }, [fetchMatriz, lastFetchParams]);
 
   const handlePagamentoMes = useCallback(async (clienteId: string, mes: number, ano: number) => {
     if (!user) return;
@@ -111,14 +148,18 @@ export const useMatrizPagamentos = (): UseMatrizPagamentosResult => {
       }
 
       // Recarregar a matriz após a atualização
-      if (pagination) {
-        await fetchMatriz(ano, '', pagination.currentPage, pagination.itemsPerPage);
+      if (lastFetchParams) {
+        await fetchMatriz(lastFetchParams.ano, lastFetchParams.search, lastFetchParams.page, lastFetchParams.itemsPerPage);
       }
+      
+      // Notificar outros hooks para sincronização
+      invalidateClientesCache();
+      notifyMatrizUpdate();
     } catch (error) {
       console.error('Erro ao atualizar pagamento:', error);
       throw error;
     }
-  }, [user, matriz, pagination, fetchMatriz]);
+  }, [user, matriz, lastFetchParams, fetchMatriz]);
 
   const getPagamentoDoMes = useCallback((clienteId: string, mes: number) => {
     const clienteMatriz = matriz.find(m => m.clienteId === clienteId);

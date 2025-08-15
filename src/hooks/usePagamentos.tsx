@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
+import { invalidateClientesCache } from "@/hooks/useClientesCalculos";
+import { addMatrizUpdateListener } from "@/hooks/useMatrizPagamentos";
 
 // Estado global para sincronização
 let globalPagamentos: any[] = [];
@@ -27,6 +29,27 @@ export const usePagamentos = () => {
   const { user } = useAuth();
   const [pagamentos, setPagamentos] = useState<any[]>(globalPagamentos);
   
+  const notifyAllListeners = () => {
+    listeners.forEach(listener => listener());
+  };
+
+  const fetchPagamentos = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('pagamentos')
+        .select('*')
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+      
+      globalPagamentos = data || [];
+      setPagamentos([...globalPagamentos]);
+      notifyAllListeners();
+    } catch (error) {
+      console.error('Erro ao buscar pagamentos:', error);
+    }
+  }, [user]);
+  
   // Registrar listener para atualizações globais
   useEffect(() => {
     const updateListener = () => {
@@ -44,28 +67,16 @@ export const usePagamentos = () => {
     if (user) {
       fetchPagamentos();
     }
-  }, [user]);
+  }, [user, fetchPagamentos]);
 
-  const notifyAllListeners = () => {
-    listeners.forEach(listener => listener());
-  };
+  // Listener para atualizações da matriz
+  useEffect(() => {
+    const removeListener = addMatrizUpdateListener(() => {
+      fetchPagamentos();
+    });
 
-  const fetchPagamentos = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('pagamentos')
-        .select('*')
-        .eq('user_id', user?.id);
-
-      if (error) throw error;
-      
-      globalPagamentos = data || [];
-      setPagamentos([...globalPagamentos]);
-      notifyAllListeners();
-    } catch (error) {
-      console.error('Erro ao buscar pagamentos:', error);
-    }
-  };
+    return removeListener;
+  }, [fetchPagamentos]);
 
   const getPagamentoMesAtual = (clienteId: string) => {
     const hoje = new Date();
@@ -136,6 +147,9 @@ export const usePagamentos = () => {
       
       // Notificar outros hooks que os pagamentos foram atualizados
       notifyPagamentoUpdate();
+      
+      // Invalidar cache de clientes também
+      invalidateClientesCache();
       
     } catch (error) {
       console.error('Erro ao atualizar pagamento:', error);
