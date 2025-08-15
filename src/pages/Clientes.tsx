@@ -1,15 +1,13 @@
 import { useState, useEffect } from "react";
-import { useClientesOptimized } from "@/hooks/useClientesOptimized";
+import { useClientesCalculos } from "@/hooks/useClientesCalculos";
 import { usePagamentos } from "@/hooks/usePagamentos";
-import { calcularDiasParaVencer } from "@/utils/clienteUtils";
 import { ClienteHeader } from "@/components/clientes/ClienteHeader";
 import { ClienteFilters } from "@/components/clientes/ClienteFilters";
 import { ClienteCard } from "@/components/clientes/ClienteCard";
 import { ClientePagination } from "@/components/clientes/ClientePagination";
 import { ClienteMatrixView } from "@/components/clientes/ClienteMatrixView";
 import { Button } from "@/components/ui/button";
-import { Grid, List, Check, Gift, X, UserX } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Grid, List, Check, Gift, X } from "lucide-react";
 
 const Clientes = () => {
   const [filtroStatus, setFiltroStatus] = useState("todos");
@@ -20,20 +18,20 @@ const Clientes = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   
-  const { clientes, loading, pagination, fetchClientes } = useClientesOptimized();
-  const { pagamentos, getPagamentoMesAtual, getPagamentoDoMes, handlePagamento } = usePagamentos();
+  const { clientes, loading, pagination, fetchClientes } = useClientesCalculos();
+  const { getPagamentoMesAtual, handlePagamento } = usePagamentos();
 
   // Atualizar dados quando filtros mudarem
   useEffect(() => {
     fetchClientes({
       search: busca,
       status: filtroStatus,
-      ordenacao: `${ordenacao}_asc`, // Converter para formato esperado pelo backend
+      ordenacao: `${ordenacao}_asc`,
       page: currentPage,
       itemsPerPage,
       ano: anoFiltro
     });
-  }, [busca, filtroStatus, ordenacao, currentPage, itemsPerPage, anoFiltro]);
+  }, [fetchClientes, busca, filtroStatus, ordenacao, currentPage, itemsPerPage, anoFiltro]);
 
   // Usar dados de paginação do backend
   const totalPages = pagination?.totalPages || 0;
@@ -45,10 +43,9 @@ const Clientes = () => {
 
   const handleItemsPerPageChange = (newItemsPerPage: number) => {
     setItemsPerPage(newItemsPerPage);
-    setCurrentPage(1); // Reset para primeira página
+    setCurrentPage(1);
   };
 
-  // Reset página quando filtros mudarem
   const handleFiltroChange = (novoFiltro: string) => {
     setFiltroStatus(novoFiltro);
     setCurrentPage(1);
@@ -72,7 +69,6 @@ const Clientes = () => {
   const handleViewModeChange = (novoMode: string) => {
     setViewMode(novoMode);
     if (novoMode === "lista") {
-      // Ao sair do modo matriz, volta para o ano vigente
       setAnoFiltro(new Date().getFullYear());
     }
     setCurrentPage(1);
@@ -82,147 +78,147 @@ const Clientes = () => {
     setBusca("");
     setFiltroStatus("todos");
     setOrdenacao("cadastro");
-    setAnoFiltro(new Date().getFullYear()); // Volta para o ano vigente
+    setAnoFiltro(new Date().getFullYear());
     setCurrentPage(1);
+  };
+
+  const refetchData = () => {
+    fetchClientes({
+      search: busca,
+      status: filtroStatus,
+      ordenacao: `${ordenacao}_asc`,
+      page: currentPage,
+      itemsPerPage,
+      ano: anoFiltro
+    });
   };
 
   return (
     <div>
-        <ClienteHeader 
-          clientes={clientes} 
-          onImportComplete={() => fetchClientes({
-            search: busca,
-            status: filtroStatus,
-            ordenacao: `${ordenacao}_asc`,
-            page: currentPage,
-            itemsPerPage,
-            ano: anoFiltro
-          })}
-        />
+      <ClienteHeader 
+        clientes={clientes} 
+        onImportComplete={refetchData}
+      />
 
-        <div className="mt-6 w-full">
-          <div className="mb-4">
-            <ClienteFilters
-              busca={busca}
-              setBusca={handleBuscaChange}
-              filtroStatus={filtroStatus}
-              setFiltroStatus={handleFiltroChange}
-              ordenacao={ordenacao}
-              setOrdenacao={handleOrdenacaoChange}
-              clientesFiltrados={clientes}
-              totalClientes={totalItems}
-              anoFiltro={anoFiltro}
-              setAnoFiltro={handleAnoFiltroChange}
-              showAnoFilter={viewMode === "matriz"}
-              onLimparFiltros={handleLimparFiltros}
-            />
+      <div className="mt-6 w-full">
+        <div className="mb-4">
+          <ClienteFilters
+            busca={busca}
+            setBusca={handleBuscaChange}
+            filtroStatus={filtroStatus}
+            setFiltroStatus={handleFiltroChange}
+            ordenacao={ordenacao}
+            setOrdenacao={handleOrdenacaoChange}
+            clientesFiltrados={clientes}
+            totalClientes={totalItems}
+            anoFiltro={anoFiltro}
+            setAnoFiltro={handleAnoFiltroChange}
+            showAnoFilter={viewMode === "matriz"}
+            onLimparFiltros={handleLimparFiltros}
+          />
+        </div>
+
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-sm text-muted-foreground">
+            {totalItems} clientes encontrados
           </div>
-
-          {/* Linha com contagem e botões de visualização */}
-          <div className="flex items-center justify-between mb-4">
-            <div className="text-sm text-muted-foreground">
-              {totalItems} clientes encontrados
-            </div>
-            
-            <div className="flex gap-2">
-              <Button
-                variant={viewMode === "lista" ? "default" : "outline"}
-                size="sm"
-                onClick={() => handleViewModeChange("lista")}
-                className="flex items-center gap-2"
-              >
-                <List className="h-4 w-4" />
-                Clientes
-              </Button>
-              <Button
-                variant={viewMode === "matriz" ? "default" : "outline"}
-                size="sm"
-                onClick={() => handleViewModeChange("matriz")}
-                className="flex items-center gap-2"
-              >
-                <Grid className="h-4 w-4" />
-                Pagamentos
-              </Button>
-            </div>
+          
+          <div className="flex gap-2">
+            <Button
+              variant={viewMode === "lista" ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleViewModeChange("lista")}
+              className="flex items-center gap-2"
+            >
+              <List className="h-4 w-4" />
+              Clientes
+            </Button>
+            <Button
+              variant={viewMode === "matriz" ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleViewModeChange("matriz")}
+              className="flex items-center gap-2"
+            >
+              <Grid className="h-4 w-4" />
+              Pagamentos
+            </Button>
           </div>
+        </div>
 
-          {loading ? (
-            <div className="text-center py-8">
-              <p>Carregando clientes...</p>
-            </div>
-          ) : clientes.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">Nenhum cliente encontrado.</p>
-            </div>
-          ) : (
-            <div className="w-full">
-              {viewMode === "lista" ? (
-                <div className="space-y-4">
-                  {clientes.map((cliente) => (
-                    <ClienteCard
-                      key={cliente.id}
-                      cliente={cliente}
-                      getPagamentoMesAtual={getPagamentoMesAtual}
-                      getPagamentoDoMes={getPagamentoDoMes}
-                      onPagamento={handlePagamento}
-                      onClienteDeleted={() => fetchClientes({
-                        search: busca,
-                        status: filtroStatus,
-                        ordenacao: `${ordenacao}_asc`,
-                        page: currentPage,
-                        itemsPerPage,
-                        ano: anoFiltro
-                      })}
-                    />
-                  ))}
-                  
-                  {/* Explicativo dos botões - modo lista */}
-                  <div className="mt-4 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-4 flex-wrap">
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-green-500 rounded flex items-center justify-center">
-                          <Check className="h-2 w-2 text-white" />
-                        </div>
-                        <span>Pago</span>
+        {loading ? (
+          <div className="text-center py-8">
+            <p>Carregando clientes...</p>
+          </div>
+        ) : clientes.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">Nenhum cliente encontrado.</p>
+          </div>
+        ) : (
+          <div className="w-full">
+            {viewMode === "lista" ? (
+              <div className="space-y-4">
+                {clientes.map((cliente) => (
+                  <ClienteCard
+                    key={cliente.id}
+                    cliente={cliente}
+                    statusAtivo={cliente.status_ativo}
+                    vencimentoInfo={cliente.vencimento_dias !== null ? {
+                      dias: cliente.vencimento_dias,
+                      texto: cliente.vencimento_texto || '',
+                      vencido: cliente.vencimento_vencido
+                    } : null}
+                    getPagamentoMesAtual={getPagamentoMesAtual}
+                    onPagamento={handlePagamento}
+                    onClienteDeleted={refetchData}
+                  />
+                ))}
+                
+                <div className="mt-4 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-4 flex-wrap">
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 bg-green-500 rounded flex items-center justify-center">
+                        <Check className="h-2 w-2 text-white" />
                       </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-blue-500 rounded flex items-center justify-center">
-                          <Gift className="h-2 w-2 text-white" />
-                        </div>
-                        <span>Promoção</span>
+                      <span>Pago</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 bg-blue-500 rounded flex items-center justify-center">
+                        <Gift className="h-2 w-2 text-white" />
                       </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 border border-red-200 rounded flex items-center justify-center">
-                          <X className="h-2 w-2 text-red-500" />
-                        </div>
-                        <span>Não pago</span>
+                      <span>Promoção</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border border-red-200 rounded flex items-center justify-center">
+                        <X className="h-2 w-2 text-red-500" />
                       </div>
+                      <span>Não pago</span>
                     </div>
                   </div>
                 </div>
-              ) : (
-                <ClienteMatrixView
-                  anoFiltro={anoFiltro}
-                  currentPage={currentPage}
-                  itemsPerPage={itemsPerPage}
-                  searchTerm={busca}
-                  onPageChange={handlePageChange}
-                />
-              )}
-            </div>
-          )}
+              </div>
+            ) : (
+              <ClienteMatrixView
+                anoFiltro={anoFiltro}
+                currentPage={currentPage}
+                itemsPerPage={itemsPerPage}
+                searchTerm={busca}
+                onPageChange={handlePageChange}
+              />
+            )}
+          </div>
+        )}
 
-          {!loading && clientes.length > 0 && viewMode === "lista" && (
-            <ClientePagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              itemsPerPage={itemsPerPage}
-              totalItems={totalItems}
-              onPageChange={handlePageChange}
-              onItemsPerPageChange={handleItemsPerPageChange}
-            />
-          )}
-        </div>
+        {!loading && clientes.length > 0 && viewMode === "lista" && (
+          <ClientePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            itemsPerPage={itemsPerPage}
+            totalItems={totalItems}
+            onPageChange={handlePageChange}
+            onItemsPerPageChange={handleItemsPerPageChange}
+          />
+        )}
+      </div>
     </div>
   );
 };
