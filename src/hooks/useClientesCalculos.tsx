@@ -103,6 +103,9 @@ const invalidateCache = () => {
   console.log('Cache invalidated for clientes calculations');
 };
 
+// Export invalidation function for external use
+export const invalidateClientesCache = invalidateCache;
+
 export const useClientesCalculos = (): UseClientesCalculosResult => {
   const { user } = useAuth();
   const [clientes, setClientes] = useState<ClienteComCalculos[]>([]);

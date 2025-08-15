@@ -1,7 +1,8 @@
 
 import { useState, useEffect } from "react";
 import { useClientes } from "@/hooks/useClientes";
-import { usePagamentos } from "@/hooks/usePagamentos";
+import { usePagamentos, addPagamentoUpdateListener } from "@/hooks/usePagamentos";
+import { invalidateClientesCache } from "@/hooks/useClientesCalculos";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -16,6 +17,16 @@ const PagamentosView = () => {
   
   const { clientes } = useClientes();
   const { handlePagamentoMes, getPagamentoDoMes } = usePagamentos();
+
+  // Listener para atualizar quando pagamentos mudarem
+  useEffect(() => {
+    const removeListener = addPagamentoUpdateListener(() => {
+      // Invalidar cache para sincronizar com os cards
+      invalidateClientesCache();
+    });
+
+    return removeListener;
+  }, []);
 
   // Reset para ano e mês atual quando o componente for desmontado
   useEffect(() => {
@@ -59,7 +70,10 @@ const PagamentosView = () => {
         <Button
           size="sm"
           className="w-24 h-8 bg-green-500 hover:bg-green-600 text-white"
-          onClick={() => handlePagamentoMes(clienteId, mesSelecionado, anoSelecionado)}
+          onClick={async () => {
+            await handlePagamentoMes(clienteId, mesSelecionado, anoSelecionado);
+            invalidateClientesCache();
+          }}
         >
           <Check className="h-4 w-4 mr-1" />
           Pago
@@ -72,7 +86,10 @@ const PagamentosView = () => {
         <Button
           size="sm"
           className="w-24 h-8 bg-blue-500 hover:bg-blue-600 text-white"
-          onClick={() => handlePagamentoMes(clienteId, mesSelecionado, anoSelecionado)}
+          onClick={async () => {
+            await handlePagamentoMes(clienteId, mesSelecionado, anoSelecionado);
+            invalidateClientesCache();
+          }}
         >
           <Gift className="h-4 w-4 mr-1" />
           Promoção
@@ -85,7 +102,10 @@ const PagamentosView = () => {
         size="sm"
         variant="outline"
         className="w-24 h-8 border-red-300 hover:bg-red-50"
-        onClick={() => handlePagamentoMes(clienteId, mesSelecionado, anoSelecionado)}
+        onClick={async () => {
+          await handlePagamentoMes(clienteId, mesSelecionado, anoSelecionado);
+          invalidateClientesCache();
+        }}
       >
         <X className="h-4 w-4 mr-1 text-red-500" />
         Pendente
