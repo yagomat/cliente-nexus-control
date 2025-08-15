@@ -115,26 +115,27 @@ serve(async (req) => {
       const hoje = new Date();
       const mesAtual = hoje.getMonth() + 1;
       const anoAtual = hoje.getFullYear();
+      const diaHoje = hoje.getDate();
       
-      // Pagamento do mês atual
+      // Verificar pagamento do mês atual
       const pagamentoMesAtual = pagamentosMap.get(`${cliente.id}_${mesAtual}_${anoAtual}`);
       if (pagamentoMesAtual && (pagamentoMesAtual.status === 'pago' || pagamentoMesAtual.status === 'promocao')) {
         return true;
       }
       
-      // Pagamento do mês anterior + verificar se ainda não venceu
-      let mesAnterior = mesAtual - 1;
-      let anoAnterior = anoAtual;
-      if (mesAnterior === 0) {
-        mesAnterior = 12;
-        anoAnterior = anoAtual - 1;
-      }
-      
-      const pagamentoMesAnterior = pagamentosMap.get(`${cliente.id}_${mesAnterior}_${anoAnterior}`);
-      if (pagamentoMesAnterior && (pagamentoMesAnterior.status === 'pago' || pagamentoMesAnterior.status === 'promocao')) {
-        // Verificar se ainda não passou do dia de vencimento
-        const diaHoje = hoje.getDate();
-        return diaHoje <= cliente.dia_vencimento;
+      // Se estamos antes do dia de vencimento, verificar mês anterior
+      if (diaHoje <= cliente.dia_vencimento) {
+        let mesAnterior = mesAtual - 1;
+        let anoAnterior = anoAtual;
+        if (mesAnterior === 0) {
+          mesAnterior = 12;
+          anoAnterior = anoAtual - 1;
+        }
+        
+        const pagamentoMesAnterior = pagamentosMap.get(`${cliente.id}_${mesAnterior}_${anoAnterior}`);
+        if (pagamentoMesAnterior && (pagamentoMesAnterior.status === 'pago' || pagamentoMesAnterior.status === 'promocao')) {
+          return true;
+        }
       }
       
       return false;
@@ -145,86 +146,119 @@ serve(async (req) => {
       const hoje = new Date();
       const mesAtual = hoje.getMonth() + 1;
       const anoAtual = hoje.getFullYear();
+      const diaHoje = hoje.getDate();
       
       const clienteAtivo = calcularStatusCliente(cliente);
       
       if (clienteAtivo) {
-        // Cliente ativo: encontrar primeiro gap nos pagamentos futuros
-        let mes = mesAtual;
-        let ano = anoAtual;
+        // Cliente ativo: calcular próximo vencimento
+        let proximoMes = mesAtual;
+        let proximoAno = anoAtual;
         
+        // Se já passou do dia de vencimento neste mês, próximo vencimento é no próximo mês
+        if (diaHoje > cliente.dia_vencimento) {
+          proximoMes++;
+          if (proximoMes > 12) {
+            proximoMes = 1;
+            proximoAno++;
+          }
+        }
+        
+        // Procurar o primeiro mês não pago
         for (let i = 0; i < 12; i++) {
-          const pagamento = pagamentosMap.get(`${cliente.id}_${mes}_${ano}`);
+          const pagamento = pagamentosMap.get(`${cliente.id}_${proximoMes}_${proximoAno}`);
           
           if (!pagamento || (pagamento.status !== 'pago' && pagamento.status !== 'promocao')) {
             // Calcular dias até o vencimento deste mês
-            const ultimoDiaDoMes = new Date(ano, mes, 0).getDate();
+            const ultimoDiaDoMes = new Date(proximoAno, proximoMes, 0).getDate();
             const diaEfetivo = Math.min(cliente.dia_vencimento, ultimoDiaDoMes);
-            const dataVencimento = new Date(ano, mes - 1, diaEfetivo);
+            const dataVencimento = new Date(proximoAno, proximoMes - 1, diaEfetivo);
             
             const diffTime = dataVencimento.getTime() - hoje.getTime();
-            const dias = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            const dias = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             
             return {
               dias,
-              texto: dias === 0 ? `Vence hoje` : dias < 0 ? `Venceu há ${Math.abs(dias)} dias` : `Vence em ${dias} dias`,
+              texto: dias === 0 ? `Vence hoje` : dias === 1 ? `Vence amanhã` : dias > 0 ? `Vence em ${dias} dias` : `Venceu há ${Math.abs(dias)} dias`,
               vencido: dias < 0
             };
           }
           
           // Avançar para próximo mês
-          mes++;
-          if (mes > 12) {
-            mes = 1;
-            ano++;
+          proximoMes++;
+          if (proximoMes > 12) {
+            proximoMes = 1;
+            proximoAno++;
           }
         }
         
         return {
           dias: 365,
-          texto: 'Pago por 12 meses',
+          texto: 'Pago por 12+ meses',
           vencido: false
         };
       } else {
-        // Cliente inativo: encontrar quando se tornou inativo
+        // Cliente inativo: encontrar último pagamento e calcular desde quando está vencido
         let mes = mesAtual;
         let ano = anoAtual;
+        let ultimoPagamentoEncontrado = false;
         
-        for (let i = 0; i < 12; i++) {
-          mes--;
-          if (mes < 1) {
-            mes = 12;
-            ano--;
-          }
-          
+        // Começar verificando o mês atual e ir voltando
+        for (let i = 0; i < 24; i++) { // Buscar até 2 anos atrás
           const pagamento = pagamentosMap.get(`${cliente.id}_${mes}_${ano}`);
+          
           if (pagamento && (pagamento.status === 'pago' || pagamento.status === 'promocao')) {
-            // Encontrou último mês pago, cliente se tornou inativo no mês seguinte
-            let mesInativo = mes + 1;
-            let anoInativo = ano;
-            if (mesInativo > 12) {
-              mesInativo = 1;
-              anoInativo++;
+            ultimoPagamentoEncontrado = true;
+            
+            // Próximo vencimento seria no mês seguinte ao último pago
+            let proximoMes = mes + 1;
+            let proximoAno = ano;
+            if (proximoMes > 12) {
+              proximoMes = 1;
+              proximoAno++;
             }
             
-            const ultimoDiaDoMes = new Date(anoInativo, mesInativo, 0).getDate();
+            const ultimoDiaDoMes = new Date(proximoAno, proximoMes, 0).getDate();
             const diaEfetivo = Math.min(cliente.dia_vencimento, ultimoDiaDoMes);
-            const dataVencimento = new Date(anoInativo, mesInativo - 1, diaEfetivo);
+            const dataVencimento = new Date(proximoAno, proximoMes - 1, diaEfetivo);
             
             const diffTime = hoje.getTime() - dataVencimento.getTime();
             const dias = Math.floor(diffTime / (1000 * 60 * 60 * 24));
             
             return {
-              dias,
-              texto: `Venceu há ${dias} dias`,
+              dias: Math.abs(dias),
+              texto: dias === 0 ? 'Vence hoje' : `Venceu há ${Math.abs(dias)} dias`,
               vencido: true
             };
           }
+          
+          // Voltar um mês
+          mes--;
+          if (mes < 1) {
+            mes = 12;
+            ano--;
+          }
+        }
+        
+        if (!ultimoPagamentoEncontrado) {
+          // Nunca pagou - vencimento seria no mês atual
+          const ultimoDiaDoMes = new Date(anoAtual, mesAtual, 0).getDate();
+          const diaEfetivo = Math.min(cliente.dia_vencimento, ultimoDiaDoMes);
+          const dataVencimento = new Date(anoAtual, mesAtual - 1, diaEfetivo);
+          
+          const diffTime = hoje.getTime() - dataVencimento.getTime();
+          const dias = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+          
+          return {
+            dias: Math.abs(dias),
+            texto: dias >= 0 ? `Nunca pagou - venceu há ${Math.abs(dias)} dias` : 'Nunca pagou',
+            vencido: true
+          };
         }
         
         return {
           dias: 9999,
-          texto: 'Sem histórico',
+          texto: 'Sem histórico recente',
           vencido: true
         };
       }
