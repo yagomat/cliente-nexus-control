@@ -73,16 +73,15 @@ export const useClientesOptimized = (): UseClientesOptimizedResult => {
     try {
       setLoading(true);
       
-      const searchParams = new URLSearchParams();
-      if (filters.search) searchParams.set('search', filters.search);
-      if (filters.status) searchParams.set('status', filters.status);
-      if (filters.ordenacao) searchParams.set('ordenacao', filters.ordenacao);
-      if (filters.page) searchParams.set('page', filters.page.toString());
-      if (filters.itemsPerPage) searchParams.set('itemsPerPage', filters.itemsPerPage.toString());
-      if (filters.ano) searchParams.set('ano', filters.ano.toString());
-
       const { data, error } = await supabase.functions.invoke('get-clientes-filtrados', {
-        body: {},
+        body: {
+          search: filters.search,
+          status: filters.status,
+          ordenacao: filters.ordenacao,
+          page: filters.page,
+          itemsPerPage: filters.itemsPerPage,
+          ano: filters.ano
+        },
         headers: {
           'Content-Type': 'application/json',
         },

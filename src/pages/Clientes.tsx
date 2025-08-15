@@ -1,7 +1,7 @@
-import { useState, useMemo } from "react";
-import { useClientes } from "@/hooks/useClientes";
+import { useState, useEffect } from "react";
+import { useClientesOptimized } from "@/hooks/useClientesOptimized";
 import { usePagamentos } from "@/hooks/usePagamentos";
-import { calcularDiasParaVencer, calcularStatusCliente, calcularOrdemVencimento } from "@/utils/clienteUtils";
+import { calcularDiasParaVencer } from "@/utils/clienteUtils";
 import { ClienteHeader } from "@/components/clientes/ClienteHeader";
 import { ClienteFilters } from "@/components/clientes/ClienteFilters";
 import { ClienteCard } from "@/components/clientes/ClienteCard";
@@ -20,44 +20,24 @@ const Clientes = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   
-  const { clientes, loading, fetchClientes } = useClientes();
+  const { clientes, loading, pagination, fetchClientes } = useClientesOptimized();
   const { pagamentos, getPagamentoMesAtual, getPagamentoDoMes, handlePagamento } = usePagamentos();
 
-  const clientesFiltrados = useMemo(() => {
-    return clientes
-      .filter(cliente => {
-        const clienteAtivo = calcularStatusCliente(cliente, getPagamentoDoMes);
-        const matchStatus = filtroStatus === "todos" || 
-          (filtroStatus === "ativo" && clienteAtivo) || 
-          (filtroStatus === "inativo" && !clienteAtivo);
-        
-        const matchBusca = busca === "" || 
-          cliente.nome?.toLowerCase().includes(busca.toLowerCase()) ||
-          cliente.telefone?.includes(busca);
-        
-        return matchStatus && matchBusca;
-      })
-      .sort((a, b) => {
-        switch (ordenacao) {
-          case "nome-az":
-            return a.nome.localeCompare(b.nome);
-          case "nome-za":
-            return b.nome.localeCompare(a.nome);
-          case "vencimento":
-            const ordemA = calcularOrdemVencimento(a, getPagamentoDoMes);
-            const ordemB = calcularOrdemVencimento(b, getPagamentoDoMes);
-            return ordemA - ordemB;
-          default:
-            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-        }
-      });
-  }, [clientes, filtroStatus, ordenacao, busca, getPagamentoDoMes]);
+  // Atualizar dados quando filtros mudarem
+  useEffect(() => {
+    fetchClientes({
+      search: busca,
+      status: filtroStatus,
+      ordenacao: `${ordenacao}_asc`, // Converter para formato esperado pelo backend
+      page: currentPage,
+      itemsPerPage,
+      ano: anoFiltro
+    });
+  }, [busca, filtroStatus, ordenacao, currentPage, itemsPerPage, anoFiltro]);
 
-  // Cálculos de paginação
-  const totalPages = Math.ceil(clientesFiltrados.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const clientesPaginados = clientesFiltrados.slice(startIndex, endIndex);
+  // Usar dados de paginação do backend
+  const totalPages = pagination?.totalPages || 0;
+  const totalItems = pagination?.total || 0;
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -110,7 +90,14 @@ const Clientes = () => {
     <div>
         <ClienteHeader 
           clientes={clientes} 
-          onImportComplete={fetchClientes}
+          onImportComplete={() => fetchClientes({
+            search: busca,
+            status: filtroStatus,
+            ordenacao: `${ordenacao}_asc`,
+            page: currentPage,
+            itemsPerPage,
+            ano: anoFiltro
+          })}
         />
 
         <div className="mt-6 w-full">
@@ -122,8 +109,8 @@ const Clientes = () => {
               setFiltroStatus={handleFiltroChange}
               ordenacao={ordenacao}
               setOrdenacao={handleOrdenacaoChange}
-              clientesFiltrados={clientesFiltrados}
-              totalClientes={clientes.length}
+              clientesFiltrados={clientes}
+              totalClientes={totalItems}
               anoFiltro={anoFiltro}
               setAnoFiltro={handleAnoFiltroChange}
               showAnoFilter={viewMode === "matriz"}
@@ -134,7 +121,7 @@ const Clientes = () => {
           {/* Linha com contagem e botões de visualização */}
           <div className="flex items-center justify-between mb-4">
             <div className="text-sm text-muted-foreground">
-              {clientesFiltrados.length} de {clientes.length} clientes
+              {totalItems} clientes encontrados
             </div>
             
             <div className="flex gap-2">
@@ -163,7 +150,7 @@ const Clientes = () => {
             <div className="text-center py-8">
               <p>Carregando clientes...</p>
             </div>
-          ) : clientesFiltrados.length === 0 ? (
+          ) : clientes.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground">Nenhum cliente encontrado.</p>
             </div>
@@ -171,14 +158,21 @@ const Clientes = () => {
             <div className="w-full">
               {viewMode === "lista" ? (
                 <div className="space-y-4">
-                  {clientesPaginados.map((cliente) => (
+                  {clientes.map((cliente) => (
                     <ClienteCard
                       key={cliente.id}
                       cliente={cliente}
                       getPagamentoMesAtual={getPagamentoMesAtual}
                       getPagamentoDoMes={getPagamentoDoMes}
                       onPagamento={handlePagamento}
-                      onClienteDeleted={fetchClientes}
+                      onClienteDeleted={() => fetchClientes({
+                        search: busca,
+                        status: filtroStatus,
+                        ordenacao: `${ordenacao}_asc`,
+                        page: currentPage,
+                        itemsPerPage,
+                        ano: anoFiltro
+                      })}
                     />
                   ))}
                   
@@ -209,21 +203,21 @@ const Clientes = () => {
               ) : (
                 <ClienteMatrixView
                   clientes={clientes}
-                  clientesFiltrados={clientesFiltrados}
+                  clientesFiltrados={clientes}
                   anoFiltro={anoFiltro}
-                  currentPage={currentPage}
+                  currentPage={1}
                   itemsPerPage={itemsPerPage}
                 />
               )}
             </div>
           )}
 
-          {!loading && clientesFiltrados.length > 0 && (
+          {!loading && clientes.length > 0 && viewMode === "lista" && (
             <ClientePagination
               currentPage={currentPage}
               totalPages={totalPages}
               itemsPerPage={itemsPerPage}
-              totalItems={clientesFiltrados.length}
+              totalItems={totalItems}
               onPageChange={handlePageChange}
               onItemsPerPageChange={handleItemsPerPageChange}
             />

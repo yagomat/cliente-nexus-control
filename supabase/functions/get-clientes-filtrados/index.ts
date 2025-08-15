@@ -31,13 +31,9 @@ Deno.serve(async (req) => {
       })
     }
 
-    const { searchParams } = new URL(req.url)
-    const search = searchParams.get('search') || ''
-    const status = searchParams.get('status') || 'todos'
-    const ordenacao = searchParams.get('ordenacao') || 'nome_asc'
-    const page = parseInt(searchParams.get('page') || '1')
-    const itemsPerPage = parseInt(searchParams.get('itemsPerPage') || '10')
-    const ano = parseInt(searchParams.get('ano') || new Date().getFullYear().toString())
+    // Get request body for parameters
+    const requestBody = await req.json().catch(() => ({}))
+    const { search = '', status = 'todos', ordenacao = 'cadastro_asc', page = 1, itemsPerPage = 10, ano = new Date().getFullYear() } = requestBody
 
     console.log('Filtering clients:', { search, status, ordenacao, page, itemsPerPage, ano })
 
@@ -130,13 +126,13 @@ Deno.serve(async (req) => {
           valueA = a.valor_plano || 0
           valueB = b.valor_plano || 0
           break
-        case 'status':
-          valueA = a.status_calculado ? 1 : 0
-          valueB = b.status_calculado ? 1 : 0
+        case 'cadastro':
+          valueA = new Date(a.created_at).getTime()
+          valueB = new Date(b.created_at).getTime()
           break
         default:
-          valueA = a.nome.toLowerCase()
-          valueB = b.nome.toLowerCase()
+          valueA = new Date(b.created_at).getTime()
+          valueB = new Date(a.created_at).getTime()
       }
 
       if (direcao === 'desc') {
