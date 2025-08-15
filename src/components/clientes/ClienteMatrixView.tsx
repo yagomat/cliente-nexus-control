@@ -1,26 +1,29 @@
 
-import { useMemo } from "react";
-import { usePagamentos } from "@/hooks/usePagamentos";
-import { calcularStatusCliente } from "@/utils/clienteUtils";
+import { useEffect } from "react";
+import { useMatrizPagamentos } from "@/hooks/useMatrizPagamentos";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useSidebar } from "@/components/ui/sidebar";
 import { ClientePagination } from "@/components/clientes/ClientePagination";
 import { Check, X, Gift } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 interface ClienteMatrixViewProps {
-  clientes: any[];
-  clientesFiltrados: any[];
   anoFiltro: number;
   currentPage: number;
   itemsPerPage: number;
+  searchTerm: string;
+  onPageChange: (page: number) => void;
 }
 
-export const ClienteMatrixView = ({ clientes, clientesFiltrados, anoFiltro, currentPage, itemsPerPage }: ClienteMatrixViewProps) => {
-  const { getPagamentoDoMes, handlePagamentoMes } = usePagamentos();
+export const ClienteMatrixView = ({ anoFiltro, currentPage, itemsPerPage, searchTerm, onPageChange }: ClienteMatrixViewProps) => {
+  const { matriz, loading, pagination, fetchMatriz, handlePagamentoMes, getPagamentoDoMes } = useMatrizPagamentos();
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
+
+  useEffect(() => {
+    fetchMatriz(anoFiltro, searchTerm, currentPage, itemsPerPage);
+  }, [fetchMatriz, anoFiltro, searchTerm, currentPage, itemsPerPage]);
   
   const meses = [
     { numero: 1, nome: "Jan" },
@@ -37,14 +40,8 @@ export const ClienteMatrixView = ({ clientes, clientesFiltrados, anoFiltro, curr
     { numero: 12, nome: "Dez" },
   ];
 
-  // Paginação dos clientes
-  const totalPages = Math.ceil(clientesFiltrados.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const clientesPaginados = clientesFiltrados.slice(startIndex, endIndex);
-
   const getButtonStyle = (clienteId: string, mes: number) => {
-    const pagamento = getPagamentoDoMes(clienteId, mes, anoFiltro);
+    const pagamento = getPagamentoDoMes(clienteId, mes);
     
     if (!pagamento || pagamento.status === 'removido') {
       return { 
@@ -78,7 +75,15 @@ export const ClienteMatrixView = ({ clientes, clientesFiltrados, anoFiltro, curr
   };
 
   const handlePagamentoClick = async (clienteId: string, mes: number) => {
-    await handlePagamentoMes(clienteId, mes, anoFiltro);
+    try {
+      await handlePagamentoMes(clienteId, mes, anoFiltro);
+    } catch (error) {
+      toast({
+        title: "Erro ao atualizar pagamento",
+        description: "Tente novamente mais tarde.",
+        variant: "destructive",
+      });
+    }
   };
 
   // Calculate available width based on sidebar state
@@ -95,6 +100,18 @@ export const ClienteMatrixView = ({ clientes, clientesFiltrados, anoFiltro, curr
     const padding = 32; // 2rem = 32px
     return `calc(100vw - ${sidebarWidth + padding}px)`;
   };
+
+  if (loading) {
+    return (
+      <div className="w-full overflow-hidden">
+        <div className="border rounded-md p-8">
+          <div className="text-center">
+            <p className="text-muted-foreground">Carregando matriz de pagamentos...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full overflow-hidden">
@@ -117,22 +134,22 @@ export const ClienteMatrixView = ({ clientes, clientesFiltrados, anoFiltro, curr
               </TableRow>
             </TableHeader>
             <TableBody>
-              {clientesPaginados.map((cliente) => (
-                <TableRow key={cliente.id} className="hover:bg-muted/50">
+              {matriz.map((item) => (
+                <TableRow key={item.clienteId} className="hover:bg-muted/50">
                   <TableCell className="sticky left-0 bg-background border-r font-medium w-32 min-w-32 max-w-32 z-10 p-2">
-                    <div className="font-semibold text-xs leading-tight break-words" title={cliente.nome}>
-                      {cliente.nome}
+                    <div className="font-semibold text-xs leading-tight break-words" title={item.clienteNome}>
+                      {item.clienteNome}
                     </div>
                   </TableCell>
                   {meses.map((mes) => {
-                    const buttonStyle = getButtonStyle(cliente.id, mes.numero);
+                    const buttonStyle = getButtonStyle(item.clienteId, mes.numero);
                     return (
                       <TableCell key={mes.numero} className="text-center p-2 w-16 min-w-16 max-w-16">
                         <Button
                           variant={buttonStyle.variant}
                           className={buttonStyle.className}
-                          onClick={() => handlePagamentoClick(cliente.id, mes.numero)}
-                          title={`${cliente.nome} - ${mes.nome}/${anoFiltro}`}
+                          onClick={() => handlePagamentoClick(item.clienteId, mes.numero)}
+                          title={`${item.clienteNome} - ${mes.nome}/${anoFiltro}`}
                         >
                           {buttonStyle.icon}
                         </Button>
@@ -146,12 +163,24 @@ export const ClienteMatrixView = ({ clientes, clientesFiltrados, anoFiltro, curr
         </div>
       </div>
       
-      {clientesFiltrados.length === 0 && (
+      {matriz.length === 0 && !loading && (
         <div className="text-center py-8">
           <p className="text-muted-foreground">Nenhum cliente encontrado.</p>
         </div>
       )}
       
+      {pagination && pagination.totalPages > 1 && (
+        <div className="mt-4">
+          <ClientePagination
+            currentPage={pagination.currentPage}
+            totalPages={pagination.totalPages}
+            itemsPerPage={pagination.itemsPerPage}
+            totalItems={pagination.total}
+            onPageChange={onPageChange}
+            onItemsPerPageChange={() => {}} // Not used in matrix view
+          />
+        </div>
+      )}
 
       <div className="mt-4 text-sm text-muted-foreground">
         <div className="flex items-center gap-4 flex-wrap">

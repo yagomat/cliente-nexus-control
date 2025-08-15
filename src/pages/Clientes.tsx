@@ -202,11 +202,11 @@ const Clientes = () => {
                 </div>
               ) : (
                 <ClienteMatrixView
-                  clientes={clientes}
-                  clientesFiltrados={clientes}
                   anoFiltro={anoFiltro}
-                  currentPage={1}
+                  currentPage={currentPage}
                   itemsPerPage={itemsPerPage}
+                  searchTerm={busca}
+                  onPageChange={handlePageChange}
                 />
               )}
             </div>
