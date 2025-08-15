@@ -292,7 +292,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      exec_sql: {
+        Args: { params?: Json; query: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
