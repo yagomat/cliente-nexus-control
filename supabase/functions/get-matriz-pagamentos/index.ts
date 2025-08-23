@@ -65,10 +65,11 @@ serve(async (req) => {
       search = '',
       status = 'todos',
       page = 1,
-      itemsPerPage = 10 
+      itemsPerPage = 10,
+      ordenacao = 'cadastro_desc'
     } = await req.json();
 
-    console.log(`Processing matriz request: ano=${ano}, search="${search}", status="${status}", page=${page}, itemsPerPage=${itemsPerPage}`);
+    console.log(`Processing matriz request: ano=${ano}, search="${search}", status="${status}", page=${page}, itemsPerPage=${itemsPerPage}, ordenacao=${ordenacao}`);
 
     // Buscar clientes do usuário
     let clientesQuery = supabase
@@ -78,19 +79,40 @@ serve(async (req) => {
       .is('deleted_at', null);
 
     // Aplicar filtro de status
-    if (status !== 'todos') {
-      if (status === 'ativo') {
-        clientesQuery = clientesQuery.eq('ativo', true);
-      } else if (status === 'inativo') {
-        clientesQuery = clientesQuery.eq('ativo', false);
-      }
-    } else {
-      // Para "todos", incluir apenas ativos (comportamento padrão)
+    if (status === 'ativo') {
       clientesQuery = clientesQuery.eq('ativo', true);
+    } else if (status === 'inativo') {
+      clientesQuery = clientesQuery.eq('ativo', false);
     }
+    // Para "todos", não aplicar filtro de ativo (incluir ativos e inativos)
 
     if (search.trim()) {
       clientesQuery = clientesQuery.ilike('nome', `%${search.trim()}%`);
+    }
+
+    // Aplicar ordenação
+    switch (ordenacao) {
+      case 'cadastro_asc':
+        clientesQuery = clientesQuery.order('created_at', { ascending: true });
+        break;
+      case 'cadastro_desc':
+        clientesQuery = clientesQuery.order('created_at', { ascending: false });
+        break;
+      case 'nome-az_asc':
+        clientesQuery = clientesQuery.order('nome', { ascending: true });
+        break;
+      case 'nome-za_asc':
+        clientesQuery = clientesQuery.order('nome', { ascending: false });
+        break;
+      case 'vencimento_asc':
+        clientesQuery = clientesQuery.order('dia_vencimento', { ascending: true });
+        break;
+      case 'vencimento_desc':
+        clientesQuery = clientesQuery.order('dia_vencimento', { ascending: false });
+        break;
+      default:
+        // Padrão: cadastro mais recente primeiro
+        clientesQuery = clientesQuery.order('created_at', { ascending: false });
     }
 
     const { data: clientes, error: clientesError } = await clientesQuery;

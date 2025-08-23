@@ -220,6 +220,7 @@ const Clientes = () => {
                 itemsPerPage={itemsPerPage}
                 searchTerm={busca}
                 filtroStatus={filtroStatus}
+                ordenacao={ordenacao === 'cadastro' ? `${ordenacao}_desc` : `${ordenacao}_asc`}
                 onPageChange={handlePageChange}
               />
             )}
