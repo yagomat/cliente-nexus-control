@@ -138,7 +138,7 @@ export const useClientesCalculos = (): UseClientesCalculosResult => {
         body: {
           search: filters.search || '',
           status: filters.status || 'todos',
-          ordenacao: filters.ordenacao || 'cadastro_asc',
+          ordenacao: filters.ordenacao || 'cadastro_desc',
           page: filters.page || 1,
           itemsPerPage: filters.itemsPerPage || 10,
           ano: filters.ano || new Date().getFullYear()

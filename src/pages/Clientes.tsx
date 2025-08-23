@@ -26,7 +26,7 @@ const Clientes = () => {
     fetchClientes({
       search: busca,
       status: filtroStatus,
-      ordenacao: `${ordenacao}_asc`,
+      ordenacao: ordenacao === 'cadastro' ? `${ordenacao}_desc` : `${ordenacao}_asc`,
       page: currentPage,
       itemsPerPage,
       ano: anoFiltro
@@ -40,7 +40,7 @@ const Clientes = () => {
       refreshClientes({
         search: busca,
         status: filtroStatus,
-        ordenacao: `${ordenacao}_asc`,
+        ordenacao: ordenacao === 'cadastro' ? `${ordenacao}_desc` : `${ordenacao}_asc`,
         page: currentPage,
         itemsPerPage,
         ano: anoFiltro
@@ -103,7 +103,7 @@ const Clientes = () => {
     fetchClientes({
       search: busca,
       status: filtroStatus,
-      ordenacao: `${ordenacao}_asc`,
+      ordenacao: ordenacao === 'cadastro' ? `${ordenacao}_desc` : `${ordenacao}_asc`,
       page: currentPage,
       itemsPerPage,
       ano: anoFiltro
