@@ -219,6 +219,7 @@ const Clientes = () => {
                 currentPage={currentPage}
                 itemsPerPage={itemsPerPage}
                 searchTerm={busca}
+                filtroStatus={filtroStatus}
                 onPageChange={handlePageChange}
               />
             )}

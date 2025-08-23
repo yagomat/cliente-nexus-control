@@ -63,19 +63,31 @@ serve(async (req) => {
     const { 
       ano = new Date().getFullYear(),
       search = '',
+      status = 'todos',
       page = 1,
       itemsPerPage = 10 
     } = await req.json();
 
-    console.log(`Processing matriz request: ano=${ano}, search="${search}", page=${page}, itemsPerPage=${itemsPerPage}`);
+    console.log(`Processing matriz request: ano=${ano}, search="${search}", status="${status}", page=${page}, itemsPerPage=${itemsPerPage}`);
 
     // Buscar clientes do usuário
     let clientesQuery = supabase
       .from('clientes')
       .select('id, nome, dia_vencimento, ativo, deleted_at')
       .eq('user_id', user.id)
-      .is('deleted_at', null)
-      .eq('ativo', true);
+      .is('deleted_at', null);
+
+    // Aplicar filtro de status
+    if (status !== 'todos') {
+      if (status === 'ativo') {
+        clientesQuery = clientesQuery.eq('ativo', true);
+      } else if (status === 'inativo') {
+        clientesQuery = clientesQuery.eq('ativo', false);
+      }
+    } else {
+      // Para "todos", incluir apenas ativos (comportamento padrão)
+      clientesQuery = clientesQuery.eq('ativo', true);
+    }
 
     if (search.trim()) {
       clientesQuery = clientesQuery.ilike('nome', `%${search.trim()}%`);

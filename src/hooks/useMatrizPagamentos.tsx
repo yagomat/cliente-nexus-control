@@ -36,7 +36,7 @@ interface UseMatrizPagamentosResult {
   matriz: MatrizItem[];
   loading: boolean;
   pagination: MatrizPagination | null;
-  fetchMatriz: (ano: number, search?: string, page?: number, itemsPerPage?: number) => Promise<void>;
+  fetchMatriz: (ano: number, search?: string, status?: string, page?: number, itemsPerPage?: number) => Promise<void>;
   handlePagamentoMes: (clienteId: string, mes: number, ano: number) => Promise<void>;
   getPagamentoDoMes: (clienteId: string, mes: number) => { status: string; id?: string } | null;
 }
@@ -46,24 +46,26 @@ export const useMatrizPagamentos = (): UseMatrizPagamentosResult => {
   const [matriz, setMatriz] = useState<MatrizItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState<MatrizPagination | null>(null);
-  const [lastFetchParams, setLastFetchParams] = useState<{ano: number, search: string, page: number, itemsPerPage: number} | null>(null);
+  const [lastFetchParams, setLastFetchParams] = useState<{ano: number, search: string, status: string, page: number, itemsPerPage: number} | null>(null);
 
   const fetchMatriz = useCallback(async (
     ano: number,
     search: string = '',
+    status: string = 'todos',
     page: number = 1,
     itemsPerPage: number = 10
   ) => {
     if (!user) return;
 
     setLoading(true);
-    setLastFetchParams({ ano, search, page, itemsPerPage });
+    setLastFetchParams({ ano, search, status, page, itemsPerPage });
     
     try {
       const { data, error } = await supabase.functions.invoke('get-matriz-pagamentos', {
         body: {
           ano,
           search,
+          status,
           page,
           itemsPerPage
         }
@@ -90,6 +92,7 @@ export const useMatrizPagamentos = (): UseMatrizPagamentosResult => {
         fetchMatriz(
           lastFetchParams.ano,
           lastFetchParams.search,
+          lastFetchParams.status,
           lastFetchParams.page,
           lastFetchParams.itemsPerPage
         );
@@ -149,7 +152,7 @@ export const useMatrizPagamentos = (): UseMatrizPagamentosResult => {
 
       // Recarregar a matriz após a atualização
       if (lastFetchParams) {
-        await fetchMatriz(lastFetchParams.ano, lastFetchParams.search, lastFetchParams.page, lastFetchParams.itemsPerPage);
+        await fetchMatriz(lastFetchParams.ano, lastFetchParams.search, lastFetchParams.status, lastFetchParams.page, lastFetchParams.itemsPerPage);
       }
       
       // Notificar outros hooks para sincronização

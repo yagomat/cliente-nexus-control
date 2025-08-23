@@ -13,17 +13,18 @@ interface ClienteMatrixViewProps {
   currentPage: number;
   itemsPerPage: number;
   searchTerm: string;
+  filtroStatus: string;
   onPageChange: (page: number) => void;
 }
 
-export const ClienteMatrixView = ({ anoFiltro, currentPage, itemsPerPage, searchTerm, onPageChange }: ClienteMatrixViewProps) => {
+export const ClienteMatrixView = ({ anoFiltro, currentPage, itemsPerPage, searchTerm, filtroStatus, onPageChange }: ClienteMatrixViewProps) => {
   const { matriz, loading, pagination, fetchMatriz, handlePagamentoMes, getPagamentoDoMes } = useMatrizPagamentos();
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
 
   useEffect(() => {
-    fetchMatriz(anoFiltro, searchTerm, currentPage, itemsPerPage);
-  }, [fetchMatriz, anoFiltro, searchTerm, currentPage, itemsPerPage]);
+    fetchMatriz(anoFiltro, searchTerm, filtroStatus, currentPage, itemsPerPage);
+  }, [fetchMatriz, anoFiltro, searchTerm, filtroStatus, currentPage, itemsPerPage]);
   
   const meses = [
     { numero: 1, nome: "Jan" },
