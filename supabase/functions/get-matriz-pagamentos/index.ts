@@ -27,7 +27,76 @@ interface MatrizItem {
   clienteId: string;
   clienteNome: string;
   pagamentos: Record<number, { status: string; id?: string } | null>;
+  statusAtivo?: boolean;
 }
+
+// Função para obter a data atual em São Paulo
+const getHojeSaoPaulo = (): Date => {
+  return new Date(new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Sao_Paulo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).format(new Date()));
+};
+
+// Função para normalizar data para início do dia em São Paulo
+const normalizarDataSaoPaulo = (data: Date): Date => {
+  const formatted = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Sao_Paulo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).format(data);
+  
+  return new Date(formatted + 'T00:00:00.000Z');
+};
+
+// Função para calcular data de vencimento real
+const calcularDataVencimentoReal = (ano: number, mes: number, diaVencimento: number): Date => {
+  const ultimoDiaDoMes = new Date(ano, mes, 0).getDate();
+  const diaReal = Math.min(diaVencimento, ultimoDiaDoMes);
+  
+  const dataVencimento = new Date(ano, mes - 1, diaReal);
+  return normalizarDataSaoPaulo(dataVencimento);
+};
+
+// Função para calcular status do cliente baseado nos pagamentos
+const calcularStatusCliente = (cliente: DatabaseClient, pagamentosMap: Map<string, DatabasePagamento>): boolean => {
+  const hoje = normalizarDataSaoPaulo(getHojeSaoPaulo());
+  const mesAtual = hoje.getMonth() + 1;
+  const anoAtual = hoje.getFullYear();
+  
+  // Buscar pagamento do mês atual
+  const keyMesAtual = `${cliente.id}_${mesAtual}_${anoAtual}`;
+  const pagamentoMesAtual = pagamentosMap.get(keyMesAtual);
+  
+  // Se tem pagamento no mês atual como pago/promoção, está ativo
+  if (pagamentoMesAtual && (pagamentoMesAtual.status === 'pago' || pagamentoMesAtual.status === 'promocao')) {
+    return true;
+  }
+  
+  // Calcular mês anterior
+  let mesAnterior = mesAtual - 1;
+  let anoAnterior = anoAtual;
+  if (mesAnterior === 0) {
+    mesAnterior = 12;
+    anoAnterior = anoAtual - 1;
+  }
+  
+  // Buscar pagamento do mês anterior
+  const keyMesAnterior = `${cliente.id}_${mesAnterior}_${anoAnterior}`;
+  const pagamentoMesAnterior = pagamentosMap.get(keyMesAnterior);
+  
+  // Se tem pagamento no mês anterior como pago/promoção E ainda não passou do dia de vencimento
+  if (pagamentoMesAnterior && (pagamentoMesAnterior.status === 'pago' || pagamentoMesAnterior.status === 'promocao')) {
+    // Calcular data de vencimento real do mês atual
+    const dataVencimento = calcularDataVencimentoReal(anoAtual, mesAtual, cliente.dia_vencimento);
+    return hoje <= dataVencimento;
+  }
+  
+  return false;
+};
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -71,20 +140,12 @@ serve(async (req) => {
 
     console.log(`Processing matriz request: ano=${ano}, search="${search}", status="${status}", page=${page}, itemsPerPage=${itemsPerPage}, ordenacao=${ordenacao}`);
 
-    // Buscar clientes do usuário
+    // Buscar clientes do usuário (remover filtro de status aqui - aplicar depois do cálculo)
     let clientesQuery = supabase
       .from('clientes')
       .select('id, nome, dia_vencimento, ativo, deleted_at')
       .eq('user_id', user.id)
       .is('deleted_at', null);
-
-    // Aplicar filtro de status
-    if (status === 'ativo') {
-      clientesQuery = clientesQuery.eq('ativo', true);
-    } else if (status === 'inativo') {
-      clientesQuery = clientesQuery.eq('ativo', false);
-    }
-    // Para "todos", não aplicar filtro de ativo (incluir ativos e inativos)
 
     if (search.trim()) {
       clientesQuery = clientesQuery.ilike('nome', `%${search.trim()}%`);
@@ -123,7 +184,7 @@ serve(async (req) => {
     }
 
     const clientesTyped = clientes as DatabaseClient[];
-    console.log(`Found ${clientesTyped.length} clients`);
+    console.log(`Found ${clientesTyped.length} base clients`);
 
     if (clientesTyped.length === 0) {
       return new Response(JSON.stringify({
@@ -139,13 +200,23 @@ serve(async (req) => {
       });
     }
 
-    // Buscar todos os pagamentos do ano para os clientes encontrados
+    // Buscar pagamentos do ano atual E anterior para cálculo de status
+    const hoje = getHojeSaoPaulo();
+    const anoAtual = hoje.getFullYear();
+    const anoAnterior = anoAtual - 1;
+    
     const clienteIds = clientesTyped.map(c => c.id);
+    
+    // Buscar pagamentos do ano solicitado + ano atual e anterior (para cálculo de status)
+    const anosParaBuscar = [ano];
+    if (ano !== anoAtual) anosParaBuscar.push(anoAtual);
+    if (ano !== anoAnterior && anoAtual !== anoAnterior) anosParaBuscar.push(anoAnterior);
+    
     const { data: pagamentos, error: pagamentosError } = await supabase
       .from('pagamentos')
       .select('id, cliente_id, mes, ano, status')
       .eq('user_id', user.id)
-      .eq('ano', ano)
+      .in('ano', anosParaBuscar)
       .in('cliente_id', clienteIds);
 
     if (pagamentosError) {
@@ -154,7 +225,7 @@ serve(async (req) => {
     }
 
     const pagamentosTyped = pagamentos as DatabasePagamento[];
-    console.log(`Found ${pagamentosTyped.length} payments for year ${ano}`);
+    console.log(`Found ${pagamentosTyped.length} payments for years ${anosParaBuscar.join(', ')}`);
 
     // Criar mapa de pagamentos para acesso rápido
     const pagamentosMap = new Map<string, DatabasePagamento>();
@@ -163,15 +234,18 @@ serve(async (req) => {
       pagamentosMap.set(key, pag);
     });
 
-    // Processar matriz para cada cliente
-    const matriz: MatrizItem[] = clientesTyped.map(cliente => {
+    // Processar matriz para cada cliente com cálculo de status
+    const matrizCompleta: MatrizItem[] = clientesTyped.map(cliente => {
+      const statusAtivo = calcularStatusCliente(cliente, pagamentosMap);
+      
       const item: MatrizItem = {
         clienteId: cliente.id,
         clienteNome: cliente.nome,
-        pagamentos: {}
+        pagamentos: {},
+        statusAtivo
       };
 
-      // Processar 12 meses
+      // Processar 12 meses do ano solicitado
       for (let mes = 1; mes <= 12; mes++) {
         const key = `${cliente.id}_${mes}_${ano}`;
         const pagamento = pagamentosMap.get(key);
@@ -189,12 +263,23 @@ serve(async (req) => {
       return item;
     });
 
+    // Aplicar filtro de status baseado no status calculado
+    let matrizFiltrada = matrizCompleta;
+    if (status === 'ativo') {
+      matrizFiltrada = matrizCompleta.filter(item => item.statusAtivo);
+    } else if (status === 'inativo') {
+      matrizFiltrada = matrizCompleta.filter(item => !item.statusAtivo);
+    }
+    // Para "todos", não filtrar
+    
+    console.log(`After status filter: ${matrizFiltrada.length} clients (${status} filter applied)`);
+
     // Implementar paginação
-    const total = matriz.length;
+    const total = matrizFiltrada.length;
     const totalPages = Math.ceil(total / itemsPerPage);
     const startIndex = (page - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    const paginatedMatriz = matriz.slice(startIndex, endIndex);
+    const paginatedMatriz = matrizFiltrada.slice(startIndex, endIndex);
 
     console.log(`Returning paginated matriz: ${paginatedMatriz.length} items of ${total} total`);
 
