@@ -154,10 +154,10 @@ serve(async (req) => {
     // Aplicar ordenação
     switch (ordenacao) {
       case 'cadastro_asc':
-        clientesQuery = clientesQuery.order('created_at', { ascending: true });
+        clientesQuery = clientesQuery.order('created_at', { ascending: true }).order('id', { ascending: true });
         break;
       case 'cadastro_desc':
-        clientesQuery = clientesQuery.order('created_at', { ascending: false });
+        clientesQuery = clientesQuery.order('created_at', { ascending: false }).order('id', { ascending: true });
         break;
       case 'nome-az_asc':
         clientesQuery = clientesQuery.order('nome', { ascending: true });

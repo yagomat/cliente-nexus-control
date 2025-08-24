@@ -308,7 +308,8 @@ serve(async (req) => {
       const asc = ordenacao.includes('asc');
       clientesFiltrados.sort((a, b) => {
         const comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-        return asc ? comparison : -comparison;
+        // Se as datas são iguais, usar id como critério secundário
+        return comparison !== 0 ? (asc ? comparison : -comparison) : a.id.localeCompare(b.id);
       });
     }
 
