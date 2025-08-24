@@ -143,7 +143,7 @@ serve(async (req) => {
     // Buscar clientes do usuário (remover filtro de status aqui - aplicar depois do cálculo)
     let clientesQuery = supabase
       .from('clientes')
-      .select('id, nome, dia_vencimento, ativo, deleted_at')
+      .select('id, nome, dia_vencimento, ativo, deleted_at, created_at')
       .eq('user_id', user.id)
       .is('deleted_at', null);
 
