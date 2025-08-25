@@ -250,18 +250,11 @@ serve(async (req) => {
         }
         
         if (!ultimoPagamentoEncontrado) {
-          // Nunca pagou - vencimento seria no mês atual
-          const ultimoDiaDoMes = new Date(anoAtual, mesAtual, 0).getDate();
-          const diaEfetivo = Math.min(cliente.dia_vencimento, ultimoDiaDoMes);
-          const dataVencimento = new Date(anoAtual, mesAtual - 1, diaEfetivo);
-          
-          const diffTime = hoje.getTime() - dataVencimento.getTime();
-          const dias = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-          
+          // Nunca pagou - não calcular vencimento pois não há histórico
           return {
-            dias: Math.abs(dias),
-            texto: dias >= 0 ? `Nunca pagou - venceu há ${Math.abs(dias)} dias` : 'Nunca pagou',
-            vencido: true
+            dias: 0,
+            texto: 'Nunca pagou',
+            vencido: false
           };
         }
         

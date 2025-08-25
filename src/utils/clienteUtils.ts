@@ -111,8 +111,12 @@ export const calcularVencimentoInteligente = (cliente: any, getPagamentoDoMes: (
       }
     }
     
-    // Se não encontrou histórico de pagamento, não mostrar informação
-    return null;
+    // Se não encontrou histórico de pagamento, mostrar "Nunca pagou"
+    return {
+      dias: 0,
+      texto: 'Nunca pagou',
+      vencido: false
+    };
   }
 };
 
