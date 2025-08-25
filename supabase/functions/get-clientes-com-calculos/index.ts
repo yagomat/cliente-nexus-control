@@ -47,7 +47,16 @@ serve(async (req) => {
       ano = new Date().getFullYear()
     } = await req.json();
 
-    console.log(`Processing client calculation request: search="${search}", status="${status}", ordenacao="${ordenacao}", page=${page}, itemsPerPage=${itemsPerPage}, ano=${ano}`);
+  console.log('Processing client calculation request:', {
+    search: `"${search}"`,
+    status,
+    ordenacao,
+    page,
+    itemsPerPage,
+    ano,
+    searchLength: search.length,
+    searchTrimmed: search.trim()
+  });
 
     // Buscar clientes do usuário com filtros básicos
     let clientesQuery = supabase

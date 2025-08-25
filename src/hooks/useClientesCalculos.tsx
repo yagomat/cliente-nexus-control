@@ -74,7 +74,12 @@ const cache = new Map<string, CacheEntry>();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutos em milliseconds
 
 const getCacheKey = (filters: any) => {
-  return JSON.stringify(filters);
+  // Normalizar busca vazia para consistência
+  const normalizedFilters = {
+    ...filters,
+    search: filters.search?.trim() || ''
+  };
+  return JSON.stringify(normalizedFilters);
 };
 
 const getCachedData = (key: string) => {
@@ -111,6 +116,7 @@ export const useClientesCalculos = (): UseClientesCalculosResult => {
   const [clientes, setClientes] = useState<ClienteComCalculos[]>([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
+  const [lastSearch, setLastSearch] = useState<string>('');
 
   const fetchClientes = useCallback(async (filters: {
     search?: string;
@@ -122,21 +128,37 @@ export const useClientesCalculos = (): UseClientesCalculosResult => {
   } = {}, forceRefresh = false) => {
     if (!user) return;
 
+    const currentSearch = filters.search?.trim() || '';
+    
+    // Detectar se mudou de busca preenchida para vazia - força refresh
+    const shouldForceRefresh = forceRefresh || (lastSearch && !currentSearch);
+    
+    // Debug logging
+    console.log('fetchClientes called:', {
+      search: currentSearch,
+      lastSearch,
+      shouldForceRefresh,
+      filters
+    });
+
     const cacheKey = getCacheKey({ ...filters, userId: user.id });
-    const cachedData = !forceRefresh ? getCachedData(cacheKey) : null;
+    const cachedData = !shouldForceRefresh ? getCachedData(cacheKey) : null;
     
     if (cachedData) {
       console.log('Using cached data for clientes with calculations');
       setClientes(cachedData.clientes || []);
       setPagination(cachedData.pagination || null);
+      setLastSearch(currentSearch);
       return;
     }
 
     setLoading(true);
     try {
+      console.log('Making new request to get-clientes-com-calculos with filters:', filters);
+      
       const { data, error } = await supabase.functions.invoke('get-clientes-com-calculos', {
         body: {
-          search: filters.search || '',
+          search: currentSearch,
           status: filters.status || 'todos',
           ordenacao: filters.ordenacao || 'cadastro_desc',
           page: filters.page || 1,
@@ -154,11 +176,12 @@ export const useClientesCalculos = (): UseClientesCalculosResult => {
 
       setClientes(result.clientes);
       setPagination(result.pagination);
+      setLastSearch(currentSearch);
       
       // Cache the result
       setCachedData(cacheKey, result);
       
-      console.log(`Fetched ${result.clientes.length} clients with advanced calculations`);
+      console.log(`Fetched ${result.clientes.length} clients with advanced calculations (total: ${result.pagination?.total || 'unknown'})`);
     } catch (error) {
       console.error('Erro ao buscar clientes com cálculos:', error);
       setClientes([]);
@@ -166,7 +189,7 @@ export const useClientesCalculos = (): UseClientesCalculosResult => {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, lastSearch]);
 
   const refreshClientes = useCallback((filters: {
     search?: string;
