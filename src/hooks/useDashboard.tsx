@@ -137,8 +137,14 @@ export const useDashboard = () => {
       // Clientes vencendo em 3 dias (usando lógica inteligente)
       const clientesVencendo = clientes?.filter(cliente => {
         const vencimentoInfo = calcularVencimentoInteligente(cliente, getPagamentoDoMes);
-        // Incluir apenas clientes ativos que vencerão em 3 dias ou menos (não vencidos)
-        return vencimentoInfo && !vencimentoInfo.vencido && vencimentoInfo.dias <= 3;
+        const clienteAtivo = calcularStatusCliente(cliente, getPagamentoDoMes);
+        // Incluir apenas clientes ativos, que não venceram, que vencerão em 3 dias ou menos
+        // E excluir explicitamente clientes que nunca pagaram
+        return vencimentoInfo && 
+               clienteAtivo && 
+               !vencimentoInfo.vencido && 
+               vencimentoInfo.dias <= 3 && 
+               vencimentoInfo.texto !== 'Nunca pagou';
       }).map(cliente => {
         const vencimentoInfo = calcularVencimentoInteligente(cliente, getPagamentoDoMes);
         return {
