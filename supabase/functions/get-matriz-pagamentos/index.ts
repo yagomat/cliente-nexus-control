@@ -162,7 +162,7 @@ serve(async (req) => {
       case 'nome-az_asc':
         clientesQuery = clientesQuery.order('nome', { ascending: true });
         break;
-      case 'nome-za_asc':
+      case 'nome-za_desc':
         clientesQuery = clientesQuery.order('nome', { ascending: false });
         break;
       case 'vencimento_asc':
