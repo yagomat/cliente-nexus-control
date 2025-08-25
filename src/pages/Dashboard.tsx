@@ -2,7 +2,7 @@ import { LayoutGrid, Users, TrendingUp, Calendar, DollarSign, AlertTriangle, Sma
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from "recharts";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useDashboard } from "@/hooks/useDashboard";
+import { useDashboardOptimized } from "@/hooks/useDashboardOptimized";
 import { useState } from "react";
 
 // Cores reorganizadas para melhor contraste entre cores adjacentes
@@ -29,7 +29,7 @@ const formatarDias = (dias: number): string => {
 };
 
 const Dashboard = () => {
-  const { dashboardData, loading } = useDashboard();
+  const { data: dashboardData, loading } = useDashboardOptimized();
   const [selectedSegments, setSelectedSegments] = useState<Record<string, string | null>>({
     dispositivo: null,
     aplicativo: null,
@@ -61,10 +61,10 @@ const Dashboard = () => {
   const CustomPieTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0];
-      const total = dashboardData.distribuicaoDispositivo.reduce((sum, item) => sum + item.value, 0) || 
-                   dashboardData.distribuicaoAplicativo.reduce((sum, item) => sum + item.value, 0) ||
-                   dashboardData.distribuicaoUF.reduce((sum, item) => sum + item.value, 0) ||
-                   dashboardData.distribuicaoServidor.reduce((sum, item) => sum + item.value, 0);
+      const total = dashboardData.distribuicaoDispositivos.reduce((sum, item) => sum + item.total, 0) || 
+                   dashboardData.distribuicaoAplicativos.reduce((sum, item) => sum + item.total, 0) ||
+                   dashboardData.distribuicaoUf.reduce((sum, item) => sum + item.total, 0) ||
+                   dashboardData.distribuicaoServidores.reduce((sum, item) => sum + item.total, 0);
       const percentage = ((data.value / total) * 100).toFixed(1);
       
       return (
@@ -101,30 +101,30 @@ const Dashboard = () => {
     return null;
   };
 
-  const CustomLegend = ({ data, chartType }: { data: Array<{ name: string; value: number }>, chartType: string }) => {
-    const total = data.reduce((sum, item) => sum + item.value, 0);
+  const CustomLegend = ({ data, chartType }: { data: Array<{ nome: string; total: number }>, chartType: string }) => {
+    const totalSum = data.reduce((sum, item) => sum + item.total, 0);
     
     return (
       <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-3">
         {data.map((item, index) => {
-          const percentage = ((item.value / total) * 100).toFixed(1);
-          const isSelected = selectedSegments[chartType] === item.name;
+          const percentage = ((item.total / totalSum) * 100).toFixed(1);
+          const isSelected = selectedSegments[chartType] === item.nome;
           
           return (
             <div 
-              key={item.name}
+              key={item.nome}
               className="flex items-center justify-between cursor-pointer hover:bg-muted/50 transition-colors p-1 rounded"
-              onClick={() => handleSegmentClick(chartType, item.name)}
+              onClick={() => handleSegmentClick(chartType, item.nome)}
             >
               <div className="flex items-center gap-2 min-w-0 flex-1">
                 <div
                   className="w-3 h-3 rounded-sm shrink-0"
                   style={{ backgroundColor: COLORS[index % COLORS.length] }}
                 />
-                <span className="text-sm font-medium truncate">{item.name}</span>
+                <span className="text-sm font-medium truncate">{item.nome}</span>
               </div>
               <div className="flex items-center gap-1 ml-2">
-                <span className="text-sm font-bold">{item.value}</span>
+                <span className="text-sm font-bold">{item.total}</span>
                 {isSelected && (
                   <span className="text-xs text-muted-foreground">({percentage}%)</span>
                 )}
@@ -156,22 +156,12 @@ const Dashboard = () => {
             <Calendar className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-900 dark:text-yellow-100">{dashboardData.clientesVencendo.length}</div>
+            <div className="text-2xl font-bold text-yellow-900 dark:text-yellow-100">{dashboardData.vencendoEsteMs}</div>
             <div className="text-xs text-yellow-700 dark:text-yellow-300 mt-2 space-y-1">
-              {dashboardData.clientesVencendo.length > 0 ? (
-                dashboardData.clientesVencendo.slice(0, 3).map((cliente, index) => (
-                  <div key={index} className="text-xs">
-                    <span className="font-medium">{cliente.nome}</span> - {cliente.servidor} 
-                    <span className="text-yellow-600 dark:text-yellow-400"> {formatarDias(cliente.dias)}</span>
-                  </div>
-                ))
+              {dashboardData.vencendoEsteMs > 0 ? (
+                <span>{dashboardData.vencendoEsteMs} cliente(s) vencendo este mês</span>
               ) : (
                 <span>Nenhum cliente vencendo</span>
-              )}
-              {dashboardData.clientesVencendo.length > 3 && (
-                <div className="text-xs text-yellow-600 dark:text-yellow-400">
-                  +{dashboardData.clientesVencendo.length - 3} outros...
-                </div>
               )}
             </div>
           </CardContent>
@@ -183,22 +173,12 @@ const Dashboard = () => {
             <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">{dashboardData.appsVencendo.length}</div>
+            <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">{dashboardData.vencendoProximoMs}</div>
             <div className="text-xs text-orange-700 dark:text-orange-300 mt-2 space-y-1">
-              {dashboardData.appsVencendo.length > 0 ? (
-                dashboardData.appsVencendo.slice(0, 3).map((app, index) => (
-                  <div key={index} className="text-xs">
-                    <span className="font-medium">{app.nome}</span> - {app.aplicativo} 
-                    <span className="text-orange-600 dark:text-orange-400"> {formatarDias(app.dias)}</span>
-                  </div>
-                ))
+              {dashboardData.vencendoProximoMs > 0 ? (
+                <span>{dashboardData.vencendoProximoMs} cliente(s) vencendo próximo mês</span>
               ) : (
-                <span>Nenhum app vencendo</span>
-              )}
-              {dashboardData.appsVencendo.length > 3 && (
-                <div className="text-xs text-orange-600 dark:text-orange-400">
-                  +{dashboardData.appsVencendo.length - 3} outros...
-                </div>
+                <span>Nenhum cliente vencendo</span>
               )}
             </div>
           </CardContent>
@@ -246,7 +226,7 @@ const Dashboard = () => {
             <LayoutGrid className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{dashboardData.clientesNovos}</div>
+            <div className="text-2xl font-bold">{dashboardData.novosClientes}</div>
             <p className="text-xs text-muted-foreground">Últimos 30 dias</p>
           </CardContent>
         </Card>
@@ -272,7 +252,7 @@ const Dashboard = () => {
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{dashboardData.pagamentosEsperados}</div>
+            <div className="text-2xl font-bold text-red-600">{dashboardData.valorEsperado}</div>
             <p className="text-xs text-muted-foreground">Mês atual</p>
           </CardContent>
         </Card>
@@ -314,12 +294,12 @@ const Dashboard = () => {
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={dashboardData.evolucaoClientes}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
+                <XAxis dataKey="mes" />
                 <YAxis />
                 <Tooltip content={<CustomClientesTooltip />} />
                 <Line 
                   type="monotone" 
-                  dataKey="value" 
+                  dataKey="total" 
                   stroke="hsl(var(--primary))" 
                   strokeWidth={2}
                   dot={{ fill: "hsl(var(--primary))" }}
@@ -350,12 +330,12 @@ const Dashboard = () => {
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={dashboardData.evolucaoPagamentos}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
+                <XAxis dataKey="mes" />
                 <YAxis />
                 <Tooltip content={<CustomPagamentosTooltip />} />
                 <Line 
                   type="monotone" 
-                  dataKey="value" 
+                  dataKey="total" 
                   stroke="hsl(var(--primary))" 
                   strokeWidth={2}
                   dot={{ fill: "hsl(var(--primary))" }}
@@ -389,23 +369,23 @@ const Dashboard = () => {
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie
-                  data={dashboardData.distribuicaoDispositivo}
+                  data={dashboardData.distribuicaoDispositivos}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ value }) => value}
+                  label={({ total }) => total}
                   outerRadius={80}
                   fill="#8884d8"
-                  dataKey="value"
+                  dataKey="total"
                 >
-                  {dashboardData.distribuicaoDispositivo.map((entry, index) => (
+                  {dashboardData.distribuicaoDispositivos.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip content={<CustomPieTooltip />} />
               </PieChart>
             </ResponsiveContainer>
-            <CustomLegend data={dashboardData.distribuicaoDispositivo} chartType="dispositivo" />
+            <CustomLegend data={dashboardData.distribuicaoDispositivos} chartType="dispositivo" />
           </CardContent>
         </Card>
 
@@ -430,23 +410,23 @@ const Dashboard = () => {
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie
-                  data={dashboardData.distribuicaoAplicativo}
+                  data={dashboardData.distribuicaoAplicativos}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ value }) => value}
+                  label={({ total }) => total}
                   outerRadius={80}
                   fill="#8884d8"
-                  dataKey="value"
+                  dataKey="total"
                 >
-                  {dashboardData.distribuicaoAplicativo.map((entry, index) => (
+                  {dashboardData.distribuicaoAplicativos.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip content={<CustomPieTooltip />} />
               </PieChart>
             </ResponsiveContainer>
-            <CustomLegend data={dashboardData.distribuicaoAplicativo} chartType="aplicativo" />
+            <CustomLegend data={dashboardData.distribuicaoAplicativos} chartType="aplicativo" />
           </CardContent>
         </Card>
       </div>
@@ -461,23 +441,23 @@ const Dashboard = () => {
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie
-                  data={dashboardData.distribuicaoUF}
+                  data={dashboardData.distribuicaoUf}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ value }) => value}
+                  label={({ total }) => total}
                   outerRadius={80}
                   fill="#8884d8"
-                  dataKey="value"
+                  dataKey="total"
                 >
-                  {dashboardData.distribuicaoUF.map((entry, index) => (
+                  {dashboardData.distribuicaoUf.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip content={<CustomPieTooltip />} />
               </PieChart>
             </ResponsiveContainer>
-            <CustomLegend data={dashboardData.distribuicaoUF} chartType="uf" />
+            <CustomLegend data={dashboardData.distribuicaoUf} chartType="uf" />
           </CardContent>
         </Card>
 
@@ -490,23 +470,23 @@ const Dashboard = () => {
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie
-                  data={dashboardData.distribuicaoServidor}
+                  data={dashboardData.distribuicaoServidores}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ value }) => value}
+                  label={({ total }) => total}
                   outerRadius={80}
                   fill="#8884d8"
-                  dataKey="value"
+                  dataKey="total"
                 >
-                  {dashboardData.distribuicaoServidor.map((entry, index) => (
+                  {dashboardData.distribuicaoServidores.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip content={<CustomPieTooltip />} />
               </PieChart>
             </ResponsiveContainer>
-            <CustomLegend data={dashboardData.distribuicaoServidor} chartType="servidor" />
+            <CustomLegend data={dashboardData.distribuicaoServidores} chartType="servidor" />
           </CardContent>
         </Card>
       </div>
