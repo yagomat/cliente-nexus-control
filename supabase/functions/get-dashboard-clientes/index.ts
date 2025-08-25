@@ -92,9 +92,11 @@ Deno.serve(async (req) => {
         p.ano === anoAnterior
       )
 
-      const ativo = pagamentoAtual?.status === 'pago' || 
-                   pagamentoAtual?.status === 'promocao' ||
-                   (pagamentoAnterior?.status === 'pago' || pagamentoAnterior?.status === 'promocao')
+      // Cliente só é ativo se tem pagamento atual pago/promoção OU 
+      // tem pagamento anterior pago/promoção E ainda não passou do vencimento
+      const ativo = (pagamentoAtual?.status === 'pago' || pagamentoAtual?.status === 'promocao') ||
+                   (pagamentoAnterior?.status === 'pago' || pagamentoAnterior?.status === 'promocao' && 
+                    hoje <= new Date(anoAtual, mesAtual - 1, cliente.dia_vencimento))
 
       if (ativo) {
         clientesAtivos++
