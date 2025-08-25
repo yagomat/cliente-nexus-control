@@ -21,12 +21,19 @@ const Clientes = () => {
   const { clientes, loading, pagination, fetchClientes, refreshClientes } = useClientesCalculos();
   const { getPagamentoMesAtual, handlePagamento } = usePagamentos();
 
+  // Função para converter ordenação para formato da API
+  const getOrdenacaoForAPI = (ordenacao: string) => {
+    if (ordenacao === 'cadastro') return `${ordenacao}_desc`;
+    if (ordenacao === 'nome-za') return `${ordenacao}_desc`;
+    return `${ordenacao}_asc`;
+  };
+
   // Atualizar dados quando filtros mudarem
   useEffect(() => {
     fetchClientes({
       search: busca,
       status: filtroStatus,
-      ordenacao: ordenacao === 'cadastro' ? `${ordenacao}_desc` : `${ordenacao}_asc`,
+      ordenacao: getOrdenacaoForAPI(ordenacao),
       page: currentPage,
       itemsPerPage,
       ano: anoFiltro
@@ -40,7 +47,7 @@ const Clientes = () => {
       refreshClientes({
         search: busca,
         status: filtroStatus,
-        ordenacao: ordenacao === 'cadastro' ? `${ordenacao}_desc` : `${ordenacao}_asc`,
+        ordenacao: getOrdenacaoForAPI(ordenacao),
         page: currentPage,
         itemsPerPage,
         ano: anoFiltro
@@ -103,7 +110,7 @@ const Clientes = () => {
     fetchClientes({
       search: busca,
       status: filtroStatus,
-      ordenacao: ordenacao === 'cadastro' ? `${ordenacao}_desc` : `${ordenacao}_asc`,
+      ordenacao: getOrdenacaoForAPI(ordenacao),
       page: currentPage,
       itemsPerPage,
       ano: anoFiltro
@@ -220,7 +227,7 @@ const Clientes = () => {
                 itemsPerPage={itemsPerPage}
                 searchTerm={busca}
                 filtroStatus={filtroStatus}
-                ordenacao={ordenacao === 'cadastro' ? `${ordenacao}_desc` : `${ordenacao}_asc`}
+                ordenacao={getOrdenacaoForAPI(ordenacao)}
                 onPageChange={handlePageChange}
               />
             )}
