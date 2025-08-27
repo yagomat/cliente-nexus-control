@@ -105,14 +105,36 @@ Deno.serve(async (req) => {
       if (ativo) {
         clientesAtivos++
         
-        // Calculate due dates
-        const diaVencimento = cliente.dia_vencimento
-        const dataVencimento = new Date(anoAtual, mesAtual - 1, diaVencimento)
-        const proximoVencimento = new Date(anoAtual, mesAtual, diaVencimento)
+        // Calculate next payment due date
+        let proximaDataVencimento: Date
+        let proximoMes: number
+        let proximoAno: number
         
-        // Check for clients expiring in 3 days (without current month payment)
-        if (!pagamentoAtual && dataVencimento >= hoje && dataVencimento <= new Date(hoje.getTime() + 3 * 24 * 60 * 60 * 1000)) {
-          const diasParaVencimento = Math.ceil((dataVencimento.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24))
+        const dataVencimentoAtual = new Date(anoAtual, mesAtual - 1, cliente.dia_vencimento)
+        
+        // If client hasn't paid current month and due date hasn't passed yet
+        if (!pagamentoAtual && dataVencimentoAtual >= hoje) {
+          proximaDataVencimento = dataVencimentoAtual
+          proximoMes = mesAtual
+          proximoAno = anoAtual
+        } else {
+          // Next month's due date
+          proximoMes = mesAtual === 12 ? 1 : mesAtual + 1
+          proximoAno = mesAtual === 12 ? anoAtual + 1 : anoAtual
+          proximaDataVencimento = new Date(proximoAno, proximoMes - 1, cliente.dia_vencimento)
+        }
+        
+        // Check if client already paid for the next due period
+        const pagamentoProximoPeriodo = pagamentos?.find(p => 
+          p.cliente_id === cliente.id && 
+          p.mes === proximoMes && 
+          p.ano === proximoAno
+        )
+        
+        const diasParaVencimento = Math.ceil((proximaDataVencimento.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24))
+        
+        // Clients expiring in next 3 days (only if they haven't paid for the period)
+        if (!pagamentoProximoPeriodo && diasParaVencimento >= 0 && diasParaVencimento <= 3) {
           vencendoEsteMs++
           clientesVencendo3Dias.push({
             nome: cliente.nome || 'Cliente sem nome',
@@ -121,9 +143,8 @@ Deno.serve(async (req) => {
           })
         }
         
-        // Check for apps expiring in 30 days (next month payment)
-        if (proximoVencimento >= hoje && proximoVencimento <= new Date(hoje.getTime() + 30 * 24 * 60 * 60 * 1000)) {
-          const diasParaVencimento = Math.ceil((proximoVencimento.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24))
+        // Apps expiring in next 30 days (only if they haven't paid for the period)
+        if (!pagamentoProximoPeriodo && diasParaVencimento >= 0 && diasParaVencimento <= 30) {
           vencendoProximoMs++
           appsVencendo30Dias.push({
             nome: cliente.nome || 'Cliente sem nome',
