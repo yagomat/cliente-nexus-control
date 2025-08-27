@@ -109,8 +109,8 @@ Deno.serve(async (req) => {
         const dataVencimentoAtual = new Date(anoAtual, mesAtual - 1, cliente.dia_vencimento)
         const diasParaVencimento = Math.ceil((dataVencimentoAtual.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24))
         
-        // Clients becoming inactive in next 3 days (current month not paid)
-        if (!pagamentoAtual && diasParaVencimento >= 0 && diasParaVencimento <= 3) {
+        // Clients becoming inactive in next 3 days (current month not paid or not paid properly)
+        if ((!pagamentoAtual || (pagamentoAtual?.status !== 'pago' && pagamentoAtual?.status !== 'promocao')) && diasParaVencimento >= 0 && diasParaVencimento <= 3) {
           vencendoEsteMs++
           clientesVencendo3Dias.push({
             nome: cliente.nome || 'Cliente sem nome',
@@ -132,8 +132,8 @@ Deno.serve(async (req) => {
           p.ano === proximoAno
         )
         
-        // Apps expiring in next 30 days (next month not paid)
-        if (!pagamentoProximoMes && diasParaProximoVencimento >= 0 && diasParaProximoVencimento <= 30) {
+        // Apps expiring in next 30 days (next month not paid or not paid properly)
+        if ((!pagamentoProximoMes || (pagamentoProximoMes?.status !== 'pago' && pagamentoProximoMes?.status !== 'promocao')) && diasParaProximoVencimento >= 0 && diasParaProximoVencimento <= 30) {
           vencendoProximoMs++
           appsVencendo30Dias.push({
             nome: cliente.nome || 'Cliente sem nome',
