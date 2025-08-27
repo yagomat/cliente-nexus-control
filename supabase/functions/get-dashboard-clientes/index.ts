@@ -105,36 +105,12 @@ Deno.serve(async (req) => {
       if (ativo) {
         clientesAtivos++
         
-        // Calculate next payment due date
-        let proximaDataVencimento: Date
-        let proximoMes: number
-        let proximoAno: number
-        
+        // Calculate when client will become inactive (current month due date)
         const dataVencimentoAtual = new Date(anoAtual, mesAtual - 1, cliente.dia_vencimento)
+        const diasParaVencimento = Math.ceil((dataVencimentoAtual.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24))
         
-        // If client hasn't paid current month and due date hasn't passed yet
-        if (!pagamentoAtual && dataVencimentoAtual >= hoje) {
-          proximaDataVencimento = dataVencimentoAtual
-          proximoMes = mesAtual
-          proximoAno = anoAtual
-        } else {
-          // Next month's due date
-          proximoMes = mesAtual === 12 ? 1 : mesAtual + 1
-          proximoAno = mesAtual === 12 ? anoAtual + 1 : anoAtual
-          proximaDataVencimento = new Date(proximoAno, proximoMes - 1, cliente.dia_vencimento)
-        }
-        
-        // Check if client already paid for the next due period
-        const pagamentoProximoPeriodo = pagamentos?.find(p => 
-          p.cliente_id === cliente.id && 
-          p.mes === proximoMes && 
-          p.ano === proximoAno
-        )
-        
-        const diasParaVencimento = Math.ceil((proximaDataVencimento.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24))
-        
-        // Clients expiring in next 3 days (only if they haven't paid for the period)
-        if (!pagamentoProximoPeriodo && diasParaVencimento >= 0 && diasParaVencimento <= 3) {
+        // Clients becoming inactive in next 3 days (current month not paid)
+        if (!pagamentoAtual && diasParaVencimento >= 0 && diasParaVencimento <= 3) {
           vencendoEsteMs++
           clientesVencendo3Dias.push({
             nome: cliente.nome || 'Cliente sem nome',
@@ -143,13 +119,26 @@ Deno.serve(async (req) => {
           })
         }
         
-        // Apps expiring in next 30 days (only if they haven't paid for the period)
-        if (!pagamentoProximoPeriodo && diasParaVencimento >= 0 && diasParaVencimento <= 30) {
+        // Calculate next month due date for app expiry
+        const proximoMes = mesAtual === 12 ? 1 : mesAtual + 1
+        const proximoAno = mesAtual === 12 ? anoAtual + 1 : anoAtual
+        const proximaDataVencimento = new Date(proximoAno, proximoMes - 1, cliente.dia_vencimento)
+        const diasParaProximoVencimento = Math.ceil((proximaDataVencimento.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24))
+        
+        // Check if client already paid next month
+        const pagamentoProximoMes = pagamentos?.find(p => 
+          p.cliente_id === cliente.id && 
+          p.mes === proximoMes && 
+          p.ano === proximoAno
+        )
+        
+        // Apps expiring in next 30 days (next month not paid)
+        if (!pagamentoProximoMes && diasParaProximoVencimento >= 0 && diasParaProximoVencimento <= 30) {
           vencendoProximoMs++
           appsVencendo30Dias.push({
             nome: cliente.nome || 'Cliente sem nome',
             aplicativo: cliente.aplicativo || 'App não informado',
-            dias: diasParaVencimento
+            dias: diasParaProximoVencimento
           })
         }
 
