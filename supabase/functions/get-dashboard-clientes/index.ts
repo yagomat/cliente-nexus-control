@@ -75,6 +75,10 @@ Deno.serve(async (req) => {
     const distribuicaoAplicativos: Record<string, number> = {}
     const distribuicaoUf: Record<string, number> = {}
     const distribuicaoServidores: Record<string, number> = {}
+    
+    // Arrays to store detailed expiring clients
+    const clientesVencendo3Dias: Array<{nome: string, servidor: string, dias: number}> = []
+    const appsVencendo30Dias: Array<{nome: string, aplicativo: string, dias: number}> = []
 
     clientes?.forEach(cliente => {
       // Check if client is active
@@ -106,12 +110,26 @@ Deno.serve(async (req) => {
         const dataVencimento = new Date(anoAtual, mesAtual - 1, diaVencimento)
         const proximoVencimento = new Date(anoAtual, mesAtual, diaVencimento)
         
-        if (dataVencimento >= hoje && dataVencimento <= new Date(hoje.getTime() + 30 * 24 * 60 * 60 * 1000)) {
+        // Check for clients expiring in 3 days (without current month payment)
+        if (!pagamentoAtual && dataVencimento >= hoje && dataVencimento <= new Date(hoje.getTime() + 3 * 24 * 60 * 60 * 1000)) {
+          const diasParaVencimento = Math.ceil((dataVencimento.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24))
           vencendoEsteMs++
+          clientesVencendo3Dias.push({
+            nome: cliente.nome || 'Cliente sem nome',
+            servidor: cliente.servidor || 'Servidor não informado',
+            dias: diasParaVencimento
+          })
         }
         
-        if (proximoVencimento >= hoje && proximoVencimento <= new Date(hoje.getTime() + 60 * 24 * 60 * 60 * 1000)) {
+        // Check for apps expiring in 30 days (next month payment)
+        if (proximoVencimento >= hoje && proximoVencimento <= new Date(hoje.getTime() + 30 * 24 * 60 * 60 * 1000)) {
+          const diasParaVencimento = Math.ceil((proximoVencimento.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24))
           vencendoProximoMs++
+          appsVencendo30Dias.push({
+            nome: cliente.nome || 'Cliente sem nome',
+            aplicativo: cliente.aplicativo || 'App não informado',
+            dias: diasParaVencimento
+          })
         }
 
         // Calculate revenue
@@ -184,6 +202,8 @@ Deno.serve(async (req) => {
       }).length || 0,
       vencendoEsteMs,
       vencendoProximoMs,
+      clientesVencendo3Dias,
+      appsVencendo30Dias,
       valorRecebido,
       valorEsperado,
       evolucaoClientes,

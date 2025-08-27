@@ -10,6 +10,8 @@ interface DashboardData {
   novosClientes: number;
   vencendoEsteMs: number;
   vencendoProximoMs: number;
+  clientesVencendo3Dias: Array<{ nome: string; servidor: string; dias: number }>;
+  appsVencendo30Dias: Array<{ nome: string; aplicativo: string; dias: number }>;
   valorRecebido: number;
   valorEsperado: number;
   evolucaoClientes: Array<{ mes: string; total: number }>;
@@ -29,6 +31,8 @@ export const useDashboardOptimized = () => {
     novosClientes: 0,
     vencendoEsteMs: 0,
     vencendoProximoMs: 0,
+    clientesVencendo3Dias: [],
+    appsVencendo30Dias: [],
     valorRecebido: 0,
     valorEsperado: 0,
     evolucaoClientes: [],

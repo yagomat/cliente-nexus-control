@@ -158,8 +158,15 @@ const Dashboard = () => {
           <CardContent>
             <div className="text-2xl font-bold text-yellow-900 dark:text-yellow-100">{dashboardData.vencendoEsteMs}</div>
             <div className="text-xs text-yellow-700 dark:text-yellow-300 mt-2 space-y-1">
-              {dashboardData.vencendoEsteMs > 0 ? (
-                <span>{dashboardData.vencendoEsteMs} cliente(s) vencendo este mês</span>
+              {dashboardData.clientesVencendo3Dias.length > 0 ? (
+                dashboardData.clientesVencendo3Dias.map((cliente, index) => (
+                  <div key={index} className="flex justify-between items-center">
+                    <span className="font-medium">{cliente.nome}</span>
+                    <span className="text-xs bg-yellow-200 dark:bg-yellow-800 px-2 py-1 rounded">
+                      {cliente.servidor} {formatarDias(cliente.dias)}
+                    </span>
+                  </div>
+                ))
               ) : (
                 <span>Nenhum cliente vencendo</span>
               )}
@@ -175,8 +182,15 @@ const Dashboard = () => {
           <CardContent>
             <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">{dashboardData.vencendoProximoMs}</div>
             <div className="text-xs text-orange-700 dark:text-orange-300 mt-2 space-y-1">
-              {dashboardData.vencendoProximoMs > 0 ? (
-                <span>{dashboardData.vencendoProximoMs} cliente(s) vencendo próximo mês</span>
+              {dashboardData.appsVencendo30Dias.length > 0 ? (
+                dashboardData.appsVencendo30Dias.map((cliente, index) => (
+                  <div key={index} className="flex justify-between items-center">
+                    <span className="font-medium">{cliente.nome}</span>
+                    <span className="text-xs bg-orange-200 dark:bg-orange-800 px-2 py-1 rounded">
+                      {cliente.aplicativo} {formatarDias(cliente.dias)}
+                    </span>
+                  </div>
+                ))
               ) : (
                 <span>Nenhum cliente vencendo</span>
               )}
