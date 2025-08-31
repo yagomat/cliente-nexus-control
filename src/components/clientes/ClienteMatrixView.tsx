@@ -172,7 +172,7 @@ export const ClienteMatrixView = ({ anoFiltro, currentPage, itemsPerPage, search
         </div>
       )}
       
-      {pagination && pagination.totalPages > 1 && (
+      {pagination && (
         <div className="mt-4">
           <ClientePagination
             currentPage={pagination.currentPage}
