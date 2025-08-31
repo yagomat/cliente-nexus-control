@@ -172,19 +172,6 @@ export const ClienteMatrixView = ({ anoFiltro, currentPage, itemsPerPage, search
         </div>
       )}
       
-      {pagination && (
-        <div className="mt-4">
-          <ClientePagination
-            currentPage={pagination.currentPage}
-            totalPages={pagination.totalPages}
-            itemsPerPage={pagination.itemsPerPage}
-            totalItems={pagination.total}
-            onPageChange={onPageChange}
-            onItemsPerPageChange={onItemsPerPageChange}
-          />
-        </div>
-      )}
-
       <div className="mt-4 text-sm text-muted-foreground">
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-2">
@@ -207,6 +194,19 @@ export const ClienteMatrixView = ({ anoFiltro, currentPage, itemsPerPage, search
           </div>
         </div>
       </div>
+
+      {pagination && (
+        <div className="mt-4">
+          <ClientePagination
+            currentPage={pagination.currentPage}
+            totalPages={pagination.totalPages}
+            itemsPerPage={pagination.itemsPerPage}
+            totalItems={pagination.total}
+            onPageChange={onPageChange}
+            onItemsPerPageChange={onItemsPerPageChange}
+          />
+        </div>
+      )}
     </div>
   );
 };
