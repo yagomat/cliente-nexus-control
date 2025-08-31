@@ -229,6 +229,7 @@ const Clientes = () => {
                 filtroStatus={filtroStatus}
                 ordenacao={getOrdenacaoForAPI(ordenacao)}
                 onPageChange={handlePageChange}
+                onItemsPerPageChange={handleItemsPerPageChange}
               />
             )}
           </div>

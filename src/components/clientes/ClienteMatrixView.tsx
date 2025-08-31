@@ -16,9 +16,10 @@ interface ClienteMatrixViewProps {
   filtroStatus: string;
   ordenacao: string;
   onPageChange: (page: number) => void;
+  onItemsPerPageChange: (itemsPerPage: number) => void;
 }
 
-export const ClienteMatrixView = ({ anoFiltro, currentPage, itemsPerPage, searchTerm, filtroStatus, ordenacao, onPageChange }: ClienteMatrixViewProps) => {
+export const ClienteMatrixView = ({ anoFiltro, currentPage, itemsPerPage, searchTerm, filtroStatus, ordenacao, onPageChange, onItemsPerPageChange }: ClienteMatrixViewProps) => {
   const { matriz, loading, pagination, fetchMatriz, handlePagamentoMes, getPagamentoDoMes } = useMatrizPagamentos();
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
@@ -179,7 +180,7 @@ export const ClienteMatrixView = ({ anoFiltro, currentPage, itemsPerPage, search
             itemsPerPage={pagination.itemsPerPage}
             totalItems={pagination.total}
             onPageChange={onPageChange}
-            onItemsPerPageChange={() => {}} // Not used in matrix view
+            onItemsPerPageChange={onItemsPerPageChange}
           />
         </div>
       )}
