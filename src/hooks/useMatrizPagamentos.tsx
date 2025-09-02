@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { addPagamentoUpdateListener, usePagamentos } from "@/hooks/usePagamentos";
+import { addPagamentoUpdateListener } from "@/hooks/usePagamentos";
 import { invalidateClientesCache } from "@/hooks/useClientesCalculos";
 import { calcularStatusCliente, calcularVencimentoInteligente } from "@/utils/clienteUtils";
 
@@ -50,9 +50,6 @@ interface UseMatrizPagamentosResult {
 
 export const useMatrizPagamentos = (): UseMatrizPagamentosResult => {
   const { user } = useAuth();
-  
-  // Import da função de notificação do usePagamentos
-  const { notifyPagamentoUpdate } = usePagamentos();
   const [matriz, setMatriz] = useState<MatrizItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState<MatrizPagination | null>(null);
@@ -173,8 +170,6 @@ export const useMatrizPagamentos = (): UseMatrizPagamentosResult => {
               setTimeout(() => {
                 invalidateClientesCache();
                 notifyMatrizUpdate();
-                // Notificar o sistema global para atualizar os cards
-                notifyPagamentoUpdate(clienteId);
               }, 100);
             }
           } catch (error) {
@@ -274,9 +269,6 @@ export const useMatrizPagamentos = (): UseMatrizPagamentosResult => {
         
         return novaMatriz;
       });
-
-      // Notificar imediatamente outros hooks para atualizar os cards
-      notifyPagamentoUpdate(clienteId);
 
       // Executar a operação no servidor (realtime irá corrigir/confirmar)
       if (operacao === 'INSERT') {
