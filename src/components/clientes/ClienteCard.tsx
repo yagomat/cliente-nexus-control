@@ -41,10 +41,17 @@ export const ClienteCard = ({
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   
-  // Estados locais para atualização imediata
+  // Estados locais para atualização imediata - inicializar corretamente
   const [localPagamento, setLocalPagamento] = useState(() => getPagamentoMesAtual(cliente.id));
   const [localStatusAtivo, setLocalStatusAtivo] = useState(statusAtivo);
   const [localVencimentoInfo, setLocalVencimentoInfo] = useState(vencimentoInfo);
+  
+  // Sincronizar estados locais quando props mudarem (importante para page refresh)
+  useEffect(() => {
+    setLocalPagamento(getPagamentoMesAtual(cliente.id));
+    setLocalStatusAtivo(statusAtivo);
+    setLocalVencimentoInfo(vencimentoInfo);
+  }, [getPagamentoMesAtual, cliente.id, statusAtivo, vencimentoInfo]);
   
   // Escutar atualizações de pagamento específicas para este cliente
   useEffect(() => {
