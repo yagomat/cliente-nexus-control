@@ -148,9 +148,6 @@ export const usePagamentos = () => {
       // Notificar outros hooks que os pagamentos foram atualizados
       notifyPagamentoUpdate();
       
-      // Invalidar cache de clientes também
-      invalidateClientesCache();
-      
     } catch (error) {
       console.error('Erro ao atualizar pagamento:', error);
       toast({

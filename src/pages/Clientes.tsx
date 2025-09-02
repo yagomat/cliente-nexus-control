@@ -40,22 +40,6 @@ const Clientes = () => {
     });
   }, [fetchClientes, busca, filtroStatus, ordenacao, currentPage, itemsPerPage, anoFiltro]);
 
-  // Escutar atualizações de pagamentos para atualizar clientes
-  useEffect(() => {
-    const removeListener = addPagamentoUpdateListener(() => {
-      // Atualizar clientes quando pagamentos são modificados
-      refreshClientes({
-        search: busca,
-        status: filtroStatus,
-        ordenacao: getOrdenacaoForAPI(ordenacao),
-        page: currentPage,
-        itemsPerPage,
-        ano: anoFiltro
-      });
-    });
-
-    return removeListener;
-  }, [refreshClientes, busca, filtroStatus, ordenacao, currentPage, itemsPerPage, anoFiltro]);
 
   // Usar dados de paginação do backend
   const totalPages = pagination?.totalPages || 0;

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check, X, Eye, Edit, MessageCircle, Trash2, Calendar, Gift } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -9,6 +9,7 @@ import { useClienteActions } from "@/hooks/useClienteActions";
 import { getButtonVariantAndColor } from "@/utils/clienteUtils";
 import { ClienteViewModal } from "./ClienteViewModal";
 import { TemplateModal } from "@/components/templates/TemplateModal";
+import { addPagamentoUpdateListener } from "@/hooks/usePagamentos";
 
 interface VencimentoInfo {
   dias: number;
@@ -38,7 +39,25 @@ export const ClienteCard = ({
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   
-  const buttonConfig = getButtonVariantAndColor(cliente.id, getPagamentoMesAtual);
+  // Estado local para o pagamento atual (para atualização imediata)
+  const [localPagamento, setLocalPagamento] = useState(() => getPagamentoMesAtual(cliente.id));
+  
+  // Escutar atualizações de pagamento específicas para este cliente
+  useEffect(() => {
+    const removeListener = addPagamentoUpdateListener(() => {
+      const novoPagamento = getPagamentoMesAtual(cliente.id);
+      setLocalPagamento(novoPagamento);
+    });
+
+    return removeListener;
+  }, [cliente.id, getPagamentoMesAtual]);
+  
+  // Usar pagamento local para calcular config do botão
+  const getLocalPagamentoMesAtual = (clienteId: string) => {
+    return clienteId === cliente.id ? localPagamento : getPagamentoMesAtual(clienteId);
+  };
+  
+  const buttonConfig = getButtonVariantAndColor(cliente.id, getLocalPagamentoMesAtual);
   
   const getIconComponent = (iconName: string) => {
     switch (iconName) {
@@ -53,7 +72,7 @@ export const ClienteCard = ({
   
   const IconComponent = getIconComponent(buttonConfig.icon);
 
-  const pagamento = getPagamentoMesAtual(cliente.id);
+  const pagamento = localPagamento;
   const isPromocao = pagamento && pagamento.status === 'promocao';
 
   const getVencimentoColor = (dias: number | null) => {
@@ -159,7 +178,7 @@ export const ClienteCard = ({
         isOpen={isViewModalOpen}
         onClose={() => setIsViewModalOpen(false)}
         cliente={cliente}
-        getPagamentoMesAtual={getPagamentoMesAtual}
+        getPagamentoMesAtual={getLocalPagamentoMesAtual}
       />
 
       <TemplateModal
