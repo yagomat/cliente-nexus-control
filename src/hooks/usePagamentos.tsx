@@ -50,6 +50,47 @@ export const usePagamentos = () => {
     }
   }, [user]);
   
+  // Configurar realtime subscription para pagamentos
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('pagamentos-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'pagamentos',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('Realtime update:', payload);
+          
+          // Atualizar dados imediatamente
+          fetchPagamentos();
+          
+          // Se é um update ou insert, notificar o cliente específico
+          if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
+            const clienteId = payload.new?.cliente_id;
+            if (clienteId) {
+              notifyPagamentoUpdate(clienteId);
+            }
+          } else if (payload.eventType === 'DELETE') {
+            const clienteId = payload.old?.cliente_id;
+            if (clienteId) {
+              notifyPagamentoUpdate(clienteId);
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, fetchPagamentos]);
+  
   // Registrar listener para atualizações globais
   useEffect(() => {
     const updateListener = () => {
@@ -142,11 +183,8 @@ export const usePagamentos = () => {
         if (error) throw error;
       }
       
-      // Atualizar os dados
-      await fetchPagamentos();
-      
-      // Notificar outros hooks que os pagamentos foram atualizados
-      notifyPagamentoUpdate(clienteId);
+      // Não precisa mais fazer fetch manual - o realtime vai cuidar da atualização
+      // O realtime vai disparar automaticamente notifyPagamentoUpdate quando detectar mudanças
       
     } catch (error) {
       console.error('Erro ao atualizar pagamento:', error);
