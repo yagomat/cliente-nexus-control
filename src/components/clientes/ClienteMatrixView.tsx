@@ -3,10 +3,12 @@ import { useEffect } from "react";
 import { useMatrizPagamentos } from "@/hooks/useMatrizPagamentos";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import { useSidebar } from "@/components/ui/sidebar";
 import { ClientePagination } from "@/components/clientes/ClientePagination";
 import { Check, X, Gift } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { getVencimentoColor } from "@/utils/clienteUtils";
 
 interface ClienteMatrixViewProps {
   anoFiltro: number;
@@ -124,7 +126,7 @@ export const ClienteMatrixView = ({ anoFiltro, currentPage, itemsPerPage, search
           <Table className="w-full">
             <TableHeader>
               <TableRow>
-                <TableHead className="sticky left-0 bg-background border-r w-32 min-w-32 max-w-32 font-semibold z-20">
+                <TableHead className="sticky left-0 bg-background border-r w-48 min-w-48 max-w-48 font-semibold z-20">
                   Cliente
                 </TableHead>
                 {meses.map((mes) => (
@@ -140,9 +142,21 @@ export const ClienteMatrixView = ({ anoFiltro, currentPage, itemsPerPage, search
             <TableBody>
               {matriz.map((item) => (
                 <TableRow key={item.clienteId} className="hover:bg-muted/50">
-                  <TableCell className="sticky left-0 bg-background border-r font-medium w-32 min-w-32 max-w-32 z-10 p-2">
-                    <div className="font-semibold text-xs leading-tight break-words" title={item.clienteNome}>
-                      {item.clienteNome}
+                  <TableCell className="sticky left-0 bg-background border-r font-medium w-48 min-w-48 max-w-48 z-10 p-2">
+                    <div className="space-y-1">
+                      <div className="font-semibold text-xs leading-tight break-words" title={item.clienteNome}>
+                        {item.clienteNome}
+                      </div>
+                      {item.statusAtivo !== undefined && (
+                        <Badge variant={item.statusAtivo ? "default" : "secondary"} className="text-[10px] px-1 py-0">
+                          {item.statusAtivo ? "Ativo" : "Inativo"}
+                        </Badge>
+                      )}
+                      {item.vencimentoTexto && (
+                        <div className={`text-[10px] leading-tight ${getVencimentoColor(item.vencimentoDias || 0)}`}>
+                          {item.vencimentoTexto}
+                        </div>
+                      )}
                     </div>
                   </TableCell>
                   {meses.map((mes) => {

@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { addPagamentoUpdateListener } from "@/hooks/usePagamentos";
 import { invalidateClientesCache } from "@/hooks/useClientesCalculos";
+import { calcularStatusCliente, calcularVencimentoInteligente } from "@/utils/clienteUtils";
 
 // Estado global para notificar sobre atualizações da matriz
 let matrizUpdateListeners: (() => void)[] = [];
@@ -23,6 +24,12 @@ interface MatrizItem {
   clienteId: string;
   clienteNome: string;
   pagamentos: Record<number, { status: string; id?: string } | null>;
+  statusAtivo?: boolean;
+  diaVencimento?: number;
+  valorPlano?: number | null;
+  vencimentoDias?: number;
+  vencimentoTexto?: string;
+  vencimentoVencido?: boolean;
 }
 
 interface MatrizPagination {
@@ -131,6 +138,28 @@ export const useMatrizPagamentos = (): UseMatrizPagamentosResult => {
                   }
                   
                   clienteItem.pagamentos = pagamentos;
+                  
+                  // Recalcular status e vencimento se temos os dados necessários
+                  if (clienteItem.diaVencimento !== undefined) {
+                    const getPagamentoDoMes = (clienteId: string, mes: number, ano: number) => {
+                      return pagamentos[mes] || null;
+                    };
+                    
+                    const cliente = {
+                      id: clienteId,
+                      dia_vencimento: clienteItem.diaVencimento,
+                      valor_plano: clienteItem.valorPlano
+                    };
+                    
+                    const novoStatusAtivo = calcularStatusCliente(cliente, getPagamentoDoMes);
+                    const vencimentoInfo = calcularVencimentoInteligente(cliente, getPagamentoDoMes);
+                    
+                    clienteItem.statusAtivo = novoStatusAtivo;
+                    clienteItem.vencimentoDias = vencimentoInfo.dias;
+                    clienteItem.vencimentoTexto = vencimentoInfo.texto;
+                    clienteItem.vencimentoVencido = vencimentoInfo.vencido;
+                  }
+                  
                   novaMatriz[clienteIndex] = clienteItem;
                 }
                 
@@ -212,6 +241,27 @@ export const useMatrizPagamentos = (): UseMatrizPagamentosResult => {
           // Simular o novo ID para inserções (será substituído pelo realtime)
           const novoId = operacao === 'INSERT' ? `temp-${Date.now()}` : pagamentoAtual?.id;
           pagamentos[mes] = { status: novoStatus, id: novoId };
+          
+          // Recalcular status e vencimento se temos os dados necessários
+          if (clienteItem.diaVencimento !== undefined) {
+            const getPagamentoDoMes = (clienteId: string, mes: number, ano: number) => {
+              return pagamentos[mes] || null;
+            };
+            
+            const cliente = {
+              id: clienteId,
+              dia_vencimento: clienteItem.diaVencimento,
+              valor_plano: clienteItem.valorPlano
+            };
+            
+            const novoStatusAtivo = calcularStatusCliente(cliente, getPagamentoDoMes);
+            const vencimentoInfo = calcularVencimentoInteligente(cliente, getPagamentoDoMes);
+            
+            clienteItem.statusAtivo = novoStatusAtivo;
+            clienteItem.vencimentoDias = vencimentoInfo.dias;
+            clienteItem.vencimentoTexto = vencimentoInfo.texto;
+            clienteItem.vencimentoVencido = vencimentoInfo.vencido;
+          }
           
           clienteItem.pagamentos = pagamentos;
           novaMatriz[clienteIndex] = clienteItem;
