@@ -19,7 +19,7 @@ const Clientes = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   
   const { clientes, loading, pagination, fetchClientes, refreshClientes } = useClientesCalculos();
-  const { getPagamentoMesAtual, handlePagamento } = usePagamentos();
+  const { getPagamentoMesAtual, getPagamentoDoMes, handlePagamento } = usePagamentos();
 
   // Função para converter ordenação para formato da API
   const getOrdenacaoForAPI = (ordenacao: string) => {
@@ -176,6 +176,7 @@ const Clientes = () => {
                       vencido: cliente.vencimento_vencido
                     } : null}
                     getPagamentoMesAtual={getPagamentoMesAtual}
+                    getPagamentoDoMes={getPagamentoDoMes}
                     onPagamento={handlePagamento}
                     onClienteDeleted={refetchData}
                   />

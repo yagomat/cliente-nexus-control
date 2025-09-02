@@ -8,15 +8,15 @@ import { addMatrizUpdateListener } from "@/hooks/useMatrizPagamentos";
 // Estado global para sincronização
 let globalPagamentos: any[] = [];
 let listeners: (() => void)[] = [];
-let pagamentoUpdateListeners: (() => void)[] = [];
+let pagamentoUpdateListeners: ((clienteId?: string) => void)[] = [];
 
 // Função para notificar sobre atualizações de pagamentos
-const notifyPagamentoUpdate = () => {
-  pagamentoUpdateListeners.forEach(listener => listener());
+const notifyPagamentoUpdate = (clienteId?: string) => {
+  pagamentoUpdateListeners.forEach(listener => listener(clienteId));
 };
 
 // Função para registrar listener de atualizações de pagamentos
-export const addPagamentoUpdateListener = (listener: () => void) => {
+export const addPagamentoUpdateListener = (listener: (clienteId?: string) => void) => {
   pagamentoUpdateListeners.push(listener);
   
   // Retorna função para remover o listener
@@ -146,7 +146,7 @@ export const usePagamentos = () => {
       await fetchPagamentos();
       
       // Notificar outros hooks que os pagamentos foram atualizados
-      notifyPagamentoUpdate();
+      notifyPagamentoUpdate(clienteId);
       
     } catch (error) {
       console.error('Erro ao atualizar pagamento:', error);

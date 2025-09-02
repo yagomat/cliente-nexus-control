@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useClienteActions } from "@/hooks/useClienteActions";
-import { getButtonVariantAndColor } from "@/utils/clienteUtils";
+import { getButtonVariantAndColor, calcularStatusCliente, calcularVencimentoInteligente, getVencimentoColor } from "@/utils/clienteUtils";
 import { ClienteViewModal } from "./ClienteViewModal";
 import { TemplateModal } from "@/components/templates/TemplateModal";
 import { addPagamentoUpdateListener } from "@/hooks/usePagamentos";
@@ -22,6 +22,7 @@ interface ClienteCardProps {
   statusAtivo: boolean;
   vencimentoInfo: VencimentoInfo | null;
   getPagamentoMesAtual: (clienteId: string) => any;
+  getPagamentoDoMes: (clienteId: string, mes: number, ano: number) => any;
   onPagamento: (clienteId: string) => void;
   onClienteDeleted: () => void;
 }
@@ -31,6 +32,7 @@ export const ClienteCard = ({
   statusAtivo, 
   vencimentoInfo, 
   getPagamentoMesAtual, 
+  getPagamentoDoMes, 
   onPagamento, 
   onClienteDeleted 
 }: ClienteCardProps) => {
@@ -39,18 +41,30 @@ export const ClienteCard = ({
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   
-  // Estado local para o pagamento atual (para atualização imediata)
+  // Estados locais para atualização imediata
   const [localPagamento, setLocalPagamento] = useState(() => getPagamentoMesAtual(cliente.id));
+  const [localStatusAtivo, setLocalStatusAtivo] = useState(statusAtivo);
+  const [localVencimentoInfo, setLocalVencimentoInfo] = useState(vencimentoInfo);
   
   // Escutar atualizações de pagamento específicas para este cliente
   useEffect(() => {
-    const removeListener = addPagamentoUpdateListener(() => {
-      const novoPagamento = getPagamentoMesAtual(cliente.id);
-      setLocalPagamento(novoPagamento);
+    const removeListener = addPagamentoUpdateListener((clienteId) => {
+      // Só atualizar se for este cliente específico
+      if (clienteId === cliente.id) {
+        const novoPagamento = getPagamentoMesAtual(cliente.id);
+        setLocalPagamento(novoPagamento);
+        
+        // Recalcular status e vencimento localmente
+        const novoStatus = calcularStatusCliente(cliente, getPagamentoDoMes);
+        const novoVencimento = calcularVencimentoInteligente(cliente, getPagamentoDoMes);
+        
+        setLocalStatusAtivo(novoStatus);
+        setLocalVencimentoInfo(novoVencimento);
+      }
     });
 
     return removeListener;
-  }, [cliente.id, getPagamentoMesAtual]);
+  }, [cliente.id, getPagamentoMesAtual, getPagamentoDoMes]);
   
   // Usar pagamento local para calcular config do botão
   const getLocalPagamentoMesAtual = (clienteId: string) => {
@@ -75,13 +89,6 @@ export const ClienteCard = ({
   const pagamento = localPagamento;
   const isPromocao = pagamento && pagamento.status === 'promocao';
 
-  const getVencimentoColor = (dias: number | null) => {
-    if (dias === null) return "text-muted-foreground";
-    if (dias < 0) return "text-destructive font-medium";
-    if (dias <= 5) return "text-yellow-600 font-medium";
-    return "text-foreground";
-  };
-
   const handleEdit = () => {
     navigate(`/clientes/editar/${cliente.id}`);
   };
@@ -97,8 +104,8 @@ export const ClienteCard = ({
     <Card key={cliente.id} className="p-4">
       <div className="flex justify-between items-start mb-3">
         <h3 className="font-semibold text-lg">{cliente.nome}</h3>
-        <Badge className={statusAtivo ? "bg-green-100 text-green-700 border-green-200" : "bg-red-100 text-red-700 border-red-200"}>
-          {statusAtivo ? "Ativo" : "Inativo"}
+        <Badge className={localStatusAtivo ? "bg-green-100 text-green-700 border-green-200" : "bg-red-100 text-red-700 border-red-200"}>
+          {localStatusAtivo ? "Ativo" : "Inativo"}
         </Badge>
       </div>
 
@@ -117,9 +124,9 @@ export const ClienteCard = ({
         </div>
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4 text-muted-foreground" />
-          {vencimentoInfo ? (
-            <span className={getVencimentoColor(vencimentoInfo.vencido ? -Math.abs(vencimentoInfo.dias) : vencimentoInfo.dias)}>
-              {vencimentoInfo.texto}
+          {localVencimentoInfo ? (
+            <span className={getVencimentoColor(localVencimentoInfo.vencido ? -Math.abs(localVencimentoInfo.dias) : localVencimentoInfo.dias)}>
+              {localVencimentoInfo.texto}
             </span>
           ) : (
             <span className="text-muted-foreground">Sem informação</span>
@@ -184,7 +191,7 @@ export const ClienteCard = ({
       <TemplateModal
         isOpen={isTemplateModalOpen}
         onClose={() => setIsTemplateModalOpen(false)}
-        templateData={{ cliente, vencimentoInfo }}
+        templateData={{ cliente, vencimentoInfo: localVencimentoInfo }}
       />
     </Card>
   );
