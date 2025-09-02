@@ -54,6 +54,8 @@ export const usePagamentos = () => {
   useEffect(() => {
     if (!user) return;
 
+    console.log('🔧 Configurando realtime subscription para pagamentos');
+
     const channel = supabase
       .channel('pagamentos-changes')
       .on(
@@ -64,32 +66,73 @@ export const usePagamentos = () => {
           table: 'pagamentos',
           filter: `user_id=eq.${user.id}`
         },
-        (payload) => {
-          console.log('Realtime update:', payload);
+        async (payload) => {
+          console.log('🔴 Realtime update recebido:', payload.eventType, payload);
           
-          // Atualizar dados imediatamente
-          fetchPagamentos();
-          
-          // Se é um update ou insert, notificar o cliente específico
-          if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
-            const clienteId = payload.new?.cliente_id;
-            if (clienteId) {
-              notifyPagamentoUpdate(clienteId);
+          try {
+            // Atualizar dados de forma síncrona primeiro
+            if (payload.eventType === 'INSERT' && payload.new) {
+              console.log('➕ Inserindo pagamento no estado local');
+              globalPagamentos.push(payload.new);
+            } else if (payload.eventType === 'UPDATE' && payload.new) {
+              console.log('🔄 Atualizando pagamento no estado local');
+              const index = globalPagamentos.findIndex(p => p.id === payload.new.id);
+              if (index >= 0) {
+                globalPagamentos[index] = payload.new;
+              }
+            } else if (payload.eventType === 'DELETE' && payload.old) {
+              console.log('🗑️ Removendo pagamento do estado local');
+              const index = globalPagamentos.findIndex(p => p.id === payload.old.id);
+              if (index >= 0) {
+                globalPagamentos.splice(index, 1);
+              }
             }
-          } else if (payload.eventType === 'DELETE') {
-            const clienteId = payload.old?.cliente_id;
+
+            // Atualizar estado local imediatamente
+            setPagamentos([...globalPagamentos]);
+            notifyAllListeners();
+
+            // Identificar o cliente afetado e notificar
+            const clienteId = (payload.new as any)?.cliente_id || (payload.old as any)?.cliente_id;
             if (clienteId) {
-              notifyPagamentoUpdate(clienteId);
+              console.log('📢 Notificando atualização para cliente:', clienteId);
+              // Pequeno delay para garantir que os dados foram propagados
+              setTimeout(() => {
+                notifyPagamentoUpdate(clienteId);
+              }, 50);
             }
+            
+            // Fallback: refazer o fetch se algo der errado
+            setTimeout(async () => {
+              console.log('🔄 Executando fallback fetch');
+              try {
+                const { data, error } = await supabase
+                  .from('pagamentos')
+                  .select('*')
+                  .eq('user_id', user?.id);
+
+                if (error) throw error;
+                
+                globalPagamentos = data || [];
+                setPagamentos([...globalPagamentos]);
+                notifyAllListeners();
+              } catch (error) {
+                console.error('❌ Erro no fallback fetch:', error);
+              }
+            }, 1000);
+
+          } catch (error) {
+            console.error('❌ Erro processando realtime update:', error);
           }
         }
       )
       .subscribe();
 
     return () => {
+      console.log('🔌 Removendo realtime subscription');
       supabase.removeChannel(channel);
     };
-  }, [user, fetchPagamentos]);
+  }, [user]); // Removido fetchPagamentos das dependências
   
   // Registrar listener para atualizações globais
   useEffect(() => {
