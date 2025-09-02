@@ -92,34 +92,15 @@ export const usePagamentos = () => {
             setPagamentos([...globalPagamentos]);
             notifyAllListeners();
 
-            // Identificar o cliente afetado e notificar
+            // Identificar o cliente afetado e notificar com debounce
             const clienteId = (payload.new as any)?.cliente_id || (payload.old as any)?.cliente_id;
             if (clienteId) {
               console.log('📢 Notificando atualização para cliente:', clienteId);
-              // Pequeno delay para garantir que os dados foram propagados
+              // Debounce para evitar múltiplas atualizações simultâneas
               setTimeout(() => {
                 notifyPagamentoUpdate(clienteId);
-              }, 50);
+              }, 100);
             }
-            
-            // Fallback: refazer o fetch se algo der errado
-            setTimeout(async () => {
-              console.log('🔄 Executando fallback fetch');
-              try {
-                const { data, error } = await supabase
-                  .from('pagamentos')
-                  .select('*')
-                  .eq('user_id', user?.id);
-
-                if (error) throw error;
-                
-                globalPagamentos = data || [];
-                setPagamentos([...globalPagamentos]);
-                notifyAllListeners();
-              } catch (error) {
-                console.error('❌ Erro no fallback fetch:', error);
-              }
-            }, 1000);
 
           } catch (error) {
             console.error('❌ Erro processando realtime update:', error);

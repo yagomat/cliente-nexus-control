@@ -46,12 +46,8 @@ export const ClienteCard = ({
   const [localStatusAtivo, setLocalStatusAtivo] = useState(statusAtivo);
   const [localVencimentoInfo, setLocalVencimentoInfo] = useState(vencimentoInfo);
   
-  // Sincronizar estados locais quando props mudarem (importante para page refresh)
-  useEffect(() => {
-    setLocalPagamento(getPagamentoMesAtual(cliente.id));
-    setLocalStatusAtivo(statusAtivo);
-    setLocalVencimentoInfo(vencimentoInfo);
-  }, [getPagamentoMesAtual, cliente.id, statusAtivo, vencimentoInfo]);
+  // Estados locais são inicializados uma única vez e mantidos via realtime
+  // Removido useEffect de sincronização que estava causando conflito
   
   // Escutar atualizações de pagamento específicas para este cliente
   useEffect(() => {
