@@ -24,9 +24,10 @@ export const ClienteMatrixView = ({ anoFiltro, currentPage, itemsPerPage, search
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
 
+  // Fetch inicial e apenas quando parâmetros essenciais mudarem (não a cada render)
   useEffect(() => {
     fetchMatriz(anoFiltro, searchTerm, filtroStatus, currentPage, itemsPerPage, ordenacao);
-  }, [fetchMatriz, anoFiltro, searchTerm, filtroStatus, currentPage, itemsPerPage, ordenacao]);
+  }, [anoFiltro, searchTerm, filtroStatus, currentPage, itemsPerPage, ordenacao]);
   
   const meses = [
     { numero: 1, nome: "Jan" },

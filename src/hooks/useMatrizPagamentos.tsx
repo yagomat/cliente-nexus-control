@@ -86,24 +86,85 @@ export const useMatrizPagamentos = (): UseMatrizPagamentosResult => {
     }
   }, [user]);
 
-  // Listener para atualizações de pagamentos de outros hooks
+  // Listener para atualizações realtime de pagamentos específico para matriz
   useEffect(() => {
-    const removeListener = addPagamentoUpdateListener(() => {
-      // Re-fetch com os últimos parâmetros se existirem
-      if (lastFetchParams) {
-        fetchMatriz(
-          lastFetchParams.ano,
-          lastFetchParams.search,
-          lastFetchParams.status,
-          lastFetchParams.page,
-          lastFetchParams.itemsPerPage,
-          lastFetchParams.ordenacao
-        );
-      }
+    if (!user) return;
+
+    console.log('🔧 Configurando realtime subscription para matriz de pagamentos');
+
+    const channel = supabase
+      .channel('matriz-pagamentos-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'pagamentos',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('📡 Realtime update na matriz:', payload);
+          
+          try {
+            // Atualizar a matriz local imediatamente
+            const clienteId = (payload.new as any)?.cliente_id || (payload.old as any)?.cliente_id;
+            const mes = (payload.new as any)?.mes || (payload.old as any)?.mes;
+            const ano = (payload.new as any)?.ano || (payload.old as any)?.ano;
+            const status = (payload.new as any)?.status;
+            const id = (payload.new as any)?.id;
+
+            if (clienteId && mes !== undefined && ano !== undefined) {
+              console.log('🔄 Atualizando matriz local para cliente:', clienteId, 'mes:', mes, 'ano:', ano);
+              
+              setMatriz(currentMatriz => {
+                const novaMatriz = [...currentMatriz];
+                const clienteIndex = novaMatriz.findIndex(item => item.clienteId === clienteId);
+                
+                if (clienteIndex !== -1) {
+                  const clienteItem = { ...novaMatriz[clienteIndex] };
+                  const pagamentos = { ...clienteItem.pagamentos };
+                  
+                  if (payload.eventType === 'DELETE') {
+                    delete pagamentos[mes];
+                  } else {
+                    pagamentos[mes] = { status, id };
+                  }
+                  
+                  clienteItem.pagamentos = pagamentos;
+                  novaMatriz[clienteIndex] = clienteItem;
+                }
+                
+                return novaMatriz;
+              });
+              
+              // Notificar outros hooks com debounce
+              setTimeout(() => {
+                invalidateClientesCache();
+                notifyMatrizUpdate();
+              }, 100);
+            }
+          } catch (error) {
+            console.error('❌ Erro processando realtime update na matriz:', error);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('🔌 Removendo realtime subscription da matriz');
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
+  // Listener para sincronização com outros hooks (sem re-fetch)
+  useEffect(() => {
+    const removeListener = addPagamentoUpdateListener((clienteId) => {
+      console.log('📢 Matriz recebeu notificação de update para cliente:', clienteId);
+      // Não fazer re-fetch, o realtime já atualizou localmente
     });
 
     return removeListener;
-  }, [fetchMatriz, lastFetchParams]);
+  }, []);
 
   const handlePagamentoMes = useCallback(async (clienteId: string, mes: number, ano: number) => {
     if (!user) return;
@@ -114,23 +175,15 @@ export const useMatrizPagamentos = (): UseMatrizPagamentosResult => {
       if (!clienteMatriz) return;
 
       const pagamentoAtual = clienteMatriz.pagamentos[mes];
+      let novoStatus: string;
+      let operacao: 'INSERT' | 'UPDATE';
 
       if (!pagamentoAtual) {
         // Primeiro clique: registrar pagamento (pago)
-        const { error } = await supabase
-          .from('pagamentos')
-          .insert({
-            cliente_id: clienteId,
-            user_id: user.id,
-            mes: mes,
-            ano: ano,
-            status: 'pago'
-          });
-
-        if (error) throw error;
+        novoStatus = 'pago';
+        operacao = 'INSERT';
       } else {
         // Ciclar entre os status
-        let novoStatus;
         switch (pagamentoAtual.status) {
           case 'pago':
             novoStatus = 'promocao';
@@ -144,7 +197,43 @@ export const useMatrizPagamentos = (): UseMatrizPagamentosResult => {
           default:
             novoStatus = 'pago';
         }
+        operacao = 'UPDATE';
+      }
 
+      // Atualização otimista local ANTES da requisição ao servidor
+      setMatriz(currentMatriz => {
+        const novaMatriz = [...currentMatriz];
+        const clienteIndex = novaMatriz.findIndex(item => item.clienteId === clienteId);
+        
+        if (clienteIndex !== -1) {
+          const clienteItem = { ...novaMatriz[clienteIndex] };
+          const pagamentos = { ...clienteItem.pagamentos };
+          
+          // Simular o novo ID para inserções (será substituído pelo realtime)
+          const novoId = operacao === 'INSERT' ? `temp-${Date.now()}` : pagamentoAtual?.id;
+          pagamentos[mes] = { status: novoStatus, id: novoId };
+          
+          clienteItem.pagamentos = pagamentos;
+          novaMatriz[clienteIndex] = clienteItem;
+        }
+        
+        return novaMatriz;
+      });
+
+      // Executar a operação no servidor (realtime irá corrigir/confirmar)
+      if (operacao === 'INSERT') {
+        const { error } = await supabase
+          .from('pagamentos')
+          .insert({
+            cliente_id: clienteId,
+            user_id: user.id,
+            mes: mes,
+            ano: ano,
+            status: novoStatus
+          });
+
+        if (error) throw error;
+      } else {
         const { error } = await supabase
           .from('pagamentos')
           .update({ status: novoStatus })
@@ -153,16 +242,26 @@ export const useMatrizPagamentos = (): UseMatrizPagamentosResult => {
         if (error) throw error;
       }
 
-      // Recarregar a matriz após a atualização
+      // O realtime listener irá se encarregar da atualização final
+      // Não fazemos re-fetch aqui para evitar conflitos
+      
+    } catch (error) {
+      console.error('Erro ao atualizar pagamento na matriz:', error);
+      
+      // Em caso de erro, reverter a atualização otimista
       if (lastFetchParams) {
-        await fetchMatriz(lastFetchParams.ano, lastFetchParams.search, lastFetchParams.status, lastFetchParams.page, lastFetchParams.itemsPerPage, lastFetchParams.ordenacao);
+        setTimeout(() => {
+          fetchMatriz(
+            lastFetchParams.ano,
+            lastFetchParams.search,
+            lastFetchParams.status,
+            lastFetchParams.page,
+            lastFetchParams.itemsPerPage,
+            lastFetchParams.ordenacao
+          );
+        }, 100);
       }
       
-      // Notificar outros hooks para sincronização
-      invalidateClientesCache();
-      notifyMatrizUpdate();
-    } catch (error) {
-      console.error('Erro ao atualizar pagamento:', error);
       throw error;
     }
   }, [user, matriz, lastFetchParams, fetchMatriz]);
