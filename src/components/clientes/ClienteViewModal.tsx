@@ -3,6 +3,8 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, Phone, Server, MapPin, User, DollarSign, Monitor, Smartphone, Key } from "lucide-react";
 import { getVencimentoColor } from "@/utils/clienteUtils";
 
+// Fixed import issue - removed calcularStatusCliente reference
+
 // Função para parsing seguro de datas evitando problemas de timezone
 const parseLocalDate = (dateString: string): Date => {
   const [year, month, day] = dateString.split('-').map(Number);
