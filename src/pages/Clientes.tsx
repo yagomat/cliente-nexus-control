@@ -40,6 +40,23 @@ const Clientes = () => {
     });
   }, [fetchClientes, busca, filtroStatus, ordenacao, currentPage, itemsPerPage, anoFiltro]);
 
+  // Sincronizar dados quando pagamentos mudarem
+  useEffect(() => {
+    const listener = () => {
+      refreshClientes({
+        search: busca,
+        status: filtroStatus,
+        ordenacao: getOrdenacaoForAPI(ordenacao),
+        page: currentPage,
+        itemsPerPage,
+        ano: anoFiltro
+      });
+    };
+    
+    const unsubscribe = addPagamentoUpdateListener(listener);
+    return unsubscribe;
+  }, [refreshClientes, busca, filtroStatus, ordenacao, currentPage, itemsPerPage, anoFiltro]);
+
 
   // Usar dados de paginação do backend
   const totalPages = pagination?.totalPages || 0;
