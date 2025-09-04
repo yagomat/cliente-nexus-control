@@ -21,24 +21,6 @@ const Clientes = () => {
   const { clientes, loading, pagination, fetchClientes, refreshClientes } = useClientesCalculos();
   const { getPagamentoMesAtual, getPagamentoDoMes, handlePagamento } = usePagamentos();
 
-  // Listener para atualizar dados quando pagamentos mudarem
-  useEffect(() => {
-    const removeListener = addPagamentoUpdateListener((clienteId) => {
-      console.log('🔄 Cliente atualizou pagamento, invalidando cache:', clienteId);
-      // Force refresh dos dados dos clientes quando houver mudanças de pagamento
-      refreshClientes({
-        search: busca,
-        status: filtroStatus,
-        ordenacao: getOrdenacaoForAPI(ordenacao),
-        page: currentPage,
-        itemsPerPage,
-        ano: anoFiltro
-      });
-    });
-
-    return removeListener;
-  }, [refreshClientes, busca, filtroStatus, ordenacao, currentPage, itemsPerPage, anoFiltro]);
-
   // Função para converter ordenação para formato da API
   const getOrdenacaoForAPI = (ordenacao: string) => {
     if (ordenacao === 'cadastro') return `${ordenacao}_desc`;
