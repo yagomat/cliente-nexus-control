@@ -1,19 +1,21 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Phone, Server, MapPin, User, DollarSign, Monitor, Smartphone, Key } from "lucide-react";
-import { calcularDiasParaVencer, calcularStatusCliente, getVencimentoColor, getVencimentoTexto } from "@/utils/clienteUtils";
+import { getVencimentoColor } from "@/utils/clienteUtils";
 
 // Função para parsing seguro de datas evitando problemas de timezone
 const parseLocalDate = (dateString: string): Date => {
   const [year, month, day] = dateString.split('-').map(Number);
   return new Date(year, month - 1, day);
 };
+
 interface ClienteViewModalProps {
   isOpen: boolean;
   onClose: () => void;
   cliente: any | null;
   getPagamentoMesAtual: (clienteId: string) => any;
 }
+
 export const ClienteViewModal = ({
   isOpen,
   onClose,
@@ -21,9 +23,14 @@ export const ClienteViewModal = ({
   getPagamentoMesAtual
 }: ClienteViewModalProps) => {
   if (!cliente) return null;
-  const diasParaVencer = calcularDiasParaVencer(cliente.dia_vencimento);
-  const clienteAtivo = calcularStatusCliente(cliente, getPagamentoMesAtual);
-  return <Dialog open={isOpen} onOpenChange={onClose}>
+  
+  // Status e vencimento já vêm calculados do backend nos dados do cliente
+  const clienteAtivo = cliente.status_ativo ?? true;
+  const vencimentoInfo = cliente.vencimento_texto || "Sem informação";
+  const vencimentoDias = cliente.vencimento_dias ?? 0;
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
@@ -76,8 +83,8 @@ export const ClienteViewModal = ({
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">Status do Vencimento:</span>
-                  <span className={`text-sm font-medium ${getVencimentoColor(diasParaVencer)}`}>
-                    {getVencimentoTexto(diasParaVencer)}
+                  <span className={`text-sm font-medium ${getVencimentoColor(vencimentoDias)}`}>
+                    {vencimentoInfo}
                   </span>
                 </div>
               </div>
@@ -128,7 +135,8 @@ export const ClienteViewModal = ({
           </div>
 
           {/* Aplicativo Secundário */}
-          {cliente.aplicativo_2 && <div className="space-y-3">
+          {cliente.aplicativo_2 && (
+            <div className="space-y-3">
               <h3 className="text-lg font-semibold text-foreground">Tela Adicional</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -163,14 +171,18 @@ export const ClienteViewModal = ({
                   </div>
                 </div>
               </div>
-            </div>}
+            </div>
+          )}
 
           {/* Observações */}
-          {cliente.observacoes && <div className="space-y-3">
+          {cliente.observacoes && (
+            <div className="space-y-3">
               <h3 className="text-lg font-semibold text-foreground">Observações</h3>
               <p className="text-sm bg-muted p-3 rounded-md">{cliente.observacoes}</p>
-            </div>}
+            </div>
+          )}
         </div>
       </DialogContent>
-    </Dialog>;
+    </Dialog>
+  );
 };

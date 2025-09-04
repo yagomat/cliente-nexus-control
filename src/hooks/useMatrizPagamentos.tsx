@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { addPagamentoUpdateListener } from "@/hooks/usePagamentos";
 import { invalidateClientesCache } from "@/hooks/useClientesCalculos";
-import { calcularStatusCliente, calcularVencimentoInteligente } from "@/utils/clienteUtils";
+// Business logic calculations are handled by backend edge functions
 
 // Estado global para notificar sobre atualizações da matriz
 let matrizUpdateListeners: (() => void)[] = [];
@@ -151,13 +151,13 @@ export const useMatrizPagamentos = (): UseMatrizPagamentosResult => {
                       valor_plano: clienteItem.valorPlano
                     };
                     
-                    const novoStatusAtivo = calcularStatusCliente(cliente, getPagamentoDoMes);
-                    const vencimentoInfo = calcularVencimentoInteligente(cliente, getPagamentoDoMes);
+                    // Status e vencimento são calculados automaticamente pelos edge functions
+                    // Não é necessário recalcular no frontend
                     
-                    clienteItem.statusAtivo = novoStatusAtivo;
-                    clienteItem.vencimentoDias = vencimentoInfo.dias;
-                    clienteItem.vencimentoTexto = vencimentoInfo.texto;
-                    clienteItem.vencimentoVencido = vencimentoInfo.vencido;
+                    clienteItem.statusAtivo = clienteItem.statusAtivo; // Manter valor atual
+                    clienteItem.vencimentoDias = clienteItem.vencimentoDias; // Manter valor atual
+                    clienteItem.vencimentoTexto = clienteItem.vencimentoTexto; // Manter valor atual
+                    clienteItem.vencimentoVencido = clienteItem.vencimentoVencido; // Manter valor atual
                   }
                   
                   novaMatriz[clienteIndex] = clienteItem;
@@ -254,13 +254,13 @@ export const useMatrizPagamentos = (): UseMatrizPagamentosResult => {
               valor_plano: clienteItem.valorPlano
             };
             
-            const novoStatusAtivo = calcularStatusCliente(cliente, getPagamentoDoMes);
-            const vencimentoInfo = calcularVencimentoInteligente(cliente, getPagamentoDoMes);
+            // Status e vencimento são calculados automaticamente pelos edge functions
+            // Não é necessário recalcular no frontend
             
-            clienteItem.statusAtivo = novoStatusAtivo;
-            clienteItem.vencimentoDias = vencimentoInfo.dias;
-            clienteItem.vencimentoTexto = vencimentoInfo.texto;
-            clienteItem.vencimentoVencido = vencimentoInfo.vencido;
+            clienteItem.statusAtivo = clienteItem.statusAtivo; // Manter valor atual
+            clienteItem.vencimentoDias = clienteItem.vencimentoDias; // Manter valor atual
+            clienteItem.vencimentoTexto = clienteItem.vencimentoTexto; // Manter valor atual
+            clienteItem.vencimentoVencido = clienteItem.vencimentoVencido; // Manter valor atual
           }
           
           clienteItem.pagamentos = pagamentos;

@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { useClientes } from "@/hooks/useClientes";
+import { useClientesCalculos } from "@/hooks/useClientesCalculos";
 import { usePagamentos, addPagamentoUpdateListener } from "@/hooks/usePagamentos";
 import { invalidateClientesCache } from "@/hooks/useClientesCalculos";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ const PagamentosView = () => {
   const [anoSelecionado, setAnoSelecionado] = useState(anoAtual);
   const [mesSelecionado, setMesSelecionado] = useState(mesAtual);
   
-  const { clientes } = useClientes();
+  const { clientes } = useClientesCalculos();
   const { handlePagamentoMes, getPagamentoDoMes } = usePagamentos();
 
   // Listener para atualizar quando pagamentos mudarem

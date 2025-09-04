@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useClienteActions } from "@/hooks/useClienteActions";
-import { getButtonVariantAndColor, calcularStatusCliente, calcularVencimentoInteligente, getVencimentoColor } from "@/utils/clienteUtils";
+import { getButtonVariantAndColor, getVencimentoColor } from "@/utils/clienteUtils";
 import { ClienteViewModal } from "./ClienteViewModal";
 import { TemplateModal } from "@/components/templates/TemplateModal";
 import { addPagamentoUpdateListener } from "@/hooks/usePagamentos";
@@ -56,13 +56,7 @@ export const ClienteCard = ({
       if (clienteId === cliente.id) {
         const novoPagamento = getPagamentoMesAtual(cliente.id);
         setLocalPagamento(novoPagamento);
-        
-        // Recalcular status e vencimento localmente
-        const novoStatus = calcularStatusCliente(cliente, getPagamentoDoMes);
-        const novoVencimento = calcularVencimentoInteligente(cliente, getPagamentoDoMes);
-        
-        setLocalStatusAtivo(novoStatus);
-        setLocalVencimentoInfo(novoVencimento);
+        // Status e vencimento são recalculados automaticamente pelos edge functions
       }
     });
 
