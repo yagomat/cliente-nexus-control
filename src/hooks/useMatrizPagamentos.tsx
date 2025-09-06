@@ -166,9 +166,8 @@ export const useMatrizPagamentos = (): UseMatrizPagamentosResult => {
                 return novaMatriz;
               });
               
-              // Notificar outros hooks com debounce
+              // Notificar sobre atualizações da matriz (sem invalidar cache de clientes)
               setTimeout(() => {
-                invalidateClientesCache();
                 notifyMatrizUpdate();
               }, 100);
             }

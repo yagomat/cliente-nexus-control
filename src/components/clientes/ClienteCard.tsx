@@ -11,6 +11,7 @@ import { ClienteViewModal } from "./ClienteViewModal";
 import { TemplateModal } from "@/components/templates/TemplateModal";
 import { addPagamentoUpdateListener } from "@/hooks/usePagamentos";
 import { calcularStatusCliente, calcularVencimentoInteligente } from "@/utils/clienteCalculations";
+import { addMatrizUpdateListener } from "@/hooks/useMatrizPagamentos";
 
 interface VencimentoInfo {
   dias: number;
@@ -53,8 +54,8 @@ export const ClienteCard = ({
   // Escutar atualizações de pagamento específicas para este cliente
   useEffect(() => {
     const removeListener = addPagamentoUpdateListener((clienteId) => {
-      // Só atualizar se for este cliente específico
-      if (clienteId === cliente.id) {
+      // Só atualizar se for este cliente específico ou se não for especificado cliente (atualização global)
+      if (!clienteId || clienteId === cliente.id) {
         const novoPagamento = getPagamentoMesAtual(cliente.id);
         setLocalPagamento(novoPagamento);
         
@@ -65,6 +66,24 @@ export const ClienteCard = ({
         setLocalStatusAtivo(novoStatusAtivo);
         setLocalVencimentoInfo(novoVencimentoInfo);
       }
+    });
+
+    return removeListener;
+  }, [cliente.id, getPagamentoMesAtual, getPagamentoDoMes]);
+
+  // Escutar atualizações da matriz para sincronização entre modos
+  useEffect(() => {
+    const removeListener = addMatrizUpdateListener(() => {
+      // Quando a matriz é atualizada, recalcular dados locais
+      const novoPagamento = getPagamentoMesAtual(cliente.id);
+      setLocalPagamento(novoPagamento);
+      
+      // Calcular localmente status e vencimento para atualização imediata
+      const novoStatusAtivo = calcularStatusCliente(cliente, getPagamentoDoMes);
+      const novoVencimentoInfo = calcularVencimentoInteligente(cliente, getPagamentoDoMes);
+      
+      setLocalStatusAtivo(novoStatusAtivo);
+      setLocalVencimentoInfo(novoVencimentoInfo);
     });
 
     return removeListener;
