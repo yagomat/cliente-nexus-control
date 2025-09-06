@@ -10,6 +10,7 @@ import { getButtonVariantAndColor, getVencimentoColor } from "@/utils/clienteUti
 import { ClienteViewModal } from "./ClienteViewModal";
 import { TemplateModal } from "@/components/templates/TemplateModal";
 import { addPagamentoUpdateListener } from "@/hooks/usePagamentos";
+import { calcularStatusCliente, calcularVencimentoInteligente } from "@/utils/clienteCalculations";
 
 interface VencimentoInfo {
   dias: number;
@@ -56,7 +57,13 @@ export const ClienteCard = ({
       if (clienteId === cliente.id) {
         const novoPagamento = getPagamentoMesAtual(cliente.id);
         setLocalPagamento(novoPagamento);
-        // Status e vencimento são recalculados automaticamente pelos edge functions
+        
+        // Calcular localmente status e vencimento para atualização imediata
+        const novoStatusAtivo = calcularStatusCliente(cliente, getPagamentoDoMes);
+        const novoVencimentoInfo = calcularVencimentoInteligente(cliente, getPagamentoDoMes);
+        
+        setLocalStatusAtivo(novoStatusAtivo);
+        setLocalVencimentoInfo(novoVencimentoInfo);
       }
     });
 

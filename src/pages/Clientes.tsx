@@ -40,22 +40,7 @@ const Clientes = () => {
     });
   }, [fetchClientes, busca, filtroStatus, ordenacao, currentPage, itemsPerPage, anoFiltro]);
 
-  // Sincronizar dados quando pagamentos mudarem
-  useEffect(() => {
-    const listener = () => {
-      refreshClientes({
-        search: busca,
-        status: filtroStatus,
-        ordenacao: getOrdenacaoForAPI(ordenacao),
-        page: currentPage,
-        itemsPerPage,
-        ano: anoFiltro
-      });
-    };
-    
-    const unsubscribe = addPagamentoUpdateListener(listener);
-    return unsubscribe;
-  }, [refreshClientes, busca, filtroStatus, ordenacao, currentPage, itemsPerPage, anoFiltro]);
+  // Removed global payment listener - now cards update individually for better UX
 
 
   // Usar dados de paginação do backend
