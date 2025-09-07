@@ -74,16 +74,24 @@ export const ClienteCard = ({
   // Escutar atualizações da matriz para sincronização entre modos
   useEffect(() => {
     const removeListener = addMatrizUpdateListener(() => {
-      // Quando a matriz é atualizada, recalcular dados locais
-      const novoPagamento = getPagamentoMesAtual(cliente.id);
-      setLocalPagamento(novoPagamento);
-      
-      // Calcular localmente status e vencimento para atualização imediata
-      const novoStatusAtivo = calcularStatusCliente(cliente, getPagamentoDoMes);
-      const novoVencimentoInfo = calcularVencimentoInteligente(cliente, getPagamentoDoMes);
-      
-      setLocalStatusAtivo(novoStatusAtivo);
-      setLocalVencimentoInfo(novoVencimentoInfo);
+      // Aguardar um pouco para que usePagamentos termine o fetchPagamentos
+      setTimeout(() => {
+        // Quando a matriz é atualizada, recalcular dados locais com dados atualizados
+        const novoPagamento = getPagamentoMesAtual(cliente.id);
+        setLocalPagamento(novoPagamento);
+        
+        // Calcular localmente status e vencimento para atualização imediata
+        const novoStatusAtivo = calcularStatusCliente(cliente, getPagamentoDoMes);
+        const novoVencimentoInfo = calcularVencimentoInteligente(cliente, getPagamentoDoMes);
+        
+        setLocalStatusAtivo(novoStatusAtivo);
+        setLocalVencimentoInfo(novoVencimentoInfo);
+        
+        console.log('🔄 ClienteCard recalculou após mudança da matriz:', cliente.nome, { 
+          statusAtivo: novoStatusAtivo, 
+          vencimento: novoVencimentoInfo 
+        });
+      }, 150); // Delay para permitir que usePagamentos atualize primeiro
     });
 
     return removeListener;

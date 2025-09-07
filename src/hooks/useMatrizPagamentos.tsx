@@ -166,9 +166,16 @@ export const useMatrizPagamentos = (): UseMatrizPagamentosResult => {
                 return novaMatriz;
               });
               
-              // Notificar sobre atualizações da matriz (sem invalidar cache de clientes)
+              // Notificar sobre atualizações da matriz e pagamentos
               setTimeout(() => {
                 notifyMatrizUpdate();
+                // Importar e chamar notifyPagamentoUpdate para sincronizar com modo lista
+                import("@/hooks/usePagamentos").then(({ usePagamentos }) => {
+                  const { notifyPagamentoUpdate } = usePagamentos();
+                  if (clienteId) {
+                    notifyPagamentoUpdate(clienteId);
+                  }
+                });
               }, 100);
             }
           } catch (error) {
@@ -291,6 +298,12 @@ export const useMatrizPagamentos = (): UseMatrizPagamentosResult => {
         if (error) throw error;
       }
 
+      // Notificar imediatamente sobre a mudança para sincronizar com modo lista
+      import("@/hooks/usePagamentos").then(({ usePagamentos }) => {
+        const { notifyPagamentoUpdate } = usePagamentos();
+        notifyPagamentoUpdate(clienteId);
+      });
+      
       // O realtime listener irá se encarregar da atualização final
       // Não fazemos re-fetch aqui para evitar conflitos
       
