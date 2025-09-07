@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { addPagamentoUpdateListener } from "@/hooks/usePagamentos";
+import { addPagamentoUpdateListener, notifyPagamentoUpdate } from "@/hooks/usePagamentos";
 import { invalidateClientesCache } from "@/hooks/useClientesCalculos";
 // Business logic calculations are handled by backend edge functions
 
@@ -169,13 +169,9 @@ export const useMatrizPagamentos = (): UseMatrizPagamentosResult => {
               // Notificar sobre atualizações da matriz e pagamentos
               setTimeout(() => {
                 notifyMatrizUpdate();
-                // Importar e chamar notifyPagamentoUpdate para sincronizar com modo lista
-                import("@/hooks/usePagamentos").then(({ usePagamentos }) => {
-                  const { notifyPagamentoUpdate } = usePagamentos();
-                  if (clienteId) {
-                    notifyPagamentoUpdate(clienteId);
-                  }
-                });
+                if (clienteId) {
+                  notifyPagamentoUpdate(clienteId);
+                }
               }, 100);
             }
           } catch (error) {
@@ -299,10 +295,7 @@ export const useMatrizPagamentos = (): UseMatrizPagamentosResult => {
       }
 
       // Notificar imediatamente sobre a mudança para sincronizar com modo lista
-      import("@/hooks/usePagamentos").then(({ usePagamentos }) => {
-        const { notifyPagamentoUpdate } = usePagamentos();
-        notifyPagamentoUpdate(clienteId);
-      });
+      notifyPagamentoUpdate(clienteId);
       
       // O realtime listener irá se encarregar da atualização final
       // Não fazemos re-fetch aqui para evitar conflitos

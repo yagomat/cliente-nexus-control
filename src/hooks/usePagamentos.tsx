@@ -11,7 +11,7 @@ let listeners: (() => void)[] = [];
 let pagamentoUpdateListeners: ((clienteId?: string) => void)[] = [];
 
 // Função para notificar sobre atualizações de pagamentos
-const notifyPagamentoUpdate = (clienteId?: string) => {
+export const notifyPagamentoUpdate = (clienteId?: string) => {
   pagamentoUpdateListeners.forEach(listener => listener(clienteId));
 };
 
